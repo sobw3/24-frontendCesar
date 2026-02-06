@@ -8014,15 +8014,8 @@ const AdminDashboard = ({ onLogout }) => {
         }
     };
 
-const ProductManager = React.memo(({ token }) => {
+const ProductManager = React.memo(({ token, API_URL }) => {
     
-    // --- 🕵️ LOGS DE DIAGNÓSTICO (O X-9 do Código) ---
-    console.log(`%c 🎨 [RENDER] Componente renderizou às ${new Date().toLocaleTimeString()}`, 'color: #00bcd4; font-weight: bold;');
-
-    useEffect(() => {
-        console.log(`%c ⚠️ [PROP CHANGE] Token mudou! Novo valor: ${token ? 'Presente' : 'Null'}`, 'color: orange; font-weight: bold;');
-    }, [token]);
-
     // --- ESTADOS ---
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -8043,6 +8036,9 @@ const ProductManager = React.memo(({ token }) => {
         promotional_price: '', promotion_start_date: '', promotion_end_date: '', 
         critical_stock_level: 5, image_url: '', global_stock: 0 
     });
+    
+    // Estado auxiliar para "Nova Categoria" no select
+    const [isNewCategoryMode, setIsNewCategoryMode] = useState(false);
 
     // --- HELPER: Formatação ---
     const formatCurrency = (value) => {
@@ -8051,18 +8047,12 @@ const ProductManager = React.memo(({ token }) => {
 
     // --- EFEITOS ---
 
-    // 1. Busca Inicial (Com Logs)
+    // 1. Busca Inicial
     useEffect(() => {
-        console.log('%c 🔥 [FETCH] Iniciando busca de produtos...', 'color: yellow;');
-        
         const fetchProducts = async () => {
-            if (!token) {
-                console.log('%c ❌ [FETCH] Cancelado: Sem token.', 'color: red;');
-                return;
-            }
+            if (!token) return;
             setLoading(true);
             try {
-                // Certifique-se que API_URL está definida no seu projeto
                 const res = await fetch(`${API_URL}/api/admin/products`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -8070,10 +8060,9 @@ const ProductManager = React.memo(({ token }) => {
                 if (res.ok) {
                     const data = await res.json();
                     const lista = Array.isArray(data) ? data : (data.products || []);
-                    console.log(`%c ✅ [FETCH] Sucesso! ${lista.length} produtos carregados.`, 'color: green;');
                     setProducts(lista);
                 } else {
-                    console.log('%c ❌ [FETCH] Erro na resposta da API.', 'color: red;');
+                    console.error('Erro na resposta da API.');
                 }
             } catch (error) {
                 console.error("Erro crítico ao buscar:", error);
@@ -8082,31 +8071,23 @@ const ProductManager = React.memo(({ token }) => {
             }
         };
         fetchProducts();
-    }, [token]); // Se isso rodar em loop, o culpado é o "token" mudando de referência
+    }, [token, API_URL]);
 
-    // 2. Debounce da Busca (Log de Digitação)
+    // 2. Debounce da Busca
     useEffect(() => {
-        if (searchQuery !== debouncedSearch) {
-            console.log(`⏳ [DEBOUNCE] Aguardando usuário parar de digitar: "${searchQuery}"`);
-        }
-        
         const timer = setTimeout(() => {
             if (searchQuery !== debouncedSearch) {
-                console.log(`🎯 [DEBOUNCE] Filtro aplicado: "${searchQuery}"`);
                 setDebouncedSearch(searchQuery);
             }
         }, 300);
-        
         return () => clearTimeout(timer);
     }, [searchQuery, debouncedSearch]);
 
     // 3. Resetar página
     useEffect(() => { setCurrentPage(1); }, [debouncedSearch, filterCategory]);
 
-    // --- MEMOIZATION (Performance) ---
-    // Log para saber se estamos recalculando listas pesadas à toa
+    // --- MEMOIZATION ---
     const filteredProducts = useMemo(() => {
-        // console.log('⚙️ [MEMO] Recalculando filtros...'); // Descomente se quiser ver isso
         return products.filter(product => {
             const matchesSearch = (product.name || '').toLowerCase().includes(debouncedSearch.toLowerCase());
             const matchesCategory = filterCategory === 'all' || !filterCategory || product.category === filterCategory;
@@ -8114,6 +8095,7 @@ const ProductManager = React.memo(({ token }) => {
         });
     }, [products, debouncedSearch, filterCategory]);
 
+    // Lista de categorias únicas para o filtro e para o modal
     const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products]);
 
     const { currentItems, totalPages } = useMemo(() => {
@@ -8125,11 +8107,13 @@ const ProductManager = React.memo(({ token }) => {
 
     // --- AÇÕES ---
     const handleOpenModal = (product = null) => {
-        console.log('📝 [MODAL] Abrindo modal para:', product ? 'Edição' : 'Criação');
         setEditingProduct(product);
+        setIsNewCategoryMode(false); // Reseta o modo de nova categoria
+
         if (product) {
             setFormData({
                 ...product,
+                category: product.category || '',
                 promotion_start_date: product.promotion_start_date ? product.promotion_start_date.split('T')[0] : '',
                 promotion_end_date: product.promotion_end_date ? product.promotion_end_date.split('T')[0] : ''
             });
@@ -8145,8 +8129,6 @@ const ProductManager = React.memo(({ token }) => {
         const endpoint = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products';
         const method = editingProduct ? 'PUT' : 'POST';
 
-        console.log(`💾 [SAVE] Enviando ${method} para ${endpoint}`);
-
         try {
             const res = await fetch(`${API_URL}${endpoint}`, {
                 method, 
@@ -8156,7 +8138,6 @@ const ProductManager = React.memo(({ token }) => {
 
             if (res.ok) {
                 const savedProduct = await res.json();
-                console.log('✅ [SAVE] Salvo com sucesso!', savedProduct);
                 
                 if (editingProduct) {
                     setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
@@ -8165,11 +8146,9 @@ const ProductManager = React.memo(({ token }) => {
                 }
                 setIsModalOpen(false);
             } else {
-                console.error('❌ [SAVE] Erro na API');
                 alert("Erro ao salvar produto.");
             }
         } catch (err) { 
-            console.error('❌ [SAVE] Erro de rede', err);
             alert("Erro de conexão."); 
         } finally {
             setIsSaving(false);
@@ -8185,9 +8164,8 @@ const ProductManager = React.memo(({ token }) => {
             await fetch(`${API_URL}/api/admin/products/${id}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
-            console.log('🗑️ [DELETE] Produto removido:', id);
         } catch (err) {
-            console.error('❌ [DELETE] Falha, revertendo...');
+            console.error('Falha ao deletar, revertendo...');
             setProducts(backup);
         }
     };
@@ -8196,14 +8174,8 @@ const ProductManager = React.memo(({ token }) => {
 
     // --- RENDER ---
     return (
-        // REMOVI "animate-fade-in" temporariamente para testar se é só CSS
         <div className="flex flex-col gap-6 pb-10 text-gray-200">
             
-            {/* DEBUGGER VISUAL NA TELA (Opcional, pode remover depois) */}
-            {/* <div className="bg-red-900/50 p-2 text-xs text-center border border-red-500">
-                Debug: Renders: {Math.random().toFixed(2)} | Token: {token ? 'OK' : 'MISSING'} | Prods: {products.length}
-            </div> */}
-
             {/* CABEÇALHO */}
             <div className="bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-2xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -8366,11 +8338,49 @@ const ProductManager = React.memo(({ token }) => {
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nome do Produto</label>
                                     <input required placeholder="Ex: Vinho Tinto Malbec..." value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-950/50 border border-gray-700 focus:border-orange-500 rounded-xl p-3.5 text-white outline-none transition-all"/>
                                 </div>
+                                
+                                {/* SELEÇÃO DE CATEGORIA MELHORADA */}
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Categoria</label>
-                                    <input list="cats_modal" placeholder="Selecione ou digite" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-gray-950/50 border border-gray-700 focus:border-orange-500 rounded-xl p-3.5 text-white outline-none transition-all"/>
-                                    <datalist id="cats_modal">{categories.map(c => <option key={c} value={c}/>)}</datalist>
+                                    {isNewCategoryMode ? (
+                                        <div className="flex gap-2">
+                                            <input 
+                                                autoFocus
+                                                required 
+                                                placeholder="Digite a nova categoria" 
+                                                value={formData.category} 
+                                                onChange={e => setFormData({...formData, category: e.target.value})} 
+                                                className="w-full bg-gray-950/50 border border-gray-700 focus:border-orange-500 rounded-xl p-3.5 text-white outline-none transition-all"
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => { setIsNewCategoryMode(false); setFormData({...formData, category: ''}) }}
+                                                className="px-3 bg-gray-800 rounded-xl border border-gray-700 text-gray-400 hover:text-white"
+                                            >
+                                                <X size={18}/>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <select 
+                                            required 
+                                            value={categories.includes(formData.category) ? formData.category : (formData.category ? 'manual' : '')} 
+                                            onChange={(e) => {
+                                                if (e.target.value === 'new_cat') {
+                                                    setIsNewCategoryMode(true);
+                                                    setFormData({...formData, category: ''});
+                                                } else {
+                                                    setFormData({...formData, category: e.target.value});
+                                                }
+                                            }} 
+                                            className="w-full bg-gray-950/50 border border-gray-700 rounded-xl p-3.5 text-white focus:border-orange-500 outline-none appearance-none cursor-pointer"
+                                        >
+                                            <option value="" disabled>Selecione...</option>
+                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                            <option value="new_cat" className="text-orange-400 font-bold">+ Nova Categoria...</option>
+                                        </select>
+                                    )}
                                 </div>
+
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Estoque Atual / Mínimo</label>
                                     <div className="flex gap-2">
