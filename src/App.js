@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 // --- SLIDER ---
@@ -8015,6 +8014,8 @@ const AdminDashboard = ({ onLogout }) => {
     };
 
 const ProductManager = React.memo(({ token, API_URL }) => {
+    // GARANTIA: Se a prop API_URL não vier, tenta usar uma string fixa ou alertar erro
+    const BASE_URL = API_URL || "https://two4hprontobackendcesar.onrender.com"; 
     
     // --- ESTADOS ---
     const [products, setProducts] = useState([]);
@@ -8053,7 +8054,8 @@ const ProductManager = React.memo(({ token, API_URL }) => {
             if (!token) return;
             setLoading(true);
             try {
-                const res = await fetch(`${API_URL}/api/admin/products`, {
+                // Usa BASE_URL aqui
+                const res = await fetch(`${BASE_URL}/api/admin/products`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -8062,7 +8064,7 @@ const ProductManager = React.memo(({ token, API_URL }) => {
                     const lista = Array.isArray(data) ? data : (data.products || []);
                     setProducts(lista);
                 } else {
-                    console.error('Erro na resposta da API.');
+                    console.error('Erro na resposta da API:', res.status);
                 }
             } catch (error) {
                 console.error("Erro crítico ao buscar:", error);
@@ -8071,7 +8073,7 @@ const ProductManager = React.memo(({ token, API_URL }) => {
             }
         };
         fetchProducts();
-    }, [token, API_URL]);
+    }, [token, BASE_URL]);
 
     // 2. Debounce da Busca
     useEffect(() => {
@@ -8095,7 +8097,6 @@ const ProductManager = React.memo(({ token, API_URL }) => {
         });
     }, [products, debouncedSearch, filterCategory]);
 
-    // Lista de categorias únicas para o filtro e para o modal
     const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products]);
 
     const { currentItems, totalPages } = useMemo(() => {
@@ -8108,7 +8109,7 @@ const ProductManager = React.memo(({ token, API_URL }) => {
     // --- AÇÕES ---
     const handleOpenModal = (product = null) => {
         setEditingProduct(product);
-        setIsNewCategoryMode(false); // Reseta o modo de nova categoria
+        setIsNewCategoryMode(false); 
 
         if (product) {
             setFormData({
@@ -8130,7 +8131,8 @@ const ProductManager = React.memo(({ token, API_URL }) => {
         const method = editingProduct ? 'PUT' : 'POST';
 
         try {
-            const res = await fetch(`${API_URL}${endpoint}`, {
+            // Usa BASE_URL aqui também
+            const res = await fetch(`${BASE_URL}${endpoint}`, {
                 method, 
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, 
                 body: JSON.stringify(formData)
@@ -8146,10 +8148,12 @@ const ProductManager = React.memo(({ token, API_URL }) => {
                 }
                 setIsModalOpen(false);
             } else {
-                alert("Erro ao salvar produto.");
+                const errData = await res.json();
+                alert(`Erro ao salvar: ${errData.message || res.statusText}`);
             }
         } catch (err) { 
-            alert("Erro de conexão."); 
+            console.error(err);
+            alert(`Erro de conexão com: ${BASE_URL}`); 
         } finally {
             setIsSaving(false);
         }
@@ -8158,10 +8162,10 @@ const ProductManager = React.memo(({ token, API_URL }) => {
     const handleDelete = async (id) => {
         if(!window.confirm("Arquivar produto?")) return;
         const backup = [...products];
-        setProducts(prev => prev.filter(p => p.id !== id)); // Otimista
+        setProducts(prev => prev.filter(p => p.id !== id)); 
 
         try {
-            await fetch(`${API_URL}/api/admin/products/${id}`, {
+            await fetch(`${BASE_URL}/api/admin/products/${id}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
         } catch (err) {
@@ -8175,7 +8179,6 @@ const ProductManager = React.memo(({ token, API_URL }) => {
     // --- RENDER ---
     return (
         <div className="flex flex-col gap-6 pb-10 text-gray-200">
-            
             {/* CABEÇALHO */}
             <div className="bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-2xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -8339,7 +8342,7 @@ const ProductManager = React.memo(({ token, API_URL }) => {
                                     <input required placeholder="Ex: Vinho Tinto Malbec..." value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-950/50 border border-gray-700 focus:border-orange-500 rounded-xl p-3.5 text-white outline-none transition-all"/>
                                 </div>
                                 
-                                {/* SELEÇÃO DE CATEGORIA MELHORADA */}
+                                {/* SELEÇÃO DE CATEGORIA */}
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Categoria</label>
                                     {isNewCategoryMode ? (
