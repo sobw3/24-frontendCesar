@@ -945,51 +945,43 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
 
 // App.js -> SUBSTITUA o seu componente RegisterPage por este
 
-const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
-    const [step, setStep] = React.useState(1);
-    const [formData, setFormData] = React.useState({ 
+const RegisterPage = ({ onRegister, onSwitchToLogin, API_URL }) => {
+    const [step, setStep] = useState(1);
+    const [isRegistered, setIsRegistered] = useState(false); // Novo estado para tela de sucesso
+    const [formData, setFormData] = useState({ 
         name: '', cpf: '', email: '', phone_number: '', birthDate: '', 
         apartmentBlock: '', apartmentNumber: '', 
         password: '', confirmPassword: '', terms: false 
     });
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [success, setSuccess] = React.useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    // --- UTILS DE FORMATAÇÃO (Mantendo a lógica) ---
-    // Supondo que essas funções existam no escopo global ou importadas
+    // --- UTILS DE FORMATAÇÃO ---
     const formatCPF = (v) => v.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2").slice(0, 14);
     const formatPhone = (v) => v.replace(/\D/g, "").replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d)(\d{4})$/, "$1-$2").slice(0, 15);
     const formatDate = (v) => v.replace(/\D/g, "").replace(/(\d{2})(\d)/, "$1/$2").replace(/(\d{2})(\d)/, "$1/$2").slice(0, 10);
     const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
-    const validateCPF = (cpf) => cpf.length === 14; // Validação simples visual
 
     // --- HANDLERS ---
-    const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
-    const handleCpfChange = (e) => { setFormData({ ...formData, cpf: formatCPF(e.target.value) }); };
-    const handlePhoneChange = (e) => { setFormData({ ...formData, phone_number: formatPhone(e.target.value) }); };
-    const handleDateChange = (e) => { setFormData({ ...formData, birthDate: formatDate(e.target.value) }); };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleRegisterSubmit = async () => {
         setError('');
-        if (!validateCPF(formData.cpf)) { setError('CPF inválido.'); return; }
-        if (!validateEmail(formData.email)) { setError('Formato de e-mail inválido.'); return; }
-        setIsLoading(true); setSuccess('');
+        if (formData.cpf.length !== 14) { setError('CPF incompleto.'); return; }
+        if (!validateEmail(formData.email)) { setError('E-mail inválido.'); return; }
+        
+        setIsLoading(true);
 
         const [day, month, year] = formData.birthDate.split('/');
         const birthDateForBackend = `${year}-${month}-${day}`;
 
         try {
-            // URL MOCKADA PARA VISUALIZAÇÃO - MANTENHA A SUA ORIGINAL
-            // const response = await fetch(`${API_URL}/api/auth/register`, { ...
-            
-            // Simulação de sucesso para você ver o visual
-            await new Promise(r => setTimeout(r, 1500));
-            
-            // Aqui entraria sua chamada real
-            /*
             const response = await fetch(`${API_URL}/api/auth/register`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     name: formData.name, 
                     cpf: formData.cpf, 
@@ -1000,201 +992,159 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                     apartment: `Bloco ${formData.apartmentBlock} - Apto ${formData.apartmentNumber}` 
                 })
             });
+
             const data = await response.json();
-            if (!response.ok) { throw new Error(data.message || 'Erro ao criar conta.'); }
-            */
-           
-            setSuccess('Conta criada! Redirecionando...');
-            // onRegister(data.token, data.user); 
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao criar conta.');
+            }
+
+            // Em vez de redirecionar direto, mostra a tela de boas vindas
+            setIsRegistered(true);
+            
+            // Aguarda 4 segundos na tela de boas vindas e depois vai para o login
+            setTimeout(() => {
+                onSwitchToLogin();
+            }, 4000);
 
         } catch (err) {
             setError(err.message);
             setIsLoading(false);
         }
-    }
-    
-    // --- VALIDAÇÕES ---
+    };
+
+    // --- VALIDAÇÕES DE PASSO ---
     const validateStep1 = () => {
-        if (!formData.name || !validateEmail(formData.email) || formData.cpf.length !== 14 || formData.phone_number.length < 14 || formData.birthDate.length !== 10) return false;
-        const [day, month, year] = formData.birthDate.split('/');
-        if (!day || !month || !year || year.length !== 4) return false;
-        return true; 
-    }
-    
+        return formData.name && validateEmail(formData.email) && formData.cpf.length === 14 && formData.phone_number.length >= 14 && formData.birthDate.length === 10;
+    };
     const validateStep2 = () => formData.apartmentBlock.trim() && formData.apartmentNumber.trim();
     const validateStep3 = () => formData.password.length >= 6 && formData.password === formData.confirmPassword && formData.terms;
 
-    // --- COMPONENTE DE INPUT REUTILIZÁVEL ---
-    const InputField = ({ icon: Icon, ...props }) => (
-        <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors" />
+    // --- TELA DE SUCESSO (BOAS-VINDAS) ---
+    if (isRegistered) {
+        return (
+            <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center shadow-2xl animate-in fade-in zoom-in duration-500">
+                    <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                        <Sparkles className="text-green-400 w-10 h-10" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-white mb-2">Seja bem-vindo!</h2>
+                    <p className="text-gray-400 mb-8">Obrigado por se cadastrar na Pronto24h. Sua conta foi criada com sucesso.</p>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-center gap-3 text-orange-400 font-medium">
+                            <Loader2 className="animate-spin" size={20} />
+                            Preparando seu acesso...
+                        </div>
+                    </div>
+                </div>
             </div>
-            <input
-                className="w-full bg-gray-800/50 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent block w-full pl-12 p-3.5 placeholder-gray-500 transition-all outline-none"
-                {...props}
-            />
-        </div>
-    );
+        );
+    }
 
+    // --- RENDERIZAÇÃO DO FORMULÁRIO ---
     return (
         <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4 relative overflow-hidden">
-            
-            {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
             </div>
 
-            {/* Card Principal */}
             <div className="w-full max-w-lg bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
                 
-                {/* --- ÁREA DA LOGO (FIXA) --- */}
-                <div className="h-24 mb-4 w-full flex items-center justify-center flex-shrink-0">
-                    <img 
-                        src="https://i.imgur.com/LCoZwuM.png"
-                        alt="Pronto24h" 
-                        className="h-full w-auto object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]"
-                    />
+                <div className="h-20 mb-4 w-full flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.imgur.com/LCoZwuM.png" alt="Logo" className="h-full w-auto object-contain" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-white text-center mb-1">Crie sua conta</h2>
                 <p className="text-gray-400 text-center text-sm mb-6">Passo {step} de 3</p>
 
-                {/* Barra de Progresso */}
-                <div className="w-full bg-gray-800 rounded-full h-1.5 mb-8 flex-shrink-0 overflow-hidden">
-                    <div 
-                        className="bg-gradient-to-r from-orange-500 to-orange-400 h-1.5 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(249,115,22,0.5)]" 
-                        style={{ width: `${(step / 3) * 100}%` }}
-                    ></div>
+                <div className="w-full bg-gray-800 rounded-full h-1.5 mb-8 flex-shrink-0">
+                    <div className="bg-orange-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(step / 3) * 100}%` }}></div>
                 </div>
 
-                {/* --- JANELA DE SLIDE (CONTEÚDO) --- */}
                 <div className="flex-1 overflow-hidden relative">
-                    <div 
-                        className="flex transition-transform duration-500 ease-in-out h-full" 
-                        style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-                    >
+                    <div className="flex transition-transform duration-500 ease-in-out h-full" style={{ transform: `translateX(-${(step - 1) * 100}%)` }}>
                         
-                        {/* --- PASSO 1: PESSOAL --- */}
-                        <div className="w-full flex-shrink-0 px-1 flex flex-col h-full">
-                            <div className="space-y-4 flex-1">
-                                <InputField icon={User} name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} />
-                                <InputField icon={Mail} name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField icon={FileText} name="cpf" type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} maxLength={14} />
-                                    <InputField icon={Calendar} name="birthDate" type="text" placeholder="Nascimento" value={formData.birthDate} onChange={handleDateChange} maxLength={10} />
-                                </div>
-                                <InputField icon={Phone} name="phone_number" type="tel" placeholder="Telefone" value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} />
+                        {/* PASSO 1 */}
+                        <div className="w-full flex-shrink-0 px-1 space-y-4">
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="name" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none focus:ring-2 focus:ring-orange-500" />
                             </div>
-
-                            <div className="mt-auto pt-6 flex justify-end">
-                                <button 
-                                    onClick={() => setStep(step + 1)} 
-                                    disabled={!validateStep1()} 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Continuar <ArrowRight size={18} />
-                                </button>
+                            <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none focus:ring-2 focus:ring-orange-500" />
                             </div>
-                        </div>
-
-                        {/* --- PASSO 2: ENDEREÇO --- */}
-                        <div className="w-full flex-shrink-0 px-1 flex flex-col h-full">
-                            <div className="space-y-1 flex-1">
-                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6">
-                                    <p className="text-blue-200 text-sm text-center">
-                                        Precisamos saber onde você mora para liberar o acesso às máquinas corretas.
-                                    </p>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="relative group">
+                                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                    <input placeholder="CPF" value={formData.cpf} onChange={(e) => setFormData({...formData, cpf: formatCPF(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none" />
                                 </div>
-                                
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-400 ml-1 mb-1 block uppercase">Bloco / Torre</label>
-                                        <InputField icon={Building2} name="apartmentBlock" type="text" placeholder="Ex: Bloco A" value={formData.apartmentBlock} onChange={handleChange} />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-400 ml-1 mb-1 block uppercase">Nº Apartamento</label>
-                                        <InputField icon={Home} name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} />
-                                    </div>
+                                <div className="relative group">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                    <input placeholder="Nascimento" value={formData.birthDate} onChange={(e) => setFormData({...formData, birthDate: formatDate(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none" />
                                 </div>
                             </div>
-
-                            <div className="mt-auto pt-6 flex justify-between">
-                                <button onClick={() => setStep(step - 1)} className="text-gray-400 hover:text-white font-bold py-3 px-4 rounded-xl flex items-center gap-2 transition-colors">
-                                    <ArrowLeft size={18} /> Voltar
-                                </button>
-                                <button 
-                                    onClick={() => setStep(step + 1)} 
-                                    disabled={!validateStep2()} 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Continuar <ArrowRight size={18} />
-                                </button>
+                            <div className="relative group">
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input placeholder="Telefone" value={formData.phone_number} onChange={(e) => setFormData({...formData, phone_number: formatPhone(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none" />
+                            </div>
+                            <div className="pt-6 flex justify-end">
+                                <button onClick={() => setStep(2)} disabled={!validateStep1()} className="bg-orange-500 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2 disabled:opacity-50">Continuar <ArrowRight size={18}/></button>
                             </div>
                         </div>
 
-                        {/* --- PASSO 3: SEGURANÇA --- */}
-                        <div className="w-full flex-shrink-0 px-1 flex flex-col h-full">
-                            <div className="space-y-4 flex-1">
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 ml-1 mb-1 block uppercase">Senha de Acesso</label>
-                                    <InputField icon={Lock} name="password" type="password" placeholder="Mínimo 6 caracteres" value={formData.password} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 ml-1 mb-1 block uppercase">Confirmar Senha</label>
-                                    <InputField icon={Lock} name="confirmPassword" type="password" placeholder="Repita a senha" value={formData.confirmPassword} onChange={handleChange} />
-                                </div>
-
-                                <div className="pt-4">
-                                    <label className="flex items-start gap-3 cursor-pointer group">
-                                        <div className="relative flex items-center">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={formData.terms} 
-                                                onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} 
-                                                className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-600 bg-gray-800 transition-all checked:border-orange-500 checked:bg-orange-500 hover:border-orange-400"
-                                            />
-                                            <Check size={14} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
-                                        </div>
-                                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors select-none">
-                                            Declaro que as informações preenchidas são verdadeiras e aceito os termos de uso.
-                                        </span>
-                                    </label>
-                                </div>
+                        {/* PASSO 2 */}
+                        <div className="w-full flex-shrink-0 px-1 space-y-4">
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-2 text-blue-200 text-sm">
+                                Informe sua localização para liberarmos as máquinas do seu condomínio.
                             </div>
-
-                            {/* Mensagens de Feedback */}
-                            {error && <p className="text-red-400 text-xs text-center mt-2 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{error}</p>}
-                            {success && <p className="text-green-400 text-xs text-center mt-2 bg-green-500/10 p-2 rounded-lg border border-green-500/20">{success}</p>}
-
-                            <div className="mt-auto pt-6 flex justify-between items-center">
-                                <button onClick={() => setStep(step - 1)} className="text-gray-400 hover:text-white font-bold py-3 px-4 rounded-xl flex items-center gap-2 transition-colors">
-                                    <ArrowLeft size={18} /> Voltar
-                                </button>
-                                <button 
-                                    onClick={handleRegisterSubmit} 
-                                    disabled={!validateStep3() || isLoading} 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-green-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : <>Finalizar <Check size={18} /></>}
-                                </button>
+                            <div className="relative">
+                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="apartmentBlock" placeholder="Bloco / Torre" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none" />
+                            </div>
+                            <div className="relative">
+                                <Home className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="apartmentNumber" placeholder="Número do Apartamento" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none" />
+                            </div>
+                            <div className="pt-6 flex justify-between">
+                                <button onClick={() => setStep(1)} className="text-gray-400 flex items-center gap-2"><ArrowLeft size={18}/> Voltar</button>
+                                <button onClick={() => setStep(3)} disabled={!validateStep2()} className="bg-orange-500 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2 disabled:opacity-50">Continuar <ArrowRight size={18}/></button>
                             </div>
                         </div>
 
+                        {/* PASSO 3 */}
+                        <div className="w-full flex-shrink-0 px-1 space-y-4">
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="password" type="password" placeholder="Senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none focus:ring-2 focus:ring-orange-500" />
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <input name="confirmPassword" type="password" placeholder="Confirmar Senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl pl-12 p-3.5 outline-none focus:ring-2 focus:ring-orange-500" />
+                            </div>
+                            <label className="flex items-start gap-3 cursor-pointer mt-4">
+                                <input type="checkbox" checked={formData.terms} onChange={(e) => setFormData({...formData, terms: e.target.checked})} className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-800 text-orange-500" />
+                                <span className="text-xs text-gray-400">Aceito os termos de uso e política de privacidade.</span>
+                            </label>
+
+                            {error && <p className="text-red-400 text-xs bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</p>}
+
+                            <div className="pt-6 flex justify-between items-center">
+                                <button onClick={() => setStep(2)} className="text-gray-400 flex items-center gap-2"><ArrowLeft size={18}/> Voltar</button>
+                                <button onClick={handleRegisterSubmit} disabled={!validateStep3() || isLoading} className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-10 rounded-xl flex items-center gap-2 transition-all disabled:opacity-50">
+                                    {isLoading ? <Loader2 className="animate-spin" /> : <>Finalizar <Check size={18}/></>}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Footer Link */}
-                <div className="text-center mt-6 pt-4 border-t border-white/5 flex-shrink-0">
-                    <button 
-                        onClick={onSwitchToLogin} 
-                        className="text-sm text-gray-500 hover:text-orange-400 transition-colors font-medium"
-                    >
-                        Já tem uma conta? <span className="text-white underline decoration-orange-500/50 hover:decoration-orange-500">Fazer Login</span>
+                <div className="text-center mt-6 pt-4 border-t border-white/5">
+                    <button onClick={onSwitchToLogin} className="text-sm text-gray-500 hover:text-orange-400 transition-colors">
+                        Já tem uma conta? <span className="text-white underline">Fazer Login</span>
                     </button>
                 </div>
-
             </div>
         </div>
     );
