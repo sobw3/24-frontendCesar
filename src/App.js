@@ -30,7 +30,7 @@ import {
 
 
 // --- CONFIGURAÇÃO DA API ---
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'https://two4hprontobackendcesar.onrender.com';
 const MERCADOPAGO_PUBLIC_KEY = process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY;
 
 
@@ -7253,7 +7253,7 @@ const ExpiringSoonWidget = ({ token, condoId }) => {
             setLoading(true);
             try {
                 // Passa o condoId na URL para filtrar
-                const url = new URL('http://localhost:5000/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
+                const url = new URL('https://two4hprontobackendcesar.onrender.com/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
                 if (condoId && condoId !== 'all') {
                     url.searchParams.append('condoId', condoId);
                 }
