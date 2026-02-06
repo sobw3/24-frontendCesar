@@ -2279,7 +2279,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess, API_URL }) => 
     const [copySuccess, setCopySuccess] = React.useState(false);
     
     // Fallback para API_URL se não for passado
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // --- LÓGICA DE DETETIVE (MANTIDA) ---
     const isDeposit = React.useMemo(() => {
@@ -3860,7 +3860,7 @@ const WalletPage = ({
     updateUserBalance, showToast, cart = [], API_URL
 }) => {
     
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
     const [showBalance, setShowBalance] = React.useState(true);
     const [recentTransactions, setRecentTransactions] = React.useState([]);
     const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true);
@@ -5887,7 +5887,7 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onAdd, token, productsInI
 
 
 const StockManagement = ({ condominiums, token, API_URL }) => { // Receba API_URL aqui ou defina globalmente
-    const BASE_URL = API_URL || 'http://localhost:5000'; // Fallback se não vier na prop
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';// Fallback se não vier na prop
 
     // --- ESTADOS ---
     const [selectedCondoId, setSelectedCondoId] = React.useState(condominiums[0]?.id || '');
@@ -6376,7 +6376,7 @@ const PerformanceCard = ({ margin, efficiency }) => {
 };
 
 const FinanceReport = ({ condominiums, token, API_URL }) => {
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
     
     // Referência para rolar até o extrato
     const extractRef = useRef(null);
@@ -7664,7 +7664,7 @@ const ModernStatCard = ({ icon, label, value, subValue, colorName }) => {
 // =================================================================================
 
 const AdminDashboardPage = ({ token, setActiveTab, API_URL }) => {
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // Estados
     const [stats, setStats] = useState(null);
