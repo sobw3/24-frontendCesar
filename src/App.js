@@ -1593,6 +1593,7 @@ const InstructionsCarousel = () => {
 };
 
 const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSelected, condos }) => {
+    // --- ESTADOS ---
     const [products, setProducts] = React.useState({});
     const [isLoading, setIsLoading] = React.useState(true);
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -1602,60 +1603,59 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
     const [activeTab, setActiveTab] = React.useState('home');
     const [unreadCount, setUnreadCount] = React.useState(0);
 
-    // Navegação Inferior
     const handleNavChange = (tabId) => {
         setActiveTab(tabId);
-        // Se clicar em Menu, abre o Drawer lateral
-        if (tabId === 'menu') {
-            setMobileMenuOpen(true);
-        } else {
+        if (tabId !== 'profile') {
             setPage(tabId);
+        } else {
+            setMobileMenuOpen(true);
         }
     };
 
-    // Fetch Notificações
+    // --- FETCH NOTIFICAÇÕES ---
     React.useEffect(() => {
         const fetchUnreadTickets = async () => {
             const token = localStorage.getItem('token');
             if (!token) return;
             try {
-                // Use a prop API_URL se estiver disponível no escopo, senão use hardcoded ou window
-                const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
-                const response = await fetch(`${apiUrl}/api/user/tickets`, { 
+                const response = await fetch(`${API_URL}/api/user/tickets`, { 
                     headers: { 'Authorization': `Bearer ${token}` } 
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setUnreadCount(data.filter(t => !t.is_read).length);
+                    const count = data.filter(t => !t.is_read).length;
+                    setUnreadCount(count);
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error("Erro ao buscar notificações:", err);
+            }
         };
         fetchUnreadTickets();
+        const interval = setInterval(fetchUnreadTickets, 30000);
+        return () => clearInterval(interval);
     }, []);
 
-    // Fetch Produtos
+    // --- FETCH PRODUTOS ---
     React.useEffect(() => {
         const fetchProducts = async () => {
-            setIsLoading(true);
+            setIsLoading(true); 
             if (!user?.condoId) { setIsLoading(false); setProducts({}); return; }
-            const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
             try {
-                const response = await fetch(`${apiUrl}/api/products?condoId=${user.condoId}`);
+                const response = await fetch(`${API_URL}/api/products?condoId=${user.condoId}`); 
                 if (response.ok) { const data = await response.json(); setProducts(data); }
             } catch (err) { console.error(err); } 
             finally { setIsLoading(false); }
         };
         fetchProducts();
-    }, [user?.condoId]);
+    }, [user?.condoId]); 
 
-    // Pesquisa
+    // --- PESQUISA ---
     React.useEffect(() => {
         if (!searchQuery.trim()) { setSearchResults([]); return; }
         setIsSearchLoading(true);
-        const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
         const delay = setTimeout(async () => {
             try {
-                const res = await fetch(`${apiUrl}/api/products/search?q=${searchQuery}&condoId=${user?.condoId}`);
+                const res = await fetch(`${API_URL}/api/products/search?q=${searchQuery}&condoId=${user?.condoId}`);
                 if (res.ok) { const data = await res.json(); setSearchResults(data); }
             } catch (err) { console.error(err); } 
             finally { setIsSearchLoading(false); }
@@ -1665,16 +1665,16 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
 
     const currentCondo = condos.find(c => c.id === user?.condoId);
 
+    // --- RENDERIZAÇÃO ---
     return (
-        // ADICIONADO overflow-x-hidden para evitar o "zoom" ou rolagem horizontal indesejada
-        <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col overflow-x-hidden">
+        <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col">
             
-            {/* HEADER - Com overflow hidden para evitar que a imagem estourada cause zoom */}
-            <header className="bg-[#0f172a]/95 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 shadow-lg shadow-black/20 py-1 h-16 relative flex items-center justify-center overflow-hidden">
+            {/* HEADER COM NOTIFICAÇÃO */}
+            <header className="bg-[#0f172a]/95 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 shadow-lg shadow-black/20 py-1 h-16 relative flex items-center justify-center">
                 <img 
                     src="https://i.imgur.com/LCoZwuM.png" 
                     alt="Pronto24h" 
-                    className="h-14 md:h-20 w-auto object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.4)]" 
+                    className="h-16 md:h-20 w-auto object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.4)] transform scale-150 transition-transform duration-300" 
                 />
                 {unreadCount > 0 && (
                     <button 
@@ -1685,12 +1685,13 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                         <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-[#0f172a] shadow-md animate-bounce">
                             {unreadCount}
                         </span>
+                        <div className="absolute inset-0 rounded-full blur-md bg-red-500/20 -z-10 animate-pulse"></div>
                     </button>
                 )}
             </header>
 
-            {/* MAIN CONTENT */}
-            <main className="flex-1 container mx-auto px-4 py-6 pb-32 md:pb-10 relative">
+            {/* CONTEÚDO PRINCIPAL */}
+            <main className="flex-1 container mx-auto px-4 py-6 pb-36 md:pb-10 relative">
                 
                 <HeroBanner 
                     user={user} 
@@ -1701,43 +1702,53 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                     isSearchLoading={isSearchLoading}
                 />
                 
-                {/* RESULTADOS DA PESQUISA (Sobreposto) */}
+                {/* RESULTADOS DA BUSCA */}
                 {searchResults.length > 0 && searchQuery && (
                     <div className="mb-8 -mt-6 relative z-30 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="bg-[#0f172a]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-                            <div className="px-5 py-3 border-b border-white/5 bg-white/5">
+                            <div className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/5">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                     <Search size={12} className="text-orange-500" /> Resultados ({searchResults.length})
                                 </p>
                             </div>
                             <div className="max-h-[60vh] overflow-y-auto custom-scrollbar p-2">
-                                {searchResults.map(item => (
-                                    <div key={item.id} onClick={() => { addToCart(item); setSearchQuery(''); }} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0">
-                                        <img src={item.image_url || 'https://placehold.co/50'} className="w-12 h-12 rounded-lg object-cover" alt={item.name} />
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-sm text-gray-200">{item.name}</h4>
-                                            <span className="text-orange-400 font-bold text-sm">R$ {parseFloat(item.sale_price).toFixed(2)}</span>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {searchResults.map(item => (
+                                        <div key={item.id} onClick={() => { addToCart(item); setSearchQuery(''); }} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 cursor-pointer border border-transparent hover:border-white/5 relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                            <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-800 border border-white/10 shadow-sm">
+                                                <img src={item.image_url || 'https://placehold.co/50'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
+                                            </div>
+                                            <div className="flex-1 min-w-0 relative z-10">
+                                                <h4 className="font-bold text-gray-200 text-sm mb-1 truncate group-hover:text-orange-400 transition-colors">{item.name}</h4>
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-xs text-gray-500">R$</span>
+                                                    <span className="text-orange-400 font-black text-lg">{parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</span>
+                                                </div>
+                                            </div>
+                                            <button className="relative z-10 w-10 h-10 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center text-gray-400 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all shadow-lg group-hover:shadow-orange-500/20">
+                                                <Plus size={20} />
+                                            </button>
                                         </div>
-                                        <button className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white"><Plus size={16}/></button>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* SELETOR DE MÁQUINA */}
+                {/* Seletor de Máquina */}
                 {condos.length > 1 && (
-                    <div className="mb-8 overflow-hidden">
-                        <p className="text-gray-400 text-[10px] font-bold uppercase mb-3 ml-1 tracking-wider flex items-center gap-2">
+                    <div className="mb-8">
+                        <p className="text-gray-400 text-xs font-bold uppercase mb-3 ml-1 tracking-wider flex items-center gap-2">
                             <MapPin size={12} /> Selecione uma máquina
                         </p>
-                        <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
+                        <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
                             {condos.map(c => (
                                 <button 
                                     key={c.id} 
                                     onClick={() => onCondoSelected(c, true)}
-                                    className={`px-6 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${c.id === user?.condoId ? 'bg-white text-black border-white shadow-lg shadow-white/10' : 'bg-gray-800/50 text-gray-400 border-gray-700'}`}
+                                    className={`px-6 py-3 rounded-full text-sm font-bold whitespace-nowrap transition border ${c.id === user?.condoId ? 'bg-white text-black border-white shadow-lg shadow-white/10' : 'bg-gray-800/50 text-gray-400 border-gray-700 hover:border-gray-500 hover:bg-gray-800'}`}
                                 >
                                     {c.name}
                                 </button>
@@ -1746,23 +1757,27 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                     </div>
                 )}
 
-                {/* LISTAGEM DE PRODUTOS */}
+                {/* Listagem de Produtos */}
                 {isLoading ? (
                     <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto text-orange-500" size={40}/></div>
                 ) : (
-                    <div className="space-y-10">
+                    <div className="space-y-12">
                         {Object.keys(products).map(category => (
-                            <div key={category}>
-                                <div className="flex items-center gap-3 mb-5">
-                                    <h2 className="text-lg md:text-2xl font-black text-white tracking-tight uppercase">
+                            <div key={category} className="relative">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <h2 className="text-2xl font-black text-white tracking-tight uppercase flex items-center gap-2">
+                                        <span className="w-1.5 h-8 bg-gradient-to-b from-orange-500 to-red-600 rounded-full"></span>
                                         {category}
                                     </h2>
                                     <div className="h-px bg-white/10 flex-1"></div>
                                 </div>
-                                {/* Grid ajustado para mobile: 2 colunas */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                                     {products[category].map(product => (
-                                        <ProductCard key={product.id} product={product} addToCart={addToCart} />
+                                        <ProductCard 
+                                            key={product.id} 
+                                            product={product} 
+                                            addToCart={addToCart} 
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -1772,49 +1787,61 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                 )}
             </main>
 
-            {/* --- BOTTOM NAV (MENU ATUALIZADO) --- */}
+            {/* --- BOTTOM NAV --- */}
             <div className="md:hidden fixed bottom-0 left-0 w-full z-50">
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
                     <button 
                         onClick={() => handleNavChange('cart')} 
-                        className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all ${activeTab === 'cart' ? 'bg-orange-500 scale-110 shadow-orange-500/50' : 'bg-[#1e293b] border-4 border-[#0f172a] text-gray-400'}`}
+                        className={`group relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${activeTab === 'cart' ? 'bg-orange-500 scale-110 shadow-orange-500/50' : 'bg-[#1e293b] border-4 border-[#0f172a] text-gray-400'}`}
                     >
-                        <ShoppingCart size={24} className={activeTab === 'cart' ? 'text-white' : 'text-gray-400'} />
+                        <ShoppingCart size={28} className={activeTab === 'cart' ? 'text-white' : 'text-gray-400 group-hover:text-white'} />
                         {cart.length > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-[#0f172a]">
+                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-6 w-6 rounded-full flex items-center justify-center border-2 border-[#0f172a] shadow-md animate-bounce">
                                 {cart.reduce((a,b)=>a+b.quantity,0)}
                             </span>
                         )}
+                        <div className={`absolute inset-0 rounded-full blur-xl bg-orange-500/40 -z-10 transition-opacity duration-300 ${activeTab === 'cart' ? 'opacity-100' : 'opacity-0'}`}></div>
                     </button>
                 </div>
 
-                <div className="relative bg-[#0f172a]/95 backdrop-blur-xl border-t border-white/10 pt-2 px-2 h-18 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex justify-around items-center pb-2">
-                    <button onClick={() => handleNavChange('home')} className="flex-1 flex flex-col items-center gap-1">
-                        <Home size={22} className={activeTab === 'home' ? 'text-orange-500' : 'text-gray-500'} />
-                        <span className={`text-[10px] font-bold ${activeTab === 'home' ? 'text-white' : 'text-gray-500'}`}>Início</span>
+                <div className="relative bg-[#0f172a]/95 backdrop-blur-xl border-t border-white/10 pb-safe pt-2 px-4 h-20 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex justify-between items-end pb-4">
+                    <button onClick={() => handleNavChange('home')} className="flex-1 flex flex-col items-center gap-1 group">
+                        <div className={`relative p-1 transition-all duration-300 ${activeTab === 'home' ? '-translate-y-1' : ''}`}>
+                            <Home size={24} className={`transition-colors duration-300 ${activeTab === 'home' ? 'text-orange-500 fill-orange-500/20' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                            <span className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-orange-500 rounded-full blur-[3px] transition-all duration-300 ${activeTab === 'home' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></span>
+                        </div>
+                        <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${activeTab === 'home' ? 'text-white' : 'text-gray-500'}`}>Início</span>
                     </button>
 
-                    <button onClick={() => handleNavChange('history')} className="flex-1 flex flex-col items-center gap-1 mr-6">
-                        <History size={22} className={activeTab === 'history' ? 'text-orange-500' : 'text-gray-500'} />
-                        <span className={`text-[10px] font-bold ${activeTab === 'history' ? 'text-white' : 'text-gray-500'}`}>Pedidos</span>
+                    <button onClick={() => handleNavChange('history')} className="flex-1 flex flex-col items-center gap-1 group mr-6">
+                        <div className={`relative p-1 transition-all duration-300 ${activeTab === 'history' ? '-translate-y-1' : ''}`}>
+                            <History size={24} className={`transition-colors duration-300 ${activeTab === 'history' ? 'text-orange-500' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                            <span className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-orange-500 rounded-full blur-[3px] transition-all duration-300 ${activeTab === 'history' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></span>
+                        </div>
+                        <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${activeTab === 'history' ? 'text-white' : 'text-gray-500'}`}>Pedidos</span>
                     </button>
 
-                    <div className="w-10"></div>
+                    <div className="w-12"></div>
 
-                    <button onClick={() => handleNavChange('wallet')} className="flex-1 flex flex-col items-center gap-1 ml-6">
-                        <Wallet size={22} className={activeTab === 'wallet' ? 'text-orange-500' : 'text-gray-500'} />
-                        <span className={`text-[10px] font-bold ${activeTab === 'wallet' ? 'text-white' : 'text-gray-500'}`}>Carteira</span>
+                    <button onClick={() => handleNavChange('wallet')} className="flex-1 flex flex-col items-center gap-1 group ml-6">
+                        <div className={`relative p-1 transition-all duration-300 ${activeTab === 'wallet' ? '-translate-y-1' : ''}`}>
+                            <Wallet size={24} className={`transition-colors duration-300 ${activeTab === 'wallet' ? 'text-orange-500 fill-orange-500/20' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                            <span className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-orange-500 rounded-full blur-[3px] transition-all duration-300 ${activeTab === 'wallet' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></span>
+                        </div>
+                        <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${activeTab === 'wallet' ? 'text-white' : 'text-gray-500'}`}>Carteira</span>
                     </button>
 
-                    {/* BOTÃO MENU (Substituindo Perfil) */}
-                    <button onClick={() => handleNavChange('menu')} className="flex-1 flex flex-col items-center gap-1">
-                        <Menu size={22} className={mobileMenuOpen ? 'text-orange-500' : 'text-gray-500'} />
-                        <span className={`text-[10px] font-bold ${mobileMenuOpen ? 'text-white' : 'text-gray-500'}`}>Menu</span>
+                    <button onClick={() => handleNavChange('profile')} className="flex-1 flex flex-col items-center gap-1 group">
+                        <div className={`relative p-1 transition-all duration-300 ${activeTab === 'profile' ? '-translate-y-1' : ''}`}>
+                            <User size={24} className={`transition-colors duration-300 ${activeTab === 'profile' ? 'text-orange-500 fill-orange-500/20' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                            <span className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-orange-500 rounded-full blur-[3px] transition-all duration-300 ${activeTab === 'profile' ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></span>
+                        </div>
+                        <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${activeTab === 'profile' ? 'text-white' : 'text-gray-500'}`}>Perfil</span>
                     </button>
                 </div>
             </div>
 
-            {/* DRAWER LATERAL (MENU COMPLETO) */}
+            {/* DRAWER MENU ATUALIZADO */}
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-[60] flex justify-end isolate">
                     <div 
@@ -1823,26 +1850,27 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                     ></div>
 
                     <div className="relative w-[85%] max-w-xs h-full bg-[#0f172a]/95 backdrop-blur-xl border-l border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-                        {/* Header do Drawer */}
+                        
+                        {/* CABEÇALHO DO MENU */}
                         <div className="p-6 flex justify-between items-center border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-                                    <User size={20} strokeWidth={2.5} />
+                                <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+                                    <User size={18} strokeWidth={2.5} />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-black text-white tracking-tight leading-none">Minha Conta</h3>
                                     <p className="text-[10px] text-gray-400 font-medium">Configurações e Ajuda</p>
                                 </div>
                             </div>
-                            <button onClick={() => setMobileMenuOpen(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white border border-white/5">
+                            <button onClick={() => setMobileMenuOpen(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-white/5">
                                 <X size={16} />
                             </button>
                         </div>
 
-                        {/* Conteúdo do Drawer */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                            {/* Card do Usuário */}
-                            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-black p-5 border border-white/10 shadow-lg">
+                            
+                            {/* CARD DO USUÁRIO */}
+                            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-black p-5 border border-white/10 group shadow-lg">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/20 rounded-full blur-[40px] -mr-10 -mt-10 pointer-events-none"></div>
                                 <div className="relative z-10 flex flex-col gap-3">
                                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-xl font-bold text-white shadow-lg border-2 border-[#0f172a]">
@@ -1855,42 +1883,52 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
                                 </div>
                             </div>
 
+                            {/* CARD DE DIVULGAÇÃO (NOVO) */}
+                            <div className="relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/40 to-black group">
+                                <div className="absolute inset-0 bg-yellow-500/10 mix-blend-overlay"></div>
+                                <div className="relative p-5 z-10">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <span className="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">Oportunidade</span>
+                                        <Zap size={16} className="text-yellow-400 animate-pulse" fill="currentColor" />
+                                    </div>
+                                    <h4 className="text-white font-black text-lg leading-tight mb-2">Tenha seu próprio Mercado Autônomo!</h4>
+                                    <p className="text-gray-300 text-xs leading-relaxed mb-4">Invista pouco e lucre 24h por dia. Tecnologia completa pronta para você começar.</p>
+                                    <div className="mb-4">
+                                        <p className="text-[10px] text-gray-400 uppercase font-bold">Investimento a partir de</p>
+                                        <p className="text-xl font-black text-yellow-400">R$ 4.690,00</p>
+                                    </div>
+                                    <a href="https://wa.me/5500000000000?text=Olá,%20tenho%20interesse%20em%20ter%20um%20ponto%20autônomo!" target="_blank" rel="noopener noreferrer" className="block w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-center py-2.5 rounded-xl transition-colors text-sm shadow-lg shadow-yellow-500/20">
+                                        Quero Saber Mais
+                                    </a>
+                                </div>
+                            </div>
+
                             <nav className="flex flex-col gap-2">
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 ml-1">Acesso Rápido</p>
-                                
-                                {/* Link para Perfil Completo */}
-                                <button onClick={() => {setPage('my-account'); setMobileMenuOpen(false)}} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-orange-500/30 transition-all group">
-                                    <div className="p-2 bg-black/30 rounded-lg text-gray-400 group-hover:text-orange-400"><User size={20}/></div>
-                                    <span className="font-bold text-gray-200 group-hover:text-white">Dados do Perfil</span>
+                                <button onClick={() => {setPage('my-account'); setMobileMenuOpen(false)}} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 transition-all group">
+                                    <div className="p-2 bg-black/30 rounded-lg text-gray-400 group-hover:text-orange-400 transition-colors"><User size={20}/></div>
+                                    <span className="font-bold text-gray-200 group-hover:text-white">Minha Conta</span>
                                 </button>
-
-                                <button onClick={() => {setPage('my-tickets'); setMobileMenuOpen(false)}} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 transition-all group">
-                                    <div className="p-2 bg-black/30 rounded-lg text-gray-400 group-hover:text-blue-400"><Bell size={20}/></div>
+                                <button onClick={() => {setPage('my-tickets'); setMobileMenuOpen(false)}} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all group">
+                                    <div className="p-2 bg-black/30 rounded-lg text-gray-400 group-hover:text-blue-400 transition-colors"><Bell size={20}/></div>
                                     <span className="font-bold text-gray-200 group-hover:text-white">Notificações</span>
                                 </button>
                             </nav>
 
-                            {/* Card de Divulgação (Opcional - Mantive do seu código anterior se quiser usar) */}
-                            <div className="relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/40 to-black p-5">
-                                <div className="absolute inset-0 bg-yellow-500/10 mix-blend-overlay"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase">Parceria</span>
-                                        <Zap size={16} className="text-yellow-400 animate-pulse" />
-                                    </div>
-                                    <h4 className="text-white font-black text-sm mb-1">Tenha sua própria Franquia!</h4>
-                                    <p className="text-gray-400 text-xs mb-3">Lucre 24h por dia com nossas máquinas.</p>
-                                    <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer" className="block w-full bg-yellow-500 text-black font-bold text-center py-2 rounded-lg text-xs shadow-lg">Saiba Mais</a>
-                                </div>
+                            <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Precisa de Ajuda?</p>
+                                <a href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-green-600/10 border border-green-500/20 text-green-400 hover:bg-green-600 hover:text-white transition-all group">
+                                    <MessageCircle size={20} className="group-hover:animate-bounce"/>
+                                    <span className="font-bold">Suporte WhatsApp</span>
+                                </a>
                             </div>
                         </div>
 
-                        {/* Footer do Menu */}
                         <div className="p-6 border-t border-white/5 bg-black/20">
-                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-red-500/20 text-red-400 font-bold hover:bg-red-500 hover:text-white transition-all text-sm">
+                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-red-500/20 text-red-400 font-bold hover:bg-red-500 hover:text-white hover:border-red-500 transition-all text-sm">
                                 <LogOut size={18} /> Sair do App
                             </button>
-                            <p className="text-center text-[10px] text-gray-600 mt-4 font-medium">Versão 2.4.1</p>
+                            <p className="text-center text-[10px] text-gray-600 mt-4 font-medium">Versão 2.4.0 • Pronto24h</p>
                         </div>
                     </div>
                 </div>
