@@ -1361,7 +1361,6 @@ const ProductCard = ({ product, addToCart }) => {
 
 const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, isSearchLoading }) => {
 
-    // CSS para a animação (Aumentei o tempo para 20s pois o texto ficou maior)
     const marqueeStyle = `
         @keyframes scroll-led {
             0% { transform: translateX(0); }
@@ -1375,7 +1374,6 @@ const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, 
 
     return (
         <div className="relative rounded-3xl overflow-hidden mb-8 shadow-2xl bg-[#1e293b] border border-white/10">
-            {/* Injeta o estilo da animação */}
             <style>{marqueeStyle}</style>
 
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
@@ -1407,13 +1405,13 @@ const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, 
                         </div>
                     </div>
 
-                    {/* --- ÁREA DE CARDS --- */}
-                    <div className="flex flex-wrap items-center gap-3 h-16">
+                    {/* --- ÁREA DE CARDS (CORRIGIDA: REMOVIDA ALTURA FIXA E MELHORADO WRAP) --- */}
+                    <div className="flex flex-col sm:flex-row items-stretch gap-3">
                         
-                        {/* 1. BOTÃO DE SALDO (MANTIDO IGUAL) */}
+                        {/* 1. BOTÃO DE SALDO */}
                         <button 
                             onClick={() => setPage('wallet')} 
-                            className="group h-full relative flex items-center gap-3 bg-black/20 hover:bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl transition-all duration-300 hover:border-orange-500/30 active:scale-95 w-fit"
+                            className="group relative flex items-center gap-3 bg-black/20 hover:bg-black/40 backdrop-blur-md border border-white/10 px-4 py-3 rounded-xl transition-all duration-300 hover:border-orange-500/30 active:scale-95 w-full sm:w-fit shrink-0"
                         >
                             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-orange-500/20 blur-lg rounded-full group-hover:bg-orange-500/40 transition-all"></div>
                             <div className="relative p-2 bg-gradient-to-br from-gray-800 to-black rounded-lg border border-white/10 shadow-lg group-hover:border-orange-500/20 transition-colors">
@@ -1429,8 +1427,8 @@ const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, 
                             </div>
                         </button>
 
-                        {/* 2. CARD "LETREIRO DIGITAL" (COM ALERTAS) */}
-                        <div className="h-full flex-1 min-w-[180px] max-w-[280px] relative bg-black/40 border border-white/10 rounded-xl overflow-hidden flex items-center shadow-inner">
+                        {/* 2. CARD "LETREIRO DIGITAL" (CORRIGIDO: Min-Height e responsividade) */}
+                        <div className="flex-1 min-h-[56px] relative bg-black/40 border border-white/10 rounded-xl overflow-hidden flex items-center shadow-inner w-full">
                             {/* Fundo escuro */}
                             <div className="absolute inset-0 bg-[#0a0f1c]"></div>
                             
@@ -1438,11 +1436,11 @@ const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, 
                             <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10 bg-[length:100%_2px,3px_100%] pointer-events-none"></div>
 
                             {/* O Texto Rolante */}
-                            <div className="relative z-0 w-full overflow-hidden flex items-center">
+                            <div className="relative z-0 w-full overflow-hidden flex items-center py-2">
                                 <div className="animate-led whitespace-nowrap">
                                     
                                     {/* BLOCO 1 DE MENSAGENS */}
-                                    <span className="font-mono font-bold text-xs md:text-sm tracking-widest px-4 flex items-center gap-6">
+                                    <span className="font-mono font-bold text-[10px] md:text-sm tracking-widest px-4 flex items-center gap-6">
                                         <span className="text-cyan-400">✨ BOAS COMPRAS!</span>
                                         <span className="text-red-500 flex items-center gap-1">📹 VOCÊ ESTÁ SENDO FILMADO</span>
                                         <span className="text-yellow-400">⚠️ RETIRE APENAS O QUE FOI PAGO</span>
@@ -1451,7 +1449,7 @@ const HeroBanner = ({ user, currentCondo, setPage, searchQuery, setSearchQuery, 
                                     </span>
 
                                     {/* BLOCO 2 DE MENSAGENS (DUPLICADO PARA O LOOP) */}
-                                    <span className="font-mono font-bold text-xs md:text-sm tracking-widest px-4 flex items-center gap-6">
+                                    <span className="font-mono font-bold text-[10px] md:text-sm tracking-widest px-4 flex items-center gap-6">
                                         <span className="text-cyan-400">✨ BOAS COMPRAS!</span>
                                         <span className="text-red-500 flex items-center gap-1">📹 VOCÊ ESTÁ SENDO FILMADO</span>
                                         <span className="text-yellow-400">⚠️ RETIRE APENAS O QUE FOI PAGO</span>
