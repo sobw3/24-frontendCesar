@@ -1,0 +1,27 @@
+{
+  "short_name": "Pronto24h",
+  "name": "",
+  "description": "Seu Micro Mercado inteligente, sempre à mão.",
+  "icons": [
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#111827",
+  "scope": "/",
+  "orientation": "portrait"
+
+}
+

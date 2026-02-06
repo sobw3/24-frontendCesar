@@ -1,0 +1,130 @@
+/* ARQUIVO: src/App.css */
+
+/* 1. FONTES E IMPORTAÇÕES */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Montserrat:ital,wght@0,900;1,900&display=swap');
+
+/* 2. VARIÁVEIS DE MARCA (Fallback para uso geral) */
+:root {
+  --brand-orange: #f97316;
+  --brand-dark: #020617; /* Slate 950 */
+  --brand-glass: rgba(255, 255, 255, 0.05);
+}
+
+/* 3. RESET E BASE GLOBAL */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--brand-dark); /* Evita flash branco no carregamento */
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased; /* Deixa a fonte mais nítida (Mac/iOS) */
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth; /* Rolagem suave ao clicar em links âncora */
+  overflow-x: hidden; /* Impede rolagem lateral indesejada */
+}
+
+/* 4. SELEÇÃO DE TEXTO PERSONALIZADA (Toque de classe) */
+/* Quando o usuário seleciona o texto, fica laranja em vez de azul padrão */
+::selection {
+  background-color: rgba(249, 115, 22, 0.3); /* Laranja transparente */
+  color: #ffffff;
+  text-shadow: 0 0 5px rgba(249, 115, 22, 0.5);
+}
+
+/* 5. BARRA DE ROLAGEM (SCROLLBAR) PREMIUM */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #020617;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px; /* Mais fina que o padrão */
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617; /* Cor do fundo do site */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #334155; /* Cor da barra (Slate 700) */
+  border-radius: 4px;
+  border: 2px solid #020617; /* Cria um espaço entre a barra e a borda */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #f97316; /* Fica laranja ao passar o mouse */
+}
+
+/* 6. CLASSES UTILITÁRIAS PERSONALIZADAS */
+
+/* Efeito de Vidro (Glassmorphism) Reforçado */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Texto Gradiente Dourado/Laranja (Para títulos de impacto) */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #ffffff 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 7. ANIMAÇÕES KEYFRAMES (Para complementar o Tailwind) */
+
+/* Flutuar suavemente (para elementos 3D ou cards) */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Piscar Laranja Suave (Glow) */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(249, 115, 22, 0.5); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite;
+}
+
+/* Fade In (Entrada suave) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* 8. AJUSTES ESPECÍFICOS PARA O DASHBOARD */
+/* Remove a borda azul padrão de inputs no Chrome ao focar */
+input:focus, button:focus {
+  outline: none;
+}
+
+/* Esconde scrollbar mas permite rolar (útil para listas horizontais) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
