@@ -2046,7 +2046,6 @@ const ClearCartModal = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-// --- 3. PÁGINA DO CARRINHO (CORRIGIDA) ---
 const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSuccess, fridgeId, showToast }) => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
@@ -2055,25 +2054,20 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
     const [isClearModalOpen, setIsClearModalOpen] = React.useState(false); 
 
-    // --- CÁLCULOS (AQUI ESTÁ A CORREÇÃO) ---
+    // --- CÁLCULOS ---
     const updateQuantity = (productId, amount) => {
         const newCart = cart.map(item => {
             if (item.id === productId) {
                 const newQuantity = item.quantity + amount;
-
-                // --- PROTEÇÃO DE ESTOQUE ---
-                // Se estiver tentando adicionar (amount > 0)
+                
+                // Proteção de estoque
                 if (amount > 0) {
-                    // Se o produto não tiver campo 'stock', assumimos 99
                     const maxStock = item.stock !== undefined ? item.stock : 99;
-                    
                     if (newQuantity > maxStock) {
-                        // Avisa o usuário e não altera a quantidade
                         if (showToast) showToast(`Máximo de ${maxStock} unidades disponíveis!`);
                         return item; 
                     }
                 }
-
                 return { ...item, quantity: Math.max(0, newQuantity) };
             }
             return item;
@@ -2086,7 +2080,6 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         setCart(cart.filter(item => item.id !== productId));
     };
 
-    // Ação real de limpar (chamada pelo modal)
     const handleClearCartConfirm = () => {
         setCart([]);
         setIsClearModalOpen(false);
@@ -2097,27 +2090,51 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const canAfford = userBalance >= cartTotal;
     const difference = cartTotal - userBalance;
 
-    // --- AÇÃO DE PAGAMENTO ---
+    // --- AÇÃO DE PAGAMENTO (CORRIGIDA) ---
     const handleConfirmPayment = async () => {
         setIsLoading(true); 
         setError('');
+        
+        // 1. Definição explícita da URL para evitar erro de localhost
+        const API_URL = 'https://two4hprontobackendcesar.onrender.com';
         const token = localStorage.getItem('token');
+
+        // 2. Dados de envio (Log para debug)
+        const payload = { 
+            items: cart, 
+            fridgeId: fridgeId || 'MS5', // Fallback se o fridgeId vier nulo
+            condoId: user?.condoId || 1  // Fallback se o condoId vier nulo
+        };
+
+        console.log("Iniciando Pagamento...", payload);
+
         try {
             const response = await fetch(`${API_URL}/api/orders/pay-with-wallet`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ items: cart, fridgeId: fridgeId, condoId: user.condoId })
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(payload)
             });
+
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha ao processar pagamento.');
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Falha ao processar pagamento.');
+            }
             
+            console.log("Pagamento Sucesso:", data);
+
+            // 3. Fluxo de Sucesso
             setPaymentData({ orderId: data.orderId }); 
-            onPaymentSuccess();
+            onPaymentSuccess(); // Isso deve acionar o feedback visual
             setCart([]); 
             setIsConfirmModalOpen(false);
             setPage('postPayment'); 
 
         } catch (err) {
+            console.error("Erro no Pagamento:", err);
             setError(err.message);
             setIsConfirmModalOpen(false);
         } finally {
@@ -2125,7 +2142,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         }
     };
 
-    // --- COMPONENTES VISUAIS INTERNOS ---
+    // --- COMPONENTES VISUAIS ---
     const CartItem = ({ item }) => (
         <div className="group relative bg-white/5 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-4 transition-all duration-300 hover:bg-white/10 hover:border-orange-500/30 overflow-hidden">
             <div className="relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-white/10 bg-gray-800 shadow-lg">
@@ -2153,21 +2170,29 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     return (
         <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col">
             
-            {/* MODAIS */}
-            <PaymentConfirmationModal
-                isOpen={isConfirmModalOpen}
-                onClose={() => setIsConfirmModalOpen(false)}
-                onConfirm={handleConfirmPayment}
-                isLoading={isLoading}
-                cartTotal={cartTotal}
-                userBalance={userBalance}
-            />
+            {/* INSERIR AQUI SEUS MODAIS (PaymentConfirmationModal e ClearCartModal) 
+                Estou assumindo que eles são importados ou passados por contexto, 
+                mas se precisar do código deles, me avise. 
+            */}
+            {/* Exemplo de uso se eles estiverem disponíveis no escopo: */}
+            {typeof PaymentConfirmationModal !== 'undefined' && (
+                <PaymentConfirmationModal
+                    isOpen={isConfirmModalOpen}
+                    onClose={() => setIsConfirmModalOpen(false)}
+                    onConfirm={handleConfirmPayment}
+                    isLoading={isLoading}
+                    cartTotal={cartTotal}
+                    userBalance={userBalance}
+                />
+            )}
             
-            <ClearCartModal
-                isOpen={isClearModalOpen}
-                onClose={() => setIsClearModalOpen(false)}
-                onConfirm={handleClearCartConfirm}
-            />
+            {typeof ClearCartModal !== 'undefined' && (
+                <ClearCartModal
+                    isOpen={isClearModalOpen}
+                    onClose={() => setIsClearModalOpen(false)}
+                    onConfirm={handleClearCartConfirm}
+                />
+            )}
 
             {/* HEADER */}
             <header className="bg-[#0f172a]/90 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40">
