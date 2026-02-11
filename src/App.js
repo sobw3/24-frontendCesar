@@ -4998,6 +4998,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const fetchHistory = async () => {
         setLoadingHistory(true);
         try {
+            // HISTÓRICO: Agora busca a rota nova que traz os detalhes
             const urlHistory = selectedCondoId === 'all' 
                 ? `${apiUrl}/api/admin/purchase-history` 
                 : `${apiUrl}/api/admin/purchase-history?condoId=${selectedCondoId}`;
@@ -5054,21 +5055,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
     };
 
     // --- HELPERS ---
-    const getHistoryGroupedByMonth = () => {
-        if (!purchaseHistory || purchaseHistory.length === 0) return [];
-        const grouped = {};
-        purchaseHistory.forEach(item => {
-            const dateObj = new Date(item.date || item.created_at);
-            if (isNaN(dateObj.getTime())) return;
-            const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-            if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 };
-            grouped[key].purchases.push(item);
-            grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0);
-            grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0);
-        });
-        return Object.entries(grouped);
-    };
-
     const getSelectedCondoName = () => {
         if (selectedCondoId === 'all') return 'Todas as Máquinas';
         const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId);
@@ -5216,7 +5202,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     };
 
     // =========================================================
-    // RENDER: MODAL DE COMPRAS REDESENHADO (CYBERPUNK)
+    // RENDER: MODAL DE COMPRAS
     // =========================================================
     if (isShoppingMode) {
         if (showSummary) {
@@ -5290,7 +5276,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
                     </div>
                     <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
 
-                    {/* FOTO E INFO DO PRODUTO */}
                     <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
                         <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
@@ -5306,10 +5291,8 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         </div>
                     </div>
 
-                    {/* INPUTS DE COMPRA */}
                     <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
                         <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
-                            {/* QUANTIDADE */}
                             <div>
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
                                     <Package size={14} className="text-orange-500"/> Comprados (UN)
@@ -5322,7 +5305,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 />
                             </div>
 
-                            {/* PREÇO */}
                             <div>
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
                                     <DollarSign size={14} className="text-green-500"/> Custo Unitário
@@ -5525,8 +5507,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
     }
 
     // --- DASHBOARD NORMAL ---
-    const historyData = getHistoryGroupedByMonth();
-
     return (
         <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500 relative">
             
@@ -5555,7 +5535,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
                     <h2 className="text-3xl font-black text-white flex items-center gap-3">
-                        <AlertTriangle className="text-orange-500" size={32}/> Abastecimento e Auditoria 
+                        <AlertTriangle className="text-orange-500" size={32}/> Central de Riscos
                     </h2>
                     <p className="text-gray-400 mt-2 font-medium">Controle de validade, reposição, e prevenção de perdas.</p>
                 </div>
@@ -5721,7 +5701,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* --- HISTÓRICO --- */}
+                        {/* --- CONTEÚDO 5: HISTÓRICO DETALHADO --- */}
                         {activeTab === 'history' && (
                             <div className="p-6 md:p-8">
                                 <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-6">
@@ -5813,6 +5793,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 )}
                             </div>
                         )}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
 
 const UserManagementPage = ({ condominiums, token }) => { 
     const [usersData, setUsersData] = React.useState({ users: [], pagination: {} });
