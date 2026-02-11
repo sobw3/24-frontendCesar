@@ -4922,9 +4922,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [pendingRestocks, setPendingRestocks] = React.useState([]);
     const [audits, setAudits] = React.useState([]); 
 
-    // --- ESTADOS DA INVESTIGAÇÃO (NOVO) ---
-    const [selectedAudit, setSelectedAudit] = React.useState(null); // Auditoria selecionada para ver detalhes
-    const [auditDetails, setAuditDetails] = React.useState(null);   // Dados detalhados (vendas suspeitas)
+    // --- ESTADOS DA INVESTIGAÇÃO ---
+    const [selectedAudit, setSelectedAudit] = React.useState(null);
+    const [auditDetails, setAuditDetails] = React.useState(null);
     const [loadingAuditDetails, setLoadingAuditDetails] = React.useState(false);
 
     // --- ESTADOS DO MODO COMPRAS (Fornecedor) ---
@@ -4972,14 +4972,14 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 setProducts(Array.isArray(data) ? data : (data.products || []));
             }
 
-            // 2. Reposições Pendentes
+            // 2. Pendentes
             const urlPending = selectedCondoId === 'all'
                 ? `${apiUrl}/api/admin/inventory/pending-restocks`
                 : `${apiUrl}/api/admin/inventory/pending-restocks?condoId=${selectedCondoId}`;
             const resPending = await fetch(urlPending, { headers });
             if (resPending.ok) setPendingRestocks(await resPending.json());
 
-            // 3. Auditorias (Inconsistências)
+            // 3. Auditorias
             const urlAudits = selectedCondoId === 'all'
                 ? `${apiUrl}/api/admin/inventory/audits`
                 : `${apiUrl}/api/admin/inventory/audits?condoId=${selectedCondoId}`;
@@ -5075,56 +5075,380 @@ const CriticalStockPage = ({ condominiums, token }) => {
         return condo ? condo.name : 'Máquina Específica';
     };
 
-    // --- MODO COMPRAS (Simplificado) ---
+    // =========================================================
+    // MODO COMPRAS (Fornecedor)
+    // =========================================================
     const startShopping = () => {
-        if (selectedCondoId === 'all') return showToast("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo.", "warning");
-        if (criticalItems.length === 0) return showToast("Estoque saudável!", "success");
-        setShoppingQueue(criticalItems); setCurrentStep(0); setCart([]); setShowSummary(false); setIsShoppingMode(true);
-        setPriceInput(criticalItems[0].purchase_price || ''); setQtyInput(calculateSmartQuantity(criticalItems[0]).toString());
+        if (selectedCondoId === 'all') {
+            return showToast("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo antes de iniciar a reposição.", "warning");
+        }
+        if (criticalItems.length === 0) {
+            return showToast("Estoque saudável! Nada a repor no momento.", "success");
+        }
+        setShoppingQueue(criticalItems);
+        setCurrentStep(0);
+        setCart([]);
+        setShowSummary(false);
+        setIsShoppingMode(true);
+        setPriceInput(criticalItems[0].purchase_price || ''); 
+        setQtyInput(calculateSmartQuantity(criticalItems[0]).toString());
     };
+
     const handleSkipProduct = () => {
         if (currentStep + 1 < shoppingQueue.length) {
             const nextItem = shoppingQueue[currentStep + 1];
-            setCurrentStep(p => p + 1); setPriceInput(nextItem.purchase_price || ''); setQtyInput(calculateSmartQuantity(nextItem).toString());
-        } else { setShowSummary(true); }
-    };
-    const handleNextProduct = () => {
-        const item = shoppingQueue[currentStep];
-        const actualPrice = parseFloat(priceInput); const boughtQty = parseInt(qtyInput);
-        if (isNaN(actualPrice) || isNaN(boughtQty) || boughtQty <= 0) return showToast("Valores inválidos.", "warning");
-        const expectedPrice = parseFloat(item.purchase_price) || 0;
-        setCart([...cart, { product_id: item.id, name: item.name, boughtQty, boughtPrice: actualPrice, expectedPrice, totalCost: actualPrice * boughtQty, savings: (expectedPrice - actualPrice) * boughtQty }]);
-        handleSkipProduct();
-    };
-    const finishShopping = async () => {
-        setIsSavingPurchase(true);
-        try {
-            const payload = { condo_id: selectedCondoId === 'all' ? null : selectedCondoId, date: new Date().toISOString().split('T')[0], total_spent: cart.reduce((a, i) => a + i.totalCost, 0), total_savings: cart.reduce((a, i) => a + i.savings, 0), items: cart.map(i => ({ product_id: i.product_id, quantity: i.boughtQty, new_price: i.boughtPrice })) };
-            const res = await fetch(`${apiUrl}/api/admin/inventory/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
-            if (!res.ok) throw new Error();
-            showToast("Compras gravadas! Aguardando abastecimento.", "success"); setIsShoppingMode(false); fetchData(); setActiveTab('pending');
-        } catch (e) { showToast("Erro ao gravar.", "error"); } finally { setIsSavingPurchase(false); }
+            setCurrentStep(prev => prev + 1);
+            setPriceInput(nextItem.purchase_price || '');
+            setQtyInput(calculateSmartQuantity(nextItem).toString());
+        } else {
+            setShowSummary(true);
+        }
     };
 
-    // --- MODO AUDITORIA (Simplificado) ---
-    const startAudit = (session) => { if (!session.items?.length) return showToast("Sessão vazia.", "error"); setCurrentAuditSession(session); setAuditStep(0); setCountedQty(''); setAuditResults([]); setShowAuditSummary(false); setIsAuditingMode(true); };
-    const handleNextAudit = () => {
-        const item = currentAuditSession.items[auditStep]; const counted = parseInt(countedQty);
-        if (isNaN(counted) || counted < 0) return showToast("Quantidade inválida.", "warning");
-        setAuditResults([...auditResults, { product_id: item.product_id, name: item.name, image_url: item.image_url, expected_qty: parseInt(item.expected_current_stock), bought_qty: item.quantity, counted_qty: counted }]);
-        if (auditStep + 1 < currentAuditSession.items.length) { setAuditStep(p => p + 1); setCountedQty(''); } else { setShowAuditSummary(true); }
+    const handleNextProduct = () => {
+        const item = shoppingQueue[currentStep];
+        const actualPrice = parseFloat(priceInput);
+        const boughtQty = parseInt(qtyInput);
+        
+        if (isNaN(actualPrice) || isNaN(boughtQty) || boughtQty <= 0) {
+            return showToast("Por favor, informe o preço pago e a quantidade válida.", "warning");
+        }
+
+        const expectedPrice = parseFloat(item.purchase_price) || 0;
+        setCart([...cart, {
+            product_id: item.id,
+            name: item.name,
+            boughtQty,
+            boughtPrice: actualPrice,
+            expectedPrice,
+            totalCost: actualPrice * boughtQty,
+            savings: (expectedPrice - actualPrice) * boughtQty 
+        }]);
+        handleSkipProduct();
     };
-    const finishAudit = async () => {
-        setIsSavingAudit(true);
+
+    const finishShopping = async () => {
+        if (cart.length === 0) { 
+            setIsShoppingMode(false); 
+            return showToast("Nenhum item comprado. Ação cancelada.", "warning"); 
+        }
+        setIsSavingPurchase(true);
         try {
-            const res = await fetch(`${apiUrl}/api/admin/inventory/execute-restock`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ pending_restock_id: currentAuditSession.id, condo_id: currentAuditSession.condo_id, items: auditResults }) });
-            if (!res.ok) throw new Error();
-            showToast("Abastecimento concluído!", "success"); setIsAuditingMode(false); fetchData(); setActiveTab('audits');
-        } catch (e) { showToast("Erro ao finalizar.", "error"); } finally { setIsSavingAudit(false); }
+            const payload = {
+                condo_id: selectedCondoId === 'all' ? null : selectedCondoId,
+                date: new Date().toISOString().split('T')[0],
+                total_spent: cart.reduce((acc, i) => acc + i.totalCost, 0),
+                total_savings: cart.reduce((acc, i) => acc + i.savings, 0),
+                items: cart.map(item => ({ product_id: item.product_id, quantity: item.boughtQty, new_price: item.boughtPrice }))
+            };
+            const response = await fetch(`${apiUrl}/api/admin/inventory/purchase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) throw new Error("Erro ao gravar compra.");
+            
+            showToast("Compras gravadas! A aguardar abastecimento físico na máquina.", "success");
+            setIsShoppingMode(false);
+            fetchData(); 
+            setActiveTab('pending'); 
+        } catch (error) { 
+            showToast(`Erro: ${error.message}`, "error"); 
+        } finally { 
+            setIsSavingPurchase(false); 
+        }
     };
 
     // =========================================================
-    // RENDER: MODAL DE INVESTIGAÇÃO (O QUE VOCÊ PEDIU!)
+    // MODO AUDITORIA (Na Máquina)
+    // =========================================================
+    const startAudit = (session) => {
+        if (!session.items || session.items.length === 0) {
+            return showToast("Sessão vazia ou inválida.", "error");
+        }
+        setCurrentAuditSession(session);
+        setAuditStep(0);
+        setCountedQty('');
+        setAuditResults([]);
+        setShowAuditSummary(false);
+        setIsAuditingMode(true);
+    };
+
+    const handleNextAudit = () => {
+        const item = currentAuditSession.items[auditStep];
+        const counted = parseInt(countedQty);
+        
+        if (isNaN(counted) || counted < 0) {
+            return showToast("Insira uma quantidade contada válida.", "warning");
+        }
+
+        setAuditResults([...auditResults, {
+            product_id: item.product_id, name: item.name, image_url: item.image_url,
+            expected_qty: parseInt(item.expected_current_stock), bought_qty: item.quantity, counted_qty: counted
+        }]);
+        
+        if (auditStep + 1 < currentAuditSession.items.length) {
+            setAuditStep(prev => prev + 1); setCountedQty('');
+        } else { 
+            setShowAuditSummary(true); 
+        }
+    };
+
+    const finishAudit = async () => {
+        setIsSavingAudit(true);
+        try {
+            const response = await fetch(`${apiUrl}/api/admin/inventory/execute-restock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ pending_restock_id: currentAuditSession.id, condo_id: currentAuditSession.condo_id, items: auditResults })
+            });
+            if (!response.ok) throw new Error("Erro ao finalizar abastecimento.");
+            
+            showToast("Abastecimento concluído! Inconsistências (se existirem) foram registadas.", "success");
+            setIsAuditingMode(false);
+            fetchData();
+            setActiveTab('audits'); 
+        } catch (error) { 
+            showToast(`Erro: ${error.message}`, "error"); 
+        } finally { 
+            setIsSavingAudit(false); 
+        }
+    };
+
+    // =========================================================
+    // RENDER: MODAL DE COMPRAS REDESENHADO (CYBERPUNK)
+    // =========================================================
+    if (isShoppingMode) {
+        if (showSummary) {
+            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
+            const totalSavings = cart.reduce((acc, i) => acc + i.savings, 0);
+            const isSaving = totalSavings >= 0;
+
+            return (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${isSaving ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
+                        
+                        <div className="mb-6 flex justify-center">
+                            <div className={`h-20 w-20 rounded-full flex items-center justify-center border-4 shadow-xl ${isSaving ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-red-500 bg-red-500/20 text-red-400'}`}>
+                                {isSaving ? <TrendingUp size={40}/> : <TrendingDown size={40}/>}
+                            </div>
+                        </div>
+                        
+                        <h2 className="text-3xl font-black text-white mb-1">Reposição Concluída!</h2>
+                        <p className="text-gray-400 mb-6 text-sm">Resumo da sua ida ao fornecedor ({getSelectedCondoName()}).</p>
+
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-inner">
+                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Custo Total</p>
+                                <p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border shadow-inner ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                                <p className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
+                                    {isSaving ? 'Economia Gerada' : 'Gasto Extra'}
+                                </p>
+                                <p className={`text-2xl font-black ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
+                                    R$ {Math.abs(totalSavings).toFixed(2).replace('.', ',')}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={finishShopping}
+                            disabled={isSavingPurchase}
+                            className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-lg shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
+                            {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const item = shoppingQueue[currentStep];
+        const currentStock = parseInt(item.global_stock || item.quantity || 0);
+        const suggestedQty = calculateSmartQuantity(item);
+
+        return (
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-orange-500 p-2.5 rounded-xl text-white shadow-lg shadow-orange-500/20"><ShoppingCart size={24}/></div>
+                        <div>
+                            <h3 className="text-xl font-black text-white leading-tight">Lista de Compras</h3>
+                            <p className="text-xs text-orange-400 font-bold tracking-wider uppercase">Repondo: {getSelectedCondoName()}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors"><X size={20}/></button>
+                </div>
+
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    
+                    <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
+                        <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div>
+                    </div>
+                    <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
+
+                    {/* FOTO E INFO DO PRODUTO */}
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block border border-white/10">
+                                {item.category || 'Geral'}
+                            </span>
+                            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2 drop-shadow-md">{item.name}</h2>
+                            <div className="flex items-center gap-4 text-sm font-medium">
+                                <span className="text-red-400">Estoque Crítico: {currentStock} un</span>
+                                <span className="text-green-400">Sugestão de Compra: {suggestedQty} un</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* INPUTS DE COMPRA */}
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
+                        <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
+                            {/* QUANTIDADE */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <Package size={14} className="text-orange-500"/> Comprados (UN)
+                                </label>
+                                <input 
+                                    type="number"
+                                    value={qtyInput}
+                                    onChange={(e) => setQtyInput(e.target.value)}
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white focus:border-orange-500 outline-none transition-colors shadow-inner"
+                                />
+                            </div>
+
+                            {/* PREÇO */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <DollarSign size={14} className="text-green-500"/> Custo Unitário
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span>
+                                    <input 
+                                        type="number"
+                                        autoFocus
+                                        placeholder="0.00"
+                                        value={priceInput}
+                                        onChange={(e) => setPriceInput(e.target.value)}
+                                        className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white focus:border-green-500 outline-none transition-colors shadow-inner"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-sm bg-gray-900 p-4 rounded-xl border border-gray-800 mb-6">
+                            <span className="text-gray-400 font-medium">Ref. Antiga: <b className="text-gray-200">R$ {parseFloat(item.purchase_price||0).toFixed(2).replace('.', ',')}</b></span>
+                            {priceInput && (
+                                <span className={`${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'} font-bold px-3 py-1 rounded-lg border ${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'border-green-400/20' : 'border-red-400/20'}`}>
+                                    {(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'Lucro Maior ⬆️' : 'Custo Maior ⬇️'}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={handleSkipProduct} 
+                                className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 hover:bg-gray-600 font-bold text-sm shadow-lg flex flex-col items-center justify-center gap-1 active:scale-95 transition-all border border-gray-600"
+                            >
+                                <X size={18}/> Não Achei
+                            </button>
+                            <button 
+                                onClick={handleNextProduct} 
+                                className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+                            >
+                                Próximo <ArrowRight size={20}/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // =========================================================
+    // RENDER: MODAL DE AUDITORIA (Na Máquina)
+    // =========================================================
+    if (isAuditingMode && currentAuditSession) {
+        if (showAuditSummary) {
+            const inconsistencies = auditResults.filter(r => r.counted_qty !== r.expected_qty);
+            return (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                        <div className="mb-6 flex justify-center">
+                            <div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl">
+                                <ClipboardCheck size={40}/>
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
+                        <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
+                            <div className="flex justify-between border-b border-gray-700 pb-2 mb-2">
+                                <span className="text-gray-400">Total de Itens:</span><span className="text-white font-bold">{auditResults.length}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Inconsistências:</span>
+                                <span className={`font-bold ${inconsistencies.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {inconsistencies.length}
+                                </span>
+                            </div>
+                        </div>
+                        {inconsistencies.length > 0 && (
+                            <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                As falhas no stock serão registadas para futura verificação nas câmaras.
+                            </p>
+                        )}
+                        <button onClick={finishAudit} disabled={isSavingAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                            {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
+                            {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        const item = currentAuditSession.items[auditStep];
+        return (
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-blue-500 p-2.5 rounded-xl text-white shadow-lg"><ClipboardCheck size={24}/></div>
+                        <div><h3 className="text-xl font-black text-white leading-tight">Auditoria e Abastecimento</h3><p className="text-xs text-blue-400 font-bold uppercase">{currentAuditSession.condo_name || 'Geral'}</p></div>
+                    </div>
+                    <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
+                </div>
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((auditStep + 1) / currentAuditSession.items.length) * 100}%` }}></div>
+                    </div>
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10 pointer-events-none"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt={item.name}/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <h2 className="text-2xl font-black text-white mb-1">{item.name}</h2>
+                            <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">Você trouxe: +{item.quantity} un</p>
+                        </div>
+                    </div>
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
+                        <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
+                        <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">Não conte com as que tem na mão. Apenas as antigas!</p>
+                        <input 
+                            type="number" autoFocus value={countedQty} onChange={(e) => setCountedQty(e.target.value)} placeholder="Ex: 2"
+                            className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 px-4 text-center text-4xl font-black text-white focus:border-blue-500 outline-none mb-6 shadow-inner"
+                        />
+                        <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                            Registar Contagem <ArrowRight size={20}/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // =========================================================
+    // RENDER: MODAL DE INVESTIGAÇÃO (INCONSISTÊNCIAS)
     // =========================================================
     if (selectedAudit && !isAuditingMode) {
         return (
@@ -5200,95 +5524,39 @@ const CriticalStockPage = ({ condominiums, token }) => {
         );
     }
 
-    // --- MANTENDO OS OUTROS MODAIS (CÓDIGO ANTERIOR) ---
-    if (isAuditingMode && currentAuditSession) { 
-        // Lógica de Renderização do Modo Auditoria (igual ao anterior)
-        const item = currentAuditSession.items[auditStep];
-        if (showAuditSummary) {
-             const inconsistencies = auditResults.filter(r => r.counted_qty !== r.expected_qty);
-             return (
-                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
-                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center">
-                        <div className="mb-6 flex justify-center"><div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl"><ClipboardCheck size={40}/></div></div>
-                        <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
-                        <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
-                            <div className="flex justify-between border-b border-gray-700 pb-2 mb-2"><span className="text-gray-400">Total Itens:</span><span className="text-white font-bold">{auditResults.length}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-400">Inconsistências:</span><span className={`font-bold ${inconsistencies.length > 0 ? 'text-red-400' : 'text-green-400'}`}>{inconsistencies.length}</span></div>
-                        </div>
-                        <button onClick={finishAudit} disabled={isSavingAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg flex items-center justify-center gap-2">{isSavingAudit ? <Loader2 className="animate-spin"/> : <CheckCircle2/>} Confirmar Estoque</button>
-                    </div>
-                </div>
-             );
-        }
-        return (
-            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                <div className="sticky top-0 p-4 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
-                    <div className="flex items-center gap-4"><div className="bg-blue-500 p-2 rounded-xl text-white"><ClipboardCheck size={24}/></div><h3 className="text-xl font-bold text-white">Auditoria</h3></div>
-                    <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400"><X size={20}/></button>
-                </div>
-                <div className="max-w-xl mx-auto p-4 flex flex-col gap-6">
-                    <div className="bg-gray-800 rounded-3xl p-1 shadow-xl overflow-hidden"><img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt=""/><div className="p-4"><h2 className="text-2xl font-bold text-white">{item.name}</h2><p className="text-green-400 font-bold">Trouxe: +{item.quantity}</p></div></div>
-                    <div className="bg-gray-800/50 p-6 rounded-3xl border border-blue-500/30">
-                        <h4 className="text-lg font-bold text-white text-center mb-4">Qtd NA MÁQUINA AGORA?</h4>
-                        <input type="number" autoFocus value={countedQty} onChange={(e) => setCountedQty(e.target.value)} className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 text-center text-4xl text-white mb-6"/>
-                        <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 text-white font-bold text-lg">Registar</button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (isShoppingMode) { /* ... Código do Modo Compras mantido ... */ 
-        if (showSummary) {
-            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
-            return (
-                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 flex flex-col items-center justify-center p-4">
-                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 text-center">
-                        <h2 className="text-3xl font-black text-white mb-4">Reposição Concluída!</h2>
-                        <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 mb-6"><p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Custo Total</p><p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p></div>
-                        <button onClick={finishShopping} disabled={isSavingPurchase} className="w-full py-4 rounded-xl bg-orange-600 text-white font-bold text-lg">{isSavingPurchase ? 'Salvando...' : 'Salvar Compra'}</button>
-                    </div>
-                </div>
-            );
-        }
-        const item = shoppingQueue[currentStep];
-        return (
-            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                <div className="sticky top-0 p-4 bg-gray-900/80 border-b border-gray-800 flex justify-between items-center z-10">
-                    <h3 className="text-xl font-bold text-white">Compras</h3>
-                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400"><X size={20}/></button>
-                </div>
-                <div className="max-w-xl mx-auto p-4 flex flex-col gap-6">
-                    <div className="bg-gray-800 rounded-3xl p-1 overflow-hidden"><img src={item.image_url} className="w-full h-60 object-cover rounded-[22px]"/></div>
-                    <div className="bg-gray-800/50 p-6 rounded-3xl border border-gray-700">
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div><label className="text-gray-400 text-xs font-bold">QTD</label><input type="number" value={qtyInput} onChange={(e)=>setQtyInput(e.target.value)} className="w-full bg-gray-900 py-4 text-center text-white text-2xl rounded-xl border border-gray-600"/></div>
-                            <div><label className="text-gray-400 text-xs font-bold">R$ UNIT</label><input type="number" value={priceInput} onChange={(e)=>setPriceInput(e.target.value)} className="w-full bg-gray-900 py-4 text-center text-white text-2xl rounded-xl border border-gray-600"/></div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={handleSkipProduct} className="w-1/3 py-4 rounded-xl bg-gray-700 text-white font-bold">Pular</button>
-                            <button onClick={handleNextProduct} className="w-2/3 py-4 rounded-xl bg-orange-600 text-white font-bold">Próximo</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // --- DASHBOARD NORMAL ---
     const historyData = getHistoryGroupedByMonth();
 
     return (
         <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500 relative">
+            
+            {/* --- TOAST FLUTUANTE --- */}
             {toast && (
-                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-2xl border flex items-center gap-3 ${toast.type === 'error' ? 'bg-red-600/95 border-red-400 text-white' : 'bg-blue-600/95 border-blue-400 text-white'}`}>
-                    <Info size={24}/> <span className="font-bold text-sm">{toast.message}</span>
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
+                    <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-md ${
+                        toast.type === 'success' ? 'bg-green-600/95 border-green-400 text-white' :
+                        toast.type === 'error' ? 'bg-red-600/95 border-red-400 text-white' :
+                        toast.type === 'warning' ? 'bg-yellow-500/95 border-yellow-400 text-gray-900' :
+                        'bg-blue-600/95 border-blue-400 text-white'
+                    }`}>
+                        {toast.type === 'success' && <CheckCircle size={24} />}
+                        {toast.type === 'error' && <XCircle size={24} />}
+                        {toast.type === 'warning' && <AlertTriangle size={24} />}
+                        {toast.type === 'info' && <Info size={24} />}
+                        <span className="font-bold text-sm">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="ml-4 opacity-70 hover:opacity-100 transition-opacity">
+                            <X size={18}/>
+                        </button>
+                    </div>
                 </div>
             )}
 
+            {/* CABEÇALHO */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
-                    <h2 className="text-3xl font-black text-white flex items-center gap-3"><AlertTriangle className="text-orange-500" size={32}/> Central de Riscos</h2>
+                    <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                        <AlertTriangle className="text-orange-500" size={32}/> Central de Riscos
+                    </h2>
                     <p className="text-gray-400 mt-2 font-medium">Controle de validade, reposição, e prevenção de perdas.</p>
                 </div>
                 <div className="w-full md:w-auto bg-gray-900 p-2 rounded-xl border border-gray-700 flex items-center gap-3 shadow-inner">
@@ -5300,29 +5568,54 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 </div>
             </div>
 
-            {loading ? <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div> : (
+            {loading ? (
+                <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div>
+            ) : (
                 <>
+                    {/* CARDS DE NAVEGAÇÃO - 5 CARDS */}
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Para Comprar</p><h3 className="text-3xl font-black text-white">{criticalItems.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShoppingCart size={20} className="text-orange-500"/></div></div>
+                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Para Comprar</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-orange-400">{criticalItems.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'critical' ? 'bg-orange-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><ShoppingCart size={20}/></div>
+                            </div>
                         </div>
-                        <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start relative"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">A Abastecer</p><h3 className="text-3xl font-black text-white">{pendingRestocks.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><Truck size={20} className="text-blue-500"/></div></div>
+
+                        <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500 shadow-lg shadow-blue-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start relative">
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">A Abastecer</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-blue-400">{pendingRestocks.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'pending' ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Truck size={20}/></div>
+                                {pendingRestocks.length > 0 && <span className="absolute -top-2 -right-2 flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>}
+                            </div>
                         </div>
-                        <div onClick={() => setActiveTab('audits')} className={`col-span-2 lg:col-span-1 rounded-3xl p-5 border cursor-pointer group ${activeTab === 'audits' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className={`${audits.length > 0 ? 'text-red-400' : 'text-gray-400'} font-bold text-[9px] uppercase tracking-wider mb-1`}>Inconsistências</p><h3 className={`text-3xl font-black ${audits.length > 0 ? 'text-red-500' : 'text-white'}`}>{audits.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShieldAlert size={20} className={audits.length > 0 ? 'text-red-500 animate-pulse' : 'text-gray-400'}/></div></div>
+
+                        <div onClick={() => setActiveTab('audits')} className={`col-span-2 lg:col-span-1 rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'audits' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500 shadow-lg shadow-red-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div><p className={`${audits.length > 0 ? 'text-red-400' : 'text-gray-400'} font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1`}>Inconsistências</p><h3 className={`text-3xl md:text-4xl font-black ${audits.length > 0 ? 'text-red-500' : 'text-white'}`}>{audits.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'audits' ? 'bg-red-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                                    <ShieldAlert size={20} className={audits.length > 0 ? 'animate-pulse text-red-500' : ''}/>
+                                </div>
+                            </div>
                         </div>
-                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Vencendo</p><h3 className="text-3xl font-black text-white">{expiringItems.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><Calendar size={20} className="text-yellow-500"/></div></div>
+
+                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500 shadow-lg shadow-yellow-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Vencendo (30d)</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-yellow-400">{expiringItems.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'validity' ? 'bg-yellow-500 text-black' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Calendar size={20}/></div>
+                            </div>
                         </div>
-                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-green-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Compras Feitas</p><h3 className="text-3xl font-black text-white">{purchaseHistory.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><History size={20} className="text-green-500"/></div></div>
+
+                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-green-500 shadow-lg shadow-green-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Compras Feitas</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-green-400">{purchaseHistory.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'history' ? 'bg-green-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><History size={20}/></div>
+                            </div>
                         </div>
                     </div>
 
                     <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
                         
-                        {/* --- LISTAGEM DE INCONSISTÊNCIAS (AGORA APARECE!) --- */}
+                        {/* --- LISTAGEM DE INCONSISTÊNCIAS --- */}
                         {activeTab === 'audits' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5"><h3 className="text-xl font-bold text-white flex items-center gap-2"><ShieldAlert className="text-red-500"/> Registo de Inconsistências</h3></div>
@@ -5350,7 +5643,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* --- LISTAGEM DE PENDENTES (A ABASTECER) --- */}
+                        {/* --- LISTAGEM DE PENDENTES --- */}
                         {activeTab === 'pending' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
