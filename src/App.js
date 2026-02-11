@@ -4910,12 +4910,11 @@ const CentralCashierPage = ({ token }) => {
 
 const CriticalStockPage = ({ condominiums, token }) => {
     // --- ESTADOS GERAIS ---
-    const [selectedCondoId, setSelectedCondoId] = React.useState(condominiums[0]?.id || '');
+    const [selectedCondoId, setSelectedCondoId] = React.useState('all'); // Padrão agora é 'Geral'
     const [products, setProducts] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('critical'); // 'critical' | 'validity' | 'history'
+    const [activeTab, setActiveTab] = React.useState('critical'); 
     
-    // Histórico Real (Vindo da API)
     const [purchaseHistory, setPurchaseHistory] = React.useState([]);
     const [loadingHistory, setLoadingHistory] = React.useState(false);
 
@@ -4929,13 +4928,18 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [showSummary, setShowSummary] = React.useState(false);
     const [isSavingPurchase, setIsSavingPurchase] = React.useState(false);
 
+    const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
+
     // --- FETCH DADOS ---
     const fetchData = React.useCallback(async () => {
-        if (!selectedCondoId) return;
         setLoading(true);
         try {
-            // 1. Busca Produtos
-            const resProducts = await fetch(`${API_URL}/api/admin/products`, { 
+            // 1. Busca Produtos filtrados pela máquina ou todos (Geral)
+            const urlProducts = selectedCondoId === 'all' 
+                ? `${apiUrl}/api/admin/products` 
+                : `${apiUrl}/api/admin/products?condoId=${selectedCondoId}`;
+
+            const resProducts = await fetch(urlProducts, { 
                 headers: { 'Authorization': `Bearer ${token}` } 
             });
             
@@ -4945,7 +4949,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 setProducts(lista);
             }
 
-            // 2. Busca Histórico de Compras (NOVO ENDPOINT)
+            // 2. Dispara a busca de histórico junto
             fetchHistory();
 
         } catch (error) { 
@@ -4953,16 +4957,19 @@ const CriticalStockPage = ({ condominiums, token }) => {
         } finally { 
             setLoading(false); 
         }
-    }, [selectedCondoId, token]);
+    }, [selectedCondoId, token, apiUrl]);
 
     const fetchHistory = async () => {
-        if (!selectedCondoId) return;
         setLoadingHistory(true);
         try {
-            // O backend deve retornar um array de compras realizadas para este condomínio
-            const resHistory = await fetch(`${API_URL}/api/admin/purchase-history?condoId=${selectedCondoId}`, {
+            const urlHistory = selectedCondoId === 'all' 
+                ? `${apiUrl}/api/admin/purchase-history` 
+                : `${apiUrl}/api/admin/purchase-history?condoId=${selectedCondoId}`;
+
+            const resHistory = await fetch(urlHistory, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+
             if (resHistory.ok) {
                 const historyData = await resHistory.json();
                 setPurchaseHistory(historyData);
@@ -4978,36 +4985,34 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
     // --- LÓGICA DE FILTROS ---
     const criticalItems = products.filter(p => {
-        const stock = parseInt(p.global_stock || 0);
+        const stock = parseInt(p.global_stock || p.quantity || 0);
         const critical = parseInt(p.critical_stock_level || 5);
         return stock <= critical;
     });
 
     const expiringItems = products.filter(p => {
-        if (!p.expiration_date) return false;
+        // Correção principal: buscando a coluna 'nearest_expiration_date'
+        const expDate = p.nearest_expiration_date || p.expiration_date;
+        if (!expDate) return false;
+        
         const today = new Date();
-        const exp = new Date(p.expiration_date);
+        const exp = new Date(expDate);
         const diffTime = exp - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        return diffDays >= 0 && diffDays <= 30;
+        return diffDays >= 0 && diffDays <= 30; // Vence em até 30 dias
     });
 
     // --- CÁLCULO DE ESTOQUE IDEAL (INTELIGENTE) ---
     const calculateSmartQuantity = (item) => {
-        const currentStock = parseInt(item.global_stock || 0);
+        const currentStock = parseInt(item.global_stock || item.quantity || 0);
         const critical = parseInt(item.critical_stock_level || 5);
-        
-        // Se o produto tiver um "ideal_stock_level" definido no banco, usa ele.
-        // Se não, usa 3x o estoque crítico como margem de segurança.
         const idealStock = item.ideal_stock_level ? parseInt(item.ideal_stock_level) : (critical * 3);
-        
-        // Sugere comprar a diferença
         return Math.max(1, idealStock - currentStock);
     };
 
     // --- MODO COMPRAS ---
     const startShopping = () => {
-        if (criticalItems.length === 0) return alert("Estoque está saudável! Nada para comprar.");
+        if (criticalItems.length === 0) return alert("Estoque está saudável! Nada para repor.");
         
         setShoppingQueue(criticalItems);
         setCurrentStep(0);
@@ -5015,9 +5020,8 @@ const CriticalStockPage = ({ condominiums, token }) => {
         setShowSummary(false);
         setIsShoppingMode(true);
         
-        // Configura o primeiro item
         const firstItem = criticalItems[0];
-        setPriceInput(''); 
+        setPriceInput(firstItem.purchase_price || ''); 
         setQtyInput(calculateSmartQuantity(firstItem).toString());
     };
 
@@ -5027,9 +5031,8 @@ const CriticalStockPage = ({ condominiums, token }) => {
         const boughtQty = parseInt(qtyInput);
         const expectedPrice = parseFloat(item.purchase_price) || 0;
 
-        // Se o usuário não digitou nada, avisa
         if (isNaN(actualPrice) || isNaN(boughtQty) || boughtQty <= 0) {
-            return alert("Por favor, informe o preço encontrado e a quantidade.");
+            return alert("Por favor, informe o preço pago e a quantidade reposta.");
         }
 
         const newItem = {
@@ -5039,7 +5042,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             boughtPrice: actualPrice,
             expectedPrice: expectedPrice,
             totalCost: actualPrice * boughtQty,
-            savings: (expectedPrice - actualPrice) * boughtQty // Positivo = Economia, Negativo = Gasto Extra
+            savings: (expectedPrice - actualPrice) * boughtQty 
         };
 
         setCart([...cart, newItem]);
@@ -5047,7 +5050,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
         if (currentStep + 1 < shoppingQueue.length) {
             const nextItem = shoppingQueue[currentStep + 1];
             setCurrentStep(prev => prev + 1);
-            setPriceInput('');
+            setPriceInput(nextItem.purchase_price || '');
             setQtyInput(calculateSmartQuantity(nextItem).toString());
         } else {
             setShowSummary(true);
@@ -5057,21 +5060,19 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const finishShopping = async () => {
         setIsSavingPurchase(true);
         try {
-            // Prepara o payload para o backend
             const payload = {
-                condo_id: selectedCondoId,
-                date: new Date().toISOString().split('T')[0], // Data de hoje YYYY-MM-DD
+                condo_id: selectedCondoId === 'all' ? null : selectedCondoId,
+                date: new Date().toISOString().split('T')[0],
                 total_spent: cart.reduce((acc, i) => acc + i.totalCost, 0),
                 total_savings: cart.reduce((acc, i) => acc + i.savings, 0),
                 items: cart.map(item => ({
                     product_id: item.product_id,
                     quantity: item.boughtQty,
-                    new_price: item.boughtPrice // Backend deve atualizar o purchase_price com isso
+                    new_price: item.boughtPrice 
                 }))
             };
 
-            // CHAMADA REAL AO BACKEND
-            const response = await fetch(`${API_URL}/api/admin/inventory/purchase`, {
+            const response = await fetch(`${apiUrl}/api/admin/inventory/purchase`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -5085,11 +5086,10 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 throw new Error(errorData.message || 'Erro ao salvar compra.');
             }
 
-            // Sucesso
-            alert("Compra registrada com sucesso! Estoque e preços atualizados.");
+            alert("Reposição registrada! Estoque e custos atualizados com sucesso.");
             setIsShoppingMode(false);
-            fetchData(); // Recarrega produtos e histórico
-            setActiveTab('history'); // Redireciona para aba de histórico
+            fetchData(); 
+            setActiveTab('history'); 
 
         } catch (error) {
             alert(`Erro: ${error.message}`);
@@ -5098,30 +5098,29 @@ const CriticalStockPage = ({ condominiums, token }) => {
         }
     };
 
-    // --- HELPER PARA AGRUPAR HISTÓRICO POR MÊS ---
     const getHistoryGroupedByMonth = () => {
         if (!purchaseHistory || purchaseHistory.length === 0) return [];
-
         const grouped = {};
         purchaseHistory.forEach(item => {
-            // Supondo que item.date venha como '2024-02-15' ou ISO
-            const dateObj = new Date(item.date);
-            // Verifica se a data é válida
+            const dateObj = new Date(item.date || item.created_at);
             if (isNaN(dateObj.getTime())) return;
-
             const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-            
             if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 };
             
             grouped[key].purchases.push(item);
             grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0);
             grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0);
         });
-        
         return Object.entries(grouped);
     };
 
-    // --- UI MODO COMPRAS (TELA CHEIA) ---
+    const getSelectedCondoName = () => {
+        if (selectedCondoId === 'all') return 'Todas as Máquinas';
+        const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId);
+        return condo ? condo.name : 'Máquina Específica';
+    };
+
+    // --- UI MODO COMPRAS ---
     if (isShoppingMode) {
         if (showSummary) {
             const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
@@ -5129,30 +5128,30 @@ const CriticalStockPage = ({ condominiums, token }) => {
             const isSaving = totalSavings >= 0;
 
             return (
-                <div className="fixed inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center p-6 animate-fade-in">
-                    <div className="bg-gray-800 border border-gray-700 w-full max-w-md rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
                         <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${isSaving ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
                         
                         <div className="mb-6 flex justify-center">
-                            <div className={`h-24 w-24 rounded-full flex items-center justify-center border-4 shadow-xl ${isSaving ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-red-500 bg-red-500/20 text-red-400'}`}>
-                                {isSaving ? <TrendingDown size={48}/> : <TrendingUp size={48}/>}
+                            <div className={`h-20 w-20 rounded-full flex items-center justify-center border-4 shadow-xl ${isSaving ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-red-500 bg-red-500/20 text-red-400'}`}>
+                                {isSaving ? <TrendingUp size={40}/> : <TrendingDown size={40}/>}
                             </div>
                         </div>
                         
-                        <h2 className="text-3xl font-black text-white mb-1">Compra Finalizada!</h2>
-                        <p className="text-gray-400 mb-8 text-sm">Os dados serão salvos e o estoque atualizado.</p>
+                        <h2 className="text-3xl font-black text-white mb-1">Reposição Concluída!</h2>
+                        <p className="text-gray-400 mb-6 text-sm">Resumo da sua ida ao fornecedor ({getSelectedCondoName()}).</p>
 
                         <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-gray-900/50 p-4 rounded-2xl border border-gray-700">
-                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Total Pago</p>
-                                <p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2)}</p>
+                            <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-inner">
+                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Custo Total</p>
+                                <p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p>
                             </div>
-                            <div className={`p-4 rounded-2xl border ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                                <p className={`text-[10px] uppercase font-bold tracking-widest ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
-                                    {isSaving ? 'Economia' : 'Gasto Extra'}
+                            <div className={`p-4 rounded-2xl border shadow-inner ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                                <p className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
+                                    {isSaving ? 'Economia Gerada' : 'Gasto Extra'}
                                 </p>
                                 <p className={`text-2xl font-black ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
-                                    R$ {Math.abs(totalSavings).toFixed(2)}
+                                    R$ {Math.abs(totalSavings).toFixed(2).replace('.', ',')}
                                 </p>
                             </div>
                         </div>
@@ -5160,10 +5159,10 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         <button 
                             onClick={finishShopping}
                             disabled={isSavingPurchase}
-                            className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-lg shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
-                            {isSavingPurchase ? 'Salvando...' : 'Confirmar e Atualizar'}
+                            {isSavingPurchase ? 'Atualizando Sistema...' : 'Salvar no Estoque'}
                         </button>
                     </div>
                 </div>
@@ -5171,226 +5170,322 @@ const CriticalStockPage = ({ condominiums, token }) => {
         }
 
         const item = shoppingQueue[currentStep];
-        const currentStock = parseInt(item.global_stock || 0);
+        const currentStock = parseInt(item.global_stock || item.quantity || 0);
+        const suggestedQty = calculateSmartQuantity(item);
 
         return (
-            <div className="fixed inset-0 z-50 bg-gray-900 flex flex-col">
-                <div className="p-6 bg-gray-800 border-b border-gray-700 flex justify-between items-center shadow-md z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-orange-500 p-2 rounded-lg text-white"><ShoppingCart size={24}/></div>
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                {/* Header Compras */}
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-orange-500 p-2.5 rounded-xl text-white shadow-lg shadow-orange-500/20"><ShoppingCart size={24}/></div>
                         <div>
-                            <h3 className="text-lg font-bold text-white leading-tight">Modo Compras</h3>
-                            <p className="text-xs text-gray-400">Item {currentStep + 1} de {shoppingQueue.length}</p>
+                            <h3 className="text-xl font-black text-white leading-tight">Lista de Compras</h3>
+                            <p className="text-xs text-orange-400 font-bold tracking-wider uppercase">Repondo: {getSelectedCondoName()}</p>
                         </div>
                     </div>
-                    <button onClick={() => setIsShoppingMode(false)} className="bg-gray-700 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
+                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors"><X size={20}/></button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
-                    <div className="w-full max-w-md">
-                        {/* FOTO DO PRODUTO */}
-                        <div className="relative bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-2xl mb-6">
-                            <div className="bg-gray-900 rounded-[22px] overflow-hidden relative">
-                                <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-64 object-cover" alt=""/>
-                                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-                                <div className="absolute bottom-0 left-0 p-6 w-full">
-                                    <p className="text-orange-400 text-xs font-bold uppercase tracking-wider mb-1">{item.category}</p>
-                                    <h2 className="text-3xl font-black text-white leading-none">{item.name}</h2>
-                                    <p className="text-gray-400 text-sm mt-1">Estoque Atual: {currentStock} un</p>
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    
+                    {/* Barra de Progresso */}
+                    <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
+                        <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div>
+                    </div>
+                    <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
+
+                    {/* FOTO E INFO DO PRODUTO */}
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block border border-white/10">
+                                {item.category || 'Geral'}
+                            </span>
+                            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2 drop-shadow-md">{item.name}</h2>
+                            <div className="flex items-center gap-4 text-sm font-medium">
+                                <span className="text-red-400">Estoque Crítico: {currentStock} un</span>
+                                <span className="text-green-400">Sugestão de Compra: {suggestedQty} un</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* INPUTS DE COMPRA */}
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
+                        <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
+                            {/* QUANTIDADE */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <Package size={14} className="text-orange-500"/> Comprados (UN)
+                                </label>
+                                <input 
+                                    type="number"
+                                    value={qtyInput}
+                                    onChange={(e) => setQtyInput(e.target.value)}
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white focus:border-orange-500 outline-none transition-colors shadow-inner"
+                                />
+                            </div>
+
+                            {/* PREÇO */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <DollarSign size={14} className="text-green-500"/> Custo Unitário
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span>
+                                    <input 
+                                        type="number"
+                                        autoFocus
+                                        placeholder="0.00"
+                                        value={priceInput}
+                                        onChange={(e) => setPriceInput(e.target.value)}
+                                        className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white focus:border-green-500 outline-none transition-colors shadow-inner"
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        {/* INPUTS DE COMPRA */}
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 shadow-lg mb-6">
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                {/* QUANTIDADE */}
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block flex items-center gap-1">
-                                        <Package size={12}/> Qtd Comprada
-                                    </label>
-                                    <div className="relative">
-                                        <input 
-                                            type="number"
-                                            value={qtyInput}
-                                            onChange={(e) => setQtyInput(e.target.value)}
-                                            className="w-full bg-gray-900 border border-gray-600 rounded-xl py-3 px-3 text-center text-xl font-bold text-white focus:border-orange-500 outline-none"
-                                        />
-                                        <div className="absolute -top-8 right-0 bg-blue-600 text-[10px] px-2 py-0.5 rounded text-white font-bold">
-                                            Sugerido
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* PREÇO */}
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block flex items-center gap-1">
-                                        <DollarSign size={12}/> Preço Unit.
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                                        <input 
-                                            type="number"
-                                            autoFocus
-                                            placeholder="0.00"
-                                            value={priceInput}
-                                            onChange={(e) => setPriceInput(e.target.value)}
-                                            className="w-full bg-gray-900 border border-gray-600 rounded-xl py-3 pl-8 pr-2 text-xl font-bold text-white focus:border-blue-500 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between items-center text-sm bg-gray-900/50 p-3 rounded-xl border border-gray-700/50 mb-4">
-                                <span className="text-gray-400">Preço Ref: R$ {parseFloat(item.purchase_price||0).toFixed(2)}</span>
-                                <span className={`${(parseFloat(item.purchase_price||0) - (parseFloat(priceInput)||0)) >= 0 ? 'text-green-400' : 'text-red-400'} font-bold`}>
-                                    {(parseFloat(item.purchase_price||0) - (parseFloat(priceInput)||0)) >= 0 ? 'Economia' : 'Mais Caro'}
+                        <div className="flex justify-between items-center text-sm bg-gray-900 p-4 rounded-xl border border-gray-800 mb-6">
+                            <span className="text-gray-400 font-medium">Ref. Antiga: <b className="text-gray-200">R$ {parseFloat(item.purchase_price||0).toFixed(2).replace('.', ',')}</b></span>
+                            {priceInput && (
+                                <span className={`${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'} font-bold px-3 py-1 rounded-lg border ${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'border-green-400/20' : 'border-red-400/20'}`}>
+                                    {(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'Lucro Maior ⬆️' : 'Custo Maior ⬇️'}
                                 </span>
-                            </div>
-
-                            <button onClick={handleNextProduct} className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg shadow-lg shadow-orange-500/20 flex items-center justify-center gap-3 active:scale-95 transition-all">
-                                Confirmar <ArrowRight size={24}/>
-                            </button>
+                            )}
                         </div>
+
+                        <button onClick={handleNextProduct} className="w-full py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+                            Próximo Produto <ArrowRight size={20}/>
+                        </button>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // --- RENDERIZAÇÃO: DASHBOARD ---
+    // --- RENDERIZAÇÃO: DASHBOARD NORMAL ---
     const historyData = getHistoryGroupedByMonth();
 
     return (
-        <div className="flex flex-col gap-8 pb-20 animate-fade-in">
+        <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500">
             {/* CABEÇALHO */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
-                    <h2 className="text-3xl font-black text-white">Central de Riscos</h2>
-                    <p className="text-gray-400 mt-1">Validade, Estoque e Economia.</p>
+                    <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                        <AlertTriangle className="text-orange-500" size={32}/> Central de Riscos
+                    </h2>
+                    <p className="text-gray-400 mt-2 font-medium">Controle de validade, reposição de estoque e fluxo de custos.</p>
                 </div>
-                <div className="w-full md:w-auto bg-gray-800 p-2 rounded-xl border border-gray-700 flex items-center gap-2 shadow-sm">
-                    <Store className="text-gray-500 ml-2" size={18}/>
-                    <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold text-sm w-full md:w-48">
+                
+                {/* SELECT ATUALIZADO COM "GERAL" */}
+                <div className="w-full md:w-auto bg-gray-900 p-2 rounded-xl border border-gray-700 flex items-center gap-3 shadow-inner">
+                    <Store className="text-gray-500 ml-3 shrink-0" size={20}/>
+                    <select 
+                        onChange={(e) => setSelectedCondoId(e.target.value)} 
+                        value={selectedCondoId} 
+                        className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold text-sm w-full md:w-56 py-2 pr-4 outline-none"
+                    >
+                        <option value="all">Geral (Todas as Máquinas)</option>
                         {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                 </div>
             </div>
 
-            {loading ? <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-blue-500" size={40}/></div> : (
+            {loading ? (
+                <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div>
+            ) : (
                 <>
                     {/* CARDS DE NAVEGAÇÃO */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* 1. ESTOQUE CRÍTICO */}
-                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gray-800 border-orange-500 shadow-lg shadow-orange-500/10' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
-                                <div><p className="text-gray-400 font-bold text-xs uppercase mb-1">Reposição</p><h3 className="text-4xl font-black text-white group-hover:text-orange-400 transition-colors">{criticalItems.length}</h3></div>
-                                <div className={`p-3 rounded-xl ${activeTab === 'critical' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'}`}><AlertTriangle size={24}/></div>
+                                <div>
+                                    <p className="text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Para Reposição</p>
+                                    <h3 className="text-5xl font-black text-white group-hover:text-orange-400 transition-colors">{criticalItems.length}</h3>
+                                </div>
+                                <div className={`p-4 rounded-2xl shadow-inner ${activeTab === 'critical' ? 'bg-orange-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><ShoppingCart size={28}/></div>
                             </div>
-                            <button className="mt-4 w-full bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg text-sm font-bold transition">Ver Lista</button>
                         </div>
 
                         {/* 2. VALIDADE */}
-                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'validity' ? 'bg-gray-800 border-red-500 shadow-lg shadow-red-500/10' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
-                            <div className="flex justify-between items-start">
-                                <div><p className="text-gray-400 font-bold text-xs uppercase mb-1">Vencendo</p><h3 className="text-4xl font-black text-white group-hover:text-red-400 transition-colors">{expiringItems.length}</h3></div>
-                                <div className={`p-3 rounded-xl ${activeTab === 'validity' ? 'bg-red-500 text-white' : 'bg-gray-700 text-gray-400'}`}><Calendar size={24}/></div>
-                            </div>
-                            <button className="mt-4 w-full bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg text-sm font-bold transition">Ver Lista</button>
-                        </div>
-
-                        {/* 3. HISTÓRICO (AGORA COM DADOS REAIS) */}
-                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'history' ? 'bg-gray-800 border-green-500 shadow-lg shadow-green-500/10' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500 shadow-lg shadow-red-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="text-gray-400 font-bold text-xs uppercase mb-1">Compras Realizadas</p>
-                                    <h3 className="text-4xl font-black text-white group-hover:text-green-400 transition-colors">{purchaseHistory.length}</h3>
+                                    <p className="text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Vencendo (30d)</p>
+                                    <h3 className="text-5xl font-black text-white group-hover:text-red-400 transition-colors">{expiringItems.length}</h3>
                                 </div>
-                                <div className={`p-3 rounded-xl ${activeTab === 'history' ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}><History size={24}/></div>
+                                <div className={`p-4 rounded-2xl shadow-inner ${activeTab === 'validity' ? 'bg-red-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Calendar size={28}/></div>
                             </div>
-                            <button className="mt-4 w-full bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg text-sm font-bold transition">Ver Relatórios</button>
+                        </div>
+
+                        {/* 3. HISTÓRICO */}
+                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-6 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Compras Feitas</p>
+                                    <h3 className="text-5xl font-black text-white group-hover:text-blue-400 transition-colors">{purchaseHistory.length}</h3>
+                                </div>
+                                <div className={`p-4 rounded-2xl shadow-inner ${activeTab === 'history' ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><History size={28}/></div>
+                            </div>
                         </div>
                     </div>
 
                     {/* CONTEÚDO DA ABA ATIVA */}
-                    <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
+                    <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
                         
                         {/* CONTEÚDO 1: CRÍTICOS */}
                         {activeTab === 'critical' && (
                             <>
-                                <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2"><AlertTriangle className="text-orange-500"/> Itens em Ponto de Pedido</h3>
+                                <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white flex items-center gap-2"><ShoppingCart className="text-orange-500"/> Fila de Compras</h3>
+                                        <p className="text-sm text-gray-400 mt-1">Produtos que atingiram o nível crítico de estoque em <b>{getSelectedCondoName()}</b>.</p>
+                                    </div>
                                     {criticalItems.length > 0 && (
-                                        <button onClick={startShopping} className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all hover:scale-105 animate-pulse">
-                                            <ShoppingCart size={18}/> INICIAR MODO COMPRAS
+                                        <button onClick={startShopping} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 animate-pulse-slow">
+                                            <ShoppingCart size={20}/> INICIAR REPOSIÇÃO
                                         </button>
                                     )}
                                 </div>
-                                <table className="w-full text-left">
-                                    <thead className="bg-white/5 text-gray-400 text-xs uppercase font-bold"><tr><th className="p-6">Produto</th><th className="p-6 text-center">Atual / Ideal</th><th className="p-6 text-center">Status</th></tr></thead>
-                                    <tbody className="divide-y divide-white/5 text-sm text-gray-300">
-                                        {criticalItems.map(item => (
-                                            <tr key={item.id} className="hover:bg-white/5 transition-colors">
-                                                <td className="p-6 font-bold text-white">{item.name}</td>
-                                                <td className="p-6 text-center text-gray-400">{item.global_stock} <span className="text-gray-600">/ {item.ideal_stock_level || (item.critical_stock_level * 3)}</span></td>
-                                                <td className="p-6 text-center"><span className="text-orange-400 font-bold text-xs border border-orange-500/30 bg-orange-500/10 px-2 py-1 rounded">BAIXO</span></td>
+                                
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider">
+                                            <tr>
+                                                <th className="p-6">Produto</th>
+                                                <th className="p-6 text-center">Custo Unt.</th>
+                                                <th className="p-6 text-center">Estoque Atual</th>
+                                                <th className="p-6 text-center">Comprar (Sugestão)</th>
                                             </tr>
-                                        ))}
-                                        {criticalItems.length === 0 && <tr><td colSpan="3" className="p-10 text-center text-gray-500">Estoque 100% abastecido.</td></tr>}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {criticalItems.map(item => {
+                                                const currentStock = parseInt(item.global_stock || item.quantity || 0);
+                                                const suggestion = calculateSmartQuantity(item);
+                                                
+                                                return (
+                                                    <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                        <td className="p-6 flex items-center gap-4">
+                                                            <img src={item.image_url || 'https://placehold.co/40'} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-800 border border-white/10"/>
+                                                            <span className="font-bold">{item.name}</span>
+                                                        </td>
+                                                        <td className="p-6 text-center text-gray-400">
+                                                            R$ {parseFloat(item.purchase_price || 0).toFixed(2).replace('.', ',')}
+                                                        </td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="bg-red-500/10 text-red-400 font-bold px-3 py-1 rounded-lg border border-red-500/20">
+                                                                {currentStock} un
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="bg-orange-500/10 text-orange-400 font-bold px-3 py-1 rounded-lg border border-orange-500/20 flex items-center justify-center gap-1 w-fit mx-auto">
+                                                                <TrendingUp size={14}/> {suggestion} un
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {criticalItems.length === 0 && (
+                                                <tr><td colSpan="4" className="p-16 text-center text-gray-500 font-medium text-lg">Estoque 100% abastecido. Ótimo trabalho!</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </>
                         )}
 
                         {/* CONTEÚDO 2: VALIDADE */}
                         {activeTab === 'validity' && (
                             <>
-                                <div className="p-6 border-b border-white/5"><h3 className="text-lg font-bold text-white flex items-center gap-2"><Calendar className="text-red-500"/> Itens Vencendo</h3></div>
-                                <table className="w-full text-left">
-                                    <thead className="bg-white/5 text-gray-400 text-xs uppercase font-bold"><tr><th className="p-6">Produto</th><th className="p-6 text-center">Vence em</th></tr></thead>
-                                    <tbody className="divide-y divide-white/5 text-sm text-gray-300">
-                                        {expiringItems.map(item => (
-                                            <tr key={item.id} className="hover:bg-white/5 transition-colors">
-                                                <td className="p-6 font-bold text-white">{item.name}</td>
-                                                <td className="p-6 text-center"><span className="text-white bg-red-600 px-3 py-1 rounded font-mono">{new Date(item.expiration_date).toLocaleDateString('pt-BR')}</span></td>
+                                <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Calendar className="text-red-500"/> Produtos Perto do Vencimento</h3>
+                                    <p className="text-sm text-gray-400 mt-1">Atenção aos produtos que vencem nos próximos 30 dias em <b>{getSelectedCondoName()}</b>.</p>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider">
+                                            <tr>
+                                                <th className="p-6">Produto</th>
+                                                <th className="p-6 text-center">Estoque Atual</th>
+                                                <th className="p-6 text-center">Data de Validade</th>
                                             </tr>
-                                        ))}
-                                        {expiringItems.length === 0 && <tr><td colSpan="2" className="p-10 text-center text-gray-500">Nenhum produto vencendo.</td></tr>}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {expiringItems.map(item => {
+                                                const expDate = item.nearest_expiration_date || item.expiration_date;
+                                                return (
+                                                    <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                        <td className="p-6 flex items-center gap-4">
+                                                            <img src={item.image_url || 'https://placehold.co/40'} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-800 border border-white/10"/>
+                                                            <span className="font-bold">{item.name}</span>
+                                                        </td>
+                                                        <td className="p-6 text-center font-medium">
+                                                            {parseInt(item.global_stock || item.quantity || 0)} un
+                                                        </td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="text-red-100 bg-red-600 shadow-lg shadow-red-600/20 px-4 py-1.5 rounded-lg font-mono font-bold tracking-widest border border-red-400">
+                                                                {new Date(expDate).toLocaleDateString('pt-BR')}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {expiringItems.length === 0 && (
+                                                <tr><td colSpan="3" className="p-16 text-center text-gray-500 font-medium text-lg">Nenhum produto vencendo nos próximos 30 dias.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </>
                         )}
 
                         {/* CONTEÚDO 3: HISTÓRICO REAL */}
                         {activeTab === 'history' && (
-                            <div className="p-6">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6"><History className="text-green-500"/> Relatório Mensal de Economia</h3>
+                            <div className="p-6 md:p-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2"><History className="text-blue-500"/> Relatório de Compras e Economia</h3>
+                                <p className="text-sm text-gray-400 mb-8">Histórico de reposições feitas para <b>{getSelectedCondoName()}</b>.</p>
                                 
                                 {loadingHistory ? (
-                                    <div className="text-center py-10"><Loader2 className="animate-spin mx-auto"/></div>
+                                    <div className="text-center py-16"><Loader2 className="animate-spin mx-auto text-blue-500" size={40}/></div>
                                 ) : (
                                     <div className="space-y-6">
                                         {historyData.map(([month, data]) => (
-                                            <div key={month} className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
-                                                <div className="flex justify-between items-center mb-4">
-                                                    <h4 className="text-xl font-bold text-white capitalize">{month}</h4>
-                                                    <span className={`text-sm font-bold px-3 py-1 rounded-lg ${data.totalSavings >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                                        {data.totalSavings >= 0 ? `Economia: R$ ${data.totalSavings.toFixed(2)}` : `Gasto Extra: R$ ${Math.abs(data.totalSavings).toFixed(2)}`}
-                                                    </span>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex-1 bg-gray-900/50 p-3 rounded-xl border border-gray-700">
-                                                        <p className="text-xs text-gray-500">Total Gasto</p>
-                                                        <p className="text-lg font-bold text-white">R$ {data.totalSpent.toFixed(2)}</p>
+                                            <div key={month} className="bg-gray-900/80 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-lg">
+                                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                                                    <h4 className="text-2xl font-black text-white capitalize flex items-center gap-3">
+                                                        <Calendar className="text-gray-500"/> {month}
+                                                    </h4>
+                                                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-bold ${data.totalSavings >= 0 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                        {data.totalSavings >= 0 ? <TrendingUp size={18}/> : <TrendingDown size={18}/>}
+                                                        {data.totalSavings >= 0 ? 'Economia no Mês:' : 'Gasto Extra:'} R$ {Math.abs(data.totalSavings).toFixed(2).replace('.', ',')}
                                                     </div>
-                                                    <div className="flex-1 bg-gray-900/50 p-3 rounded-xl border border-gray-700">
-                                                        <p className="text-xs text-gray-500">Compras</p>
-                                                        <p className="text-lg font-bold text-white">{data.purchases.length} realizadas</p>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="bg-black/30 p-5 rounded-2xl border border-white/5 flex items-center gap-4">
+                                                        <div className="p-3 bg-gray-800 rounded-xl text-gray-400"><DollarSign size={24}/></div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Custo Total de Reposição</p>
+                                                            <p className="text-xl font-black text-white mt-1">R$ {data.totalSpent.toFixed(2).replace('.', ',')}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-black/30 p-5 rounded-2xl border border-white/5 flex items-center gap-4">
+                                                        <div className="p-3 bg-gray-800 rounded-xl text-gray-400"><ShoppingCart size={24}/></div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Idas ao Fornecedor</p>
+                                                            <p className="text-xl font-black text-white mt-1">{data.purchases.length} compras registradas</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         ))}
-                                        {historyData.length === 0 && <p className="text-center text-gray-500 py-10">Nenhum histórico de compras encontrado para este condomínio.</p>}
+                                        {historyData.length === 0 && (
+                                            <div className="text-center py-16 bg-gray-900/50 rounded-3xl border border-gray-800">
+                                                <Package className="mx-auto text-gray-600 mb-4" size={48}/>
+                                                <p className="text-gray-400 font-medium text-lg">Nenhum histórico de reposição encontrado.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
