@@ -4923,8 +4923,8 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [audits, setAudits] = React.useState([]); 
 
     // --- ESTADOS DA INVESTIGAÇÃO (NOVO) ---
-    const [selectedAudit, setSelectedAudit] = React.useState(null);
-    const [auditDetails, setAuditDetails] = React.useState(null);
+    const [selectedAudit, setSelectedAudit] = React.useState(null); // Auditoria selecionada para ver detalhes
+    const [auditDetails, setAuditDetails] = React.useState(null);   // Dados detalhados (vendas suspeitas)
     const [loadingAuditDetails, setLoadingAuditDetails] = React.useState(false);
 
     // --- ESTADOS DO MODO COMPRAS (Fornecedor) ---
@@ -4963,20 +4963,26 @@ const CriticalStockPage = ({ condominiums, token }) => {
             const headers = { 'Authorization': `Bearer ${token}` };
             
             // 1. Produtos
-            const urlProducts = selectedCondoId === 'all' ? `${apiUrl}/api/admin/products` : `${apiUrl}/api/admin/products?condoId=${selectedCondoId}`;
+            const urlProducts = selectedCondoId === 'all' 
+                ? `${apiUrl}/api/admin/products` 
+                : `${apiUrl}/api/admin/products?condoId=${selectedCondoId}`;
             const resProducts = await fetch(urlProducts, { headers });
             if (resProducts.ok) {
                 const data = await resProducts.json();
                 setProducts(Array.isArray(data) ? data : (data.products || []));
             }
 
-            // 2. Pendentes
-            const urlPending = selectedCondoId === 'all' ? `${apiUrl}/api/admin/inventory/pending-restocks` : `${apiUrl}/api/admin/inventory/pending-restocks?condoId=${selectedCondoId}`;
+            // 2. Reposições Pendentes
+            const urlPending = selectedCondoId === 'all'
+                ? `${apiUrl}/api/admin/inventory/pending-restocks`
+                : `${apiUrl}/api/admin/inventory/pending-restocks?condoId=${selectedCondoId}`;
             const resPending = await fetch(urlPending, { headers });
             if (resPending.ok) setPendingRestocks(await resPending.json());
 
-            // 3. Auditorias
-            const urlAudits = selectedCondoId === 'all' ? `${apiUrl}/api/admin/inventory/audits` : `${apiUrl}/api/admin/inventory/audits?condoId=${selectedCondoId}`;
+            // 3. Auditorias (Inconsistências)
+            const urlAudits = selectedCondoId === 'all'
+                ? `${apiUrl}/api/admin/inventory/audits`
+                : `${apiUrl}/api/admin/inventory/audits?condoId=${selectedCondoId}`;
             const resAudits = await fetch(urlAudits, { headers });
             if (resAudits.ok) setAudits(await resAudits.json());
 
@@ -4992,14 +4998,16 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const fetchHistory = async () => {
         setLoadingHistory(true);
         try {
-            const urlHistory = selectedCondoId === 'all' ? `${apiUrl}/api/admin/purchase-history` : `${apiUrl}/api/admin/purchase-history?condoId=${selectedCondoId}`;
+            const urlHistory = selectedCondoId === 'all' 
+                ? `${apiUrl}/api/admin/purchase-history` 
+                : `${apiUrl}/api/admin/purchase-history?condoId=${selectedCondoId}`;
             const resHistory = await fetch(urlHistory, { headers: { 'Authorization': `Bearer ${token}` } });
             if (resHistory.ok) setPurchaseHistory(await resHistory.json());
         } catch (error) { console.error(error); } 
         finally { setLoadingHistory(false); }
     };
 
-    // --- NOVA FUNÇÃO: BUSCAR DETALHES DA AUDITORIA (QUEM COMPROU) ---
+    // --- NOVA FUNÇÃO: ABRIR INVESTIGAÇÃO ---
     const handleOpenAuditInvestigation = async (audit) => {
         setSelectedAudit(audit);
         setLoadingAuditDetails(true);
@@ -5045,7 +5053,29 @@ const CriticalStockPage = ({ condominiums, token }) => {
         return Math.max(1, idealStock - currentStock);
     };
 
-    // --- MODO COMPRAS (Simplificado para caber, use o mesmo da versão anterior) ---
+    // --- HELPERS ---
+    const getHistoryGroupedByMonth = () => {
+        if (!purchaseHistory || purchaseHistory.length === 0) return [];
+        const grouped = {};
+        purchaseHistory.forEach(item => {
+            const dateObj = new Date(item.date || item.created_at);
+            if (isNaN(dateObj.getTime())) return;
+            const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+            if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 };
+            grouped[key].purchases.push(item);
+            grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0);
+            grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0);
+        });
+        return Object.entries(grouped);
+    };
+
+    const getSelectedCondoName = () => {
+        if (selectedCondoId === 'all') return 'Todas as Máquinas';
+        const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId);
+        return condo ? condo.name : 'Máquina Específica';
+    };
+
+    // --- MODO COMPRAS (Simplificado) ---
     const startShopping = () => {
         if (selectedCondoId === 'all') return showToast("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo.", "warning");
         if (criticalItems.length === 0) return showToast("Estoque saudável!", "success");
@@ -5089,15 +5119,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
         try {
             const res = await fetch(`${apiUrl}/api/admin/inventory/execute-restock`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ pending_restock_id: currentAuditSession.id, condo_id: currentAuditSession.condo_id, items: auditResults }) });
             if (!res.ok) throw new Error();
-            showToast("Abastecimento concluído! Estoque atualizado.", "success"); setIsAuditingMode(false); fetchData(); setActiveTab('audits');
+            showToast("Abastecimento concluído!", "success"); setIsAuditingMode(false); fetchData(); setActiveTab('audits');
         } catch (e) { showToast("Erro ao finalizar.", "error"); } finally { setIsSavingAudit(false); }
     };
 
-    const getHistoryGroupedByMonth = () => { /* Logica mantida */ if (!purchaseHistory || purchaseHistory.length === 0) return []; const grouped = {}; purchaseHistory.forEach(item => { const dateObj = new Date(item.date || item.created_at); if (isNaN(dateObj.getTime())) return; const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 }; grouped[key].purchases.push(item); grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0); grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0); }); return Object.entries(grouped); };
-    const getSelectedCondoName = () => { if (selectedCondoId === 'all') return 'Todas as Máquinas'; const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId); return condo ? condo.name : 'Máquina Específica'; };
-
     // =========================================================
-    // RENDER: MODAL DE INVESTIGAÇÃO (NOVO!)
+    // RENDER: MODAL DE INVESTIGAÇÃO (O QUE VOCÊ PEDIU!)
     // =========================================================
     if (selectedAudit && !isAuditingMode) {
         return (
@@ -5124,21 +5151,21 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Search size={14}/> Vendas no Período Suspeito
+                            <Search size={14}/> Quem comprou desde o último abastecimento?
                         </h3>
                         
                         {loadingAuditDetails ? (
                             <div className="py-10 text-center"><Loader2 className="animate-spin mx-auto text-blue-500"/></div>
                         ) : (
                             <div className="space-y-2">
-                                {auditDetails && auditDetails.sales.length > 0 ? (
+                                {auditDetails && auditDetails.sales && auditDetails.sales.length > 0 ? (
                                     auditDetails.sales.map((sale, idx) => (
                                         <div key={idx} className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 flex justify-between items-center hover:bg-gray-800 transition-colors">
                                             <div className="flex items-center gap-3">
                                                 <div className="bg-blue-500/10 p-2 rounded-full text-blue-400"><User size={16}/></div>
                                                 <div>
                                                     <p className="font-bold text-white text-sm">{sale.user_name}</p>
-                                                    <p className="text-xs text-gray-500">{new Date(sale.sale_date).toLocaleString('pt-BR')}</p>
+                                                    <p className="text-xs text-gray-500">{new Date(sale.sale_date).toLocaleString('pt-BR')} às {new Date(sale.sale_date).toLocaleTimeString('pt-BR')}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
@@ -5173,10 +5200,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
         );
     }
 
-    // --- MANTENDO OS MODAIS DE COMPRA E AUDITORIA (CÓDIGO ANTERIOR) ---
-    if (isAuditingMode && currentAuditSession) { /* ... Use o código do passo anterior aqui ... */ 
-        // POR QUESTÃO DE ESPAÇO, ESTOU REPETINDO O CÓDIGO DO RENDER DA AUDITORIA AQUI DE FORMA RESUMIDA
-        // (Copie o bloco 'if (isAuditingMode...)' da resposta anterior e cole aqui se necessário, ou use o arquivo completo abaixo)
+    // --- MANTENDO OS OUTROS MODAIS (CÓDIGO ANTERIOR) ---
+    if (isAuditingMode && currentAuditSession) { 
+        // Lógica de Renderização do Modo Auditoria (igual ao anterior)
         const item = currentAuditSession.items[auditStep];
         if (showAuditSummary) {
              const inconsistencies = auditResults.filter(r => r.counted_qty !== r.expected_qty);
@@ -5214,10 +5240,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
     if (isShoppingMode) { /* ... Código do Modo Compras mantido ... */ 
         if (showSummary) {
+            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
             return (
                 <div className="fixed inset-0 z-50 bg-[#0f172a]/95 flex flex-col items-center justify-center p-4">
                     <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 text-center">
                         <h2 className="text-3xl font-black text-white mb-4">Reposição Concluída!</h2>
+                        <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 mb-6"><p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Custo Total</p><p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p></div>
                         <button onClick={finishShopping} disabled={isSavingPurchase} className="w-full py-4 rounded-xl bg-orange-600 text-white font-bold text-lg">{isSavingPurchase ? 'Salvando...' : 'Salvar Compra'}</button>
                     </div>
                 </div>
@@ -5247,6 +5275,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
         );
     }
 
+    // --- DASHBOARD NORMAL ---
+    const historyData = getHistoryGroupedByMonth();
+
     return (
         <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500 relative">
             {toast && (
@@ -5273,18 +5304,25 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 <>
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">Para Comprar</p><h3 className="text-3xl font-black text-white">{criticalItems.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShoppingCart size={20} className="text-orange-500"/></div></div>
+                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Para Comprar</p><h3 className="text-3xl font-black text-white">{criticalItems.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShoppingCart size={20} className="text-orange-500"/></div></div>
                         </div>
                         <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start relative"><div><p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">A Abastecer</p><h3 className="text-3xl font-black text-white">{pendingRestocks.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><Truck size={20} className="text-blue-500"/></div></div>
+                            <div className="flex justify-between items-start relative"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">A Abastecer</p><h3 className="text-3xl font-black text-white">{pendingRestocks.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><Truck size={20} className="text-blue-500"/></div></div>
                         </div>
                         <div onClick={() => setActiveTab('audits')} className={`col-span-2 lg:col-span-1 rounded-3xl p-5 border cursor-pointer group ${activeTab === 'audits' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500' : 'bg-gray-800/40 border-gray-700'}`}>
-                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">Inconsistências</p><h3 className={`text-3xl font-black ${audits.length > 0 ? 'text-red-500' : 'text-white'}`}>{audits.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShieldAlert size={20} className={audits.length > 0 ? 'text-red-500 animate-pulse' : 'text-gray-400'}/></div></div>
+                            <div className="flex justify-between items-start"><div><p className={`${audits.length > 0 ? 'text-red-400' : 'text-gray-400'} font-bold text-[9px] uppercase tracking-wider mb-1`}>Inconsistências</p><h3 className={`text-3xl font-black ${audits.length > 0 ? 'text-red-500' : 'text-white'}`}>{audits.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><ShieldAlert size={20} className={audits.length > 0 ? 'text-red-500 animate-pulse' : 'text-gray-400'}/></div></div>
                         </div>
-                        {/* Cards de Validade e Histórico omitidos para poupar espaço, mas você pode manter do código anterior */}
+                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500' : 'bg-gray-800/40 border-gray-700'}`}>
+                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Vencendo</p><h3 className="text-3xl font-black text-white">{expiringItems.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><Calendar size={20} className="text-yellow-500"/></div></div>
+                        </div>
+                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-5 border cursor-pointer group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-green-500' : 'bg-gray-800/40 border-gray-700'}`}>
+                            <div className="flex justify-between items-start"><div><p className="text-gray-400 font-bold text-[9px] uppercase tracking-wider mb-1">Compras Feitas</p><h3 className="text-3xl font-black text-white">{purchaseHistory.length}</h3></div><div className="p-2 bg-gray-700/50 rounded-2xl"><History size={20} className="text-green-500"/></div></div>
+                        </div>
                     </div>
 
                     <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
+                        
+                        {/* --- LISTAGEM DE INCONSISTÊNCIAS (AGORA APARECE!) --- */}
                         {activeTab === 'audits' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5"><h3 className="text-xl font-bold text-white flex items-center gap-2"><ShieldAlert className="text-red-500"/> Registo de Inconsistências</h3></div>
@@ -5311,7 +5349,101 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 </div>
                             </>
                         )}
-                        {/* Demais conteúdos das abas (critical, pending, etc.) continuam aqui... */}
+
+                        {/* --- LISTAGEM DE PENDENTES (A ABASTECER) --- */}
+                        {activeTab === 'pending' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Truck className="text-blue-500"/> Reposições Pendentes</h3>
+                                </div>
+                                <div className="p-6">
+                                    {pendingRestocks.length === 0 ? <div className="text-center py-16"><ClipboardCheck className="mx-auto text-gray-600 mb-4" size={48}/><p className="text-gray-400">Nenhuma reposição pendente.</p></div> : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {pendingRestocks.map(session => (
+                                                <div key={session.id} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col justify-between shadow-lg">
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div><h4 className="text-lg font-black text-white">{session.condo_name || 'Geral'}</h4><p className="text-xs text-gray-400 font-mono">{new Date(session.created_at).toLocaleString('pt-BR')}</p></div>
+                                                            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-1 rounded uppercase">Em Trânsito</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 mb-6">
+                                                            <div className="bg-gray-900 p-3 rounded-xl border border-gray-700 flex-1"><p className="text-[10px] text-gray-500 font-bold">Itens</p><p className="text-lg font-black text-white">{session.items?.length || 0}</p></div>
+                                                            <div className="bg-gray-900 p-3 rounded-xl border border-gray-700 flex-1"><p className="text-[10px] text-gray-500 font-bold">Valor</p><p className="text-lg font-black text-orange-400">R$ {parseFloat(session.total_spent).toFixed(2)}</p></div>
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={() => startAudit(session)} className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center gap-2"><ClipboardCheck size={18}/> Iniciar Auditoria</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+                        {/* --- LISTAGEM DE CRÍTICOS --- */}
+                        {activeTab === 'critical' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
+                                    <div><h3 className="text-xl font-bold text-white flex items-center gap-2"><ShoppingCart className="text-orange-500"/> Fila de Compras</h3></div>
+                                    {criticalItems.length > 0 && <button onClick={startShopping} className="bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg"><ShoppingCart size={20}/> INICIAR REPOSIÇÃO</button>}
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold"><tr><th className="p-6">Produto</th><th className="p-6 text-center">Custo</th><th className="p-6 text-center">Estoque</th><th className="p-6 text-center">Sugestão</th></tr></thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {criticalItems.map(item => (
+                                                <tr key={item.id} className="hover:bg-white/5">
+                                                    <td className="p-6 flex items-center gap-4"><img src={item.image_url || 'https://placehold.co/40'} className="w-10 h-10 rounded-lg object-cover"/><span className="font-bold">{item.name}</span></td>
+                                                    <td className="p-6 text-center text-gray-400">R$ {parseFloat(item.purchase_price || 0).toFixed(2)}</td>
+                                                    <td className="p-6 text-center"><span className="bg-red-500/10 text-red-400 font-bold px-3 py-1 rounded-lg border border-red-500/20">{parseInt(item.global_stock || item.quantity || 0)} un</span></td>
+                                                    <td className="p-6 text-center"><span className="bg-orange-500/10 text-orange-400 font-bold px-3 py-1 rounded-lg border border-orange-500/20">{calculateSmartQuantity(item)} un</span></td>
+                                                </tr>
+                                            ))}
+                                            {criticalItems.length === 0 && <tr><td colSpan="4" className="p-16 text-center text-gray-500">Estoque 100% abastecido.</td></tr>}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* --- LISTAGEM DE VALIDADE --- */}
+                        {activeTab === 'validity' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 bg-white/5"><h3 className="text-xl font-bold text-white flex items-center gap-2"><Calendar className="text-yellow-500"/> Produtos Vencendo</h3></div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold"><tr><th className="p-6">Produto</th><th className="p-6 text-center">Estoque</th><th className="p-6 text-center">Validade</th></tr></thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {expiringItems.map(item => (
+                                                <tr key={item.id} className="hover:bg-white/5">
+                                                    <td className="p-6 flex items-center gap-4"><img src={item.image_url || 'https://placehold.co/40'} className="w-10 h-10 rounded-lg object-cover"/><span className="font-bold">{item.name}</span></td>
+                                                    <td className="p-6 text-center">{parseInt(item.global_stock || item.quantity || 0)} un</td>
+                                                    <td className="p-6 text-center"><span className="text-yellow-100 bg-yellow-600 px-4 py-1.5 rounded-lg font-mono font-bold">{new Date(item.nearest_expiration_date || item.expiration_date).toLocaleDateString('pt-BR')}</span></td>
+                                                </tr>
+                                            ))}
+                                            {expiringItems.length === 0 && <tr><td colSpan="3" className="p-16 text-center text-gray-500">Nenhum produto vencendo.</td></tr>}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* --- HISTÓRICO --- */}
+                        {activeTab === 'history' && (
+                            <div className="p-6 md:p-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-6"><History className="text-green-500"/> Histórico de Compras</h3>
+                                {historyData.map(([month, data]) => (
+                                    <div key={month} className="bg-gray-900/80 rounded-3xl p-6 mb-6 border border-gray-700">
+                                        <h4 className="text-2xl font-black text-white capitalize mb-4">{month}</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-black/30 p-5 rounded-2xl border border-white/5"><p className="text-xs text-gray-500 font-bold uppercase">Custo Total</p><p className="text-xl font-black text-white">R$ {data.totalSpent.toFixed(2)}</p></div>
+                                            <div className="bg-black/30 p-5 rounded-2xl border border-white/5"><p className="text-xs text-gray-500 font-bold uppercase">Compras</p><p className="text-xl font-black text-white">{data.purchases.length} registos</p></div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {historyData.length === 0 && <div className="text-center py-16"><p className="text-gray-400">Sem histórico recente.</p></div>}
+                            </div>
+                        )}
                     </div>
                 </>
             )}
