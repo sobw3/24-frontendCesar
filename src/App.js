@@ -5724,25 +5724,95 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         {/* --- HISTÓRICO --- */}
                         {activeTab === 'history' && (
                             <div className="p-6 md:p-8">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-6"><History className="text-green-500"/> Histórico de Compras</h3>
-                                {historyData.map(([month, data]) => (
-                                    <div key={month} className="bg-gray-900/80 rounded-3xl p-6 mb-6 border border-gray-700">
-                                        <h4 className="text-2xl font-black text-white capitalize mb-4">{month}</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="bg-black/30 p-5 rounded-2xl border border-white/5"><p className="text-xs text-gray-500 font-bold uppercase">Custo Total</p><p className="text-xl font-black text-white">R$ {data.totalSpent.toFixed(2)}</p></div>
-                                            <div className="bg-black/30 p-5 rounded-2xl border border-white/5"><p className="text-xs text-gray-500 font-bold uppercase">Compras</p><p className="text-xl font-black text-white">{data.purchases.length} registos</p></div>
-                                        </div>
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-6">
+                                    <History className="text-green-500"/> Histórico Detalhado de Compras
+                                </h3>
+                                
+                                {loadingHistory ? (
+                                    <div className="text-center py-16"><Loader2 className="animate-spin mx-auto text-green-500" size={40}/></div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {purchaseHistory.length === 0 ? (
+                                            <div className="text-center py-16 bg-gray-900/50 rounded-3xl border border-gray-800">
+                                                <Package className="mx-auto text-gray-600 mb-4" size={48}/>
+                                                <p className="text-gray-400 font-medium text-lg">Nenhuma compra registada.</p>
+                                            </div>
+                                        ) : (
+                                            purchaseHistory.map((purchase) => (
+                                                <div key={purchase.id} className="bg-gray-800 rounded-3xl p-6 border border-gray-700 shadow-lg hover:border-gray-600 transition-colors">
+                                                    
+                                                    {/* CABEÇALHO DA COMPRA */}
+                                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-700 pb-4">
+                                                        <div>
+                                                            <div className="flex items-center gap-3 mb-1">
+                                                                <span className="bg-gray-700 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">
+                                                                    {purchase.status === 'completed' ? 'Recebido' : 'A Caminho'}
+                                                                </span>
+                                                                <span className="text-gray-400 text-xs font-mono">
+                                                                    {new Date(purchase.created_at).toLocaleDateString('pt-BR')} às {new Date(purchase.created_at).toLocaleTimeString('pt-BR')}
+                                                                </span>
+                                                            </div>
+                                                            <h4 className="text-xl font-black text-white">
+                                                                {purchase.condo_name || 'Estoque Geral (Todas as Máquinas)'}
+                                                            </h4>
+                                                        </div>
+
+                                                        <div className="flex gap-3">
+                                                            <div className="text-right">
+                                                                <p className="text-[10px] text-gray-500 uppercase font-bold">Total Gasto</p>
+                                                                <p className="text-xl font-black text-white">R$ {parseFloat(purchase.total_spent).toFixed(2).replace('.', ',')}</p>
+                                                            </div>
+                                                            
+                                                            <div className={`text-right px-4 py-1 rounded-xl border ${parseFloat(purchase.total_savings) >= 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                                                                <p className={`text-[10px] uppercase font-bold ${parseFloat(purchase.total_savings) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                    {parseFloat(purchase.total_savings) >= 0 ? 'Economia' : 'Gasto Extra'}
+                                                                </p>
+                                                                <div className="flex items-center justify-end gap-1">
+                                                                    {parseFloat(purchase.total_savings) >= 0 ? <TrendingUp size={14} className="text-green-400"/> : <TrendingDown size={14} className="text-red-400"/>}
+                                                                    <p className={`text-lg font-black ${parseFloat(purchase.total_savings) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                        R$ {Math.abs(parseFloat(purchase.total_savings)).toFixed(2).replace('.', ',')}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* LISTA DE ITENS COMPRADOS */}
+                                                    <div>
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                            <ShoppingCart size={12}/> Itens Adquiridos ({purchase.items?.length || 0})
+                                                        </p>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                            {purchase.items && purchase.items.map((item, idx) => (
+                                                                <div key={idx} className="bg-gray-900/50 p-3 rounded-xl border border-gray-700 flex items-center gap-3">
+                                                                    <img 
+                                                                        src={item.image_url || 'https://placehold.co/40'} 
+                                                                        alt={item.name} 
+                                                                        className="w-10 h-10 rounded-lg object-cover bg-gray-800"
+                                                                    />
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-bold text-white truncate">{item.name}</p>
+                                                                        <p className="text-xs text-gray-400">
+                                                                            {item.quantity} un x R$ {parseFloat(item.purchase_price).toFixed(2)}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="text-right">
+                                                                        <p className="text-sm font-black text-white">
+                                                                            R$ {(item.quantity * parseFloat(item.purchase_price)).toFixed(2)}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
-                                ))}
-                                {historyData.length === 0 && <div className="text-center py-16"><p className="text-gray-400">Sem histórico recente.</p></div>}
+                                )}
                             </div>
                         )}
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
 
 const UserManagementPage = ({ condominiums, token }) => { 
     const [usersData, setUsersData] = React.useState({ users: [], pagination: {} });
