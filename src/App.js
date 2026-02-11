@@ -4913,12 +4913,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [selectedCondoId, setSelectedCondoId] = React.useState('all'); 
     const [products, setProducts] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('critical'); // critical | validity | history | pending
+    const [activeTab, setActiveTab] = React.useState('critical');
     
     const [purchaseHistory, setPurchaseHistory] = React.useState([]);
     const [loadingHistory, setLoadingHistory] = React.useState(false);
 
-    // --- NOVO: ESTADOS DE REPOSIÇÕES PENDENTES ---
+    // --- ESTADOS DE REPOSIÇÕES PENDENTES ---
     const [pendingRestocks, setPendingRestocks] = React.useState([]);
 
     // --- ESTADOS DO MODO COMPRAS (Fornecedor) ---
@@ -4931,7 +4931,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [showSummary, setShowSummary] = React.useState(false);
     const [isSavingPurchase, setIsSavingPurchase] = React.useState(false);
 
-    // --- NOVO: ESTADOS DO MODO AUDITORIA (Na frente da máquina) ---
+    // --- ESTADOS DO MODO AUDITORIA (Na frente da máquina) ---
     const [isAuditingMode, setIsAuditingMode] = React.useState(false);
     const [currentAuditSession, setCurrentAuditSession] = React.useState(null);
     const [auditStep, setAuditStep] = React.useState(0);
@@ -4946,7 +4946,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const fetchData = React.useCallback(async () => {
         setLoading(true);
         try {
-            // 1. Busca Produtos
             const urlProducts = selectedCondoId === 'all' 
                 ? `${apiUrl}/api/admin/products` 
                 : `${apiUrl}/api/admin/products?condoId=${selectedCondoId}`;
@@ -4956,14 +4955,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 setProducts(Array.isArray(data) ? data : (data.products || []));
             }
 
-            // 2. Busca Reposições Pendentes (NOVO)
             const urlPending = selectedCondoId === 'all'
                 ? `${apiUrl}/api/admin/inventory/pending-restocks`
                 : `${apiUrl}/api/admin/inventory/pending-restocks?condoId=${selectedCondoId}`;
             const resPending = await fetch(urlPending, { headers: { 'Authorization': `Bearer ${token}` } });
             if (resPending.ok) setPendingRestocks(await resPending.json());
 
-            // 3. Busca Histórico
             fetchHistory();
         } catch (error) { 
             console.error("Erro ao buscar dados:", error); 
@@ -5012,7 +5009,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
     // MODO COMPRAS (Fornecedor)
     // =========================================================
     const startShopping = () => {
-        if (criticalItems.length === 0) return alert("Stock saudável! Nada a repor.");
+        // TRAVA DE SEGURANÇA: Obriga a escolher uma máquina
+        if (selectedCondoId === 'all') {
+            return alert("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo da página antes de iniciar a reposição.");
+        }
+        if (criticalItems.length === 0) return alert("Estoque saudável! Nada a repor.");
+        
         setShoppingQueue(criticalItems);
         setCurrentStep(0);
         setCart([]);
@@ -5082,7 +5084,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             alert("Compras gravadas! A aguardar abastecimento físico na máquina.");
             setIsShoppingMode(false);
             fetchData(); 
-            setActiveTab('pending'); // Redireciona para a aba de pendentes
+            setActiveTab('pending'); 
         } catch (error) { alert(`Erro: ${error.message}`); } 
         finally { setIsSavingPurchase(false); }
     };
@@ -5091,7 +5093,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
     // MODO AUDITORIA / ABASTECIMENTO (Na Máquina)
     // =========================================================
     const startAudit = (session) => {
-        if (!session.items || session.items.length === 0) return alert("Sessão vazia.");
+        if (!session.items || session.items.length === 0) {
+            return alert("Sessão vazia ou inválida. Como foi feita no modo antigo, ignore esta sessão.");
+        }
         setCurrentAuditSession(session);
         setAuditStep(0);
         setCountedQty('');
@@ -5150,7 +5154,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
         finally { setIsSavingAudit(false); }
     };
 
-    // --- Helpers UI ---
     const getHistoryGroupedByMonth = () => {
         if (!purchaseHistory || purchaseHistory.length === 0) return [];
         const grouped = {};
@@ -5204,7 +5207,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                         {inconsistencies.length > 0 && (
                             <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                                As falhas no stock serão registadas na lista de auditoria oculta para futura verificação nas câmaras.
+                                As falhas no estoque serão registadas para futura verificação nas câmeras.
                             </p>
                         )}
 
@@ -5214,7 +5217,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
                         >
                             {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
-                            {isSavingAudit ? 'A Injetar no Stock...' : 'Confirmar e Guardar no Stock'}
+                            {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
                         </button>
                     </div>
                 </div>
@@ -5246,7 +5249,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
                             <h2 className="text-2xl font-black text-white mb-1">{item.name}</h2>
                             <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">
-                                Você trouxe: +{item.quantity} unidades
+                                Você comprou: +{item.quantity} unidades
                             </p>
                         </div>
                     </div>
@@ -5254,7 +5257,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                     <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
                         <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
                         <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">
-                            Não conte com as que tem na mão. Apenas as que já lá estavam!
+                            Não conte com as que tem na mão. Apenas as antigas!
                         </p>
                         
                         <input 
@@ -5276,12 +5279,153 @@ const CriticalStockPage = ({ condominiums, token }) => {
     }
 
     // =========================================================
-    // RENDER: MODO COMPRAS (Fornecedor) - MANTIDO
+    // RENDER: MODO COMPRAS (Fornecedor)
     // =========================================================
     if (isShoppingMode) {
-        // ... (O CÓDIGO DO isShoppingMode CONTINUA EXATAMENTE IGUAL AO ANTERIOR)
-        // Por brevidade na resposta, a estrutura é a mesma que te enviei antes, 
-        // incluindo o showSummary e o handleSkipProduct.
+        if (showSummary) {
+            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
+            const totalSavings = cart.reduce((acc, i) => acc + i.savings, 0);
+            const isSaving = totalSavings >= 0;
+
+            return (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${isSaving ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
+                        
+                        <div className="mb-6 flex justify-center">
+                            <div className={`h-20 w-20 rounded-full flex items-center justify-center border-4 shadow-xl ${isSaving ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-red-500 bg-red-500/20 text-red-400'}`}>
+                                {isSaving ? <TrendingUp size={40}/> : <TrendingDown size={40}/>}
+                            </div>
+                        </div>
+                        
+                        <h2 className="text-3xl font-black text-white mb-1">Reposição Concluída!</h2>
+                        <p className="text-gray-400 mb-6 text-sm">Resumo da sua ida ao fornecedor ({getSelectedCondoName()}).</p>
+
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-inner">
+                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Custo Total</p>
+                                <p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border shadow-inner ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                                <p className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
+                                    {isSaving ? 'Economia Gerada' : 'Gasto Extra'}
+                                </p>
+                                <p className={`text-2xl font-black ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
+                                    R$ {Math.abs(totalSavings).toFixed(2).replace('.', ',')}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={finishShopping}
+                            disabled={isSavingPurchase}
+                            className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-lg shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
+                            {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const item = shoppingQueue[currentStep];
+        const currentStock = parseInt(item.global_stock || item.quantity || 0);
+        const suggestedQty = calculateSmartQuantity(item);
+
+        return (
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-orange-500 p-2.5 rounded-xl text-white shadow-lg shadow-orange-500/20"><ShoppingCart size={24}/></div>
+                        <div>
+                            <h3 className="text-xl font-black text-white leading-tight">Lista de Compras</h3>
+                            <p className="text-xs text-orange-400 font-bold tracking-wider uppercase">Repondo: {getSelectedCondoName()}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors"><X size={20}/></button>
+                </div>
+
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
+                        <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div>
+                    </div>
+                    <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
+
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block border border-white/10">
+                                {item.category || 'Geral'}
+                            </span>
+                            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2 drop-shadow-md">{item.name}</h2>
+                            <div className="flex items-center gap-4 text-sm font-medium">
+                                <span className="text-red-400">Estoque Crítico: {currentStock} un</span>
+                                <span className="text-green-400">Sugestão de Compra: {suggestedQty} un</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
+                        <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <Package size={14} className="text-orange-500"/> Comprados (UN)
+                                </label>
+                                <input 
+                                    type="number"
+                                    value={qtyInput}
+                                    onChange={(e) => setQtyInput(e.target.value)}
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white focus:border-orange-500 outline-none transition-colors shadow-inner"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
+                                    <DollarSign size={14} className="text-green-500"/> Custo Unitário
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span>
+                                    <input 
+                                        type="number"
+                                        autoFocus
+                                        placeholder="0.00"
+                                        value={priceInput}
+                                        onChange={(e) => setPriceInput(e.target.value)}
+                                        className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white focus:border-green-500 outline-none transition-colors shadow-inner"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-sm bg-gray-900 p-4 rounded-xl border border-gray-800 mb-6">
+                            <span className="text-gray-400 font-medium">Ref. Antiga: <b className="text-gray-200">R$ {parseFloat(item.purchase_price||0).toFixed(2).replace('.', ',')}</b></span>
+                            {priceInput && (
+                                <span className={`${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'} font-bold px-3 py-1 rounded-lg border ${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'border-green-400/20' : 'border-red-400/20'}`}>
+                                    {(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'Lucro Maior ⬆️' : 'Custo Maior ⬇️'}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={handleSkipProduct} 
+                                className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 hover:bg-gray-600 font-bold text-sm shadow-lg flex flex-col items-center justify-center gap-1 active:scale-95 transition-all border border-gray-600"
+                            >
+                                <X size={18}/> Não Achei
+                            </button>
+                            <button 
+                                onClick={handleNextProduct} 
+                                className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+                            >
+                                Próximo <ArrowRight size={20}/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     // =========================================================
@@ -5316,7 +5460,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div>
             ) : (
                 <>
-                    {/* CARDS DE NAVEGAÇÃO - AGORA SÃO 4 CARDS! */}
+                    {/* CARDS DE NAVEGAÇÃO - AGORA SÃO 4 CARDS */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                         {/* 1. PARA COMPRAR */}
                         <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
@@ -5329,7 +5473,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </div>
                         </div>
 
-                        {/* 2. PENDENTES (A ABASTECER) - NOVO CARD */}
+                        {/* 2. PENDENTES (A ABASTECER) */}
                         <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start relative">
                                 <div>
@@ -5366,12 +5510,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                     <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
                         
-                        {/* --- NOVO CONTEÚDO: REPOSIÇÕES PENDENTES --- */}
+                        {/* CONTEÚDO 1: PENDENTES (A ABASTECER) */}
                         {activeTab === 'pending' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
                                     <h3 className="text-xl font-bold text-white flex items-center gap-2"><Truck className="text-blue-500"/> Reposições Pendentes</h3>
-                                    <p className="text-sm text-gray-400 mt-1">Compras que já foram feitas no fornecedor mas ainda não foram abastecidas fisicamente na máquina.</p>
+                                    <p className="text-sm text-gray-400 mt-1">Compras que já foram feitas mas ainda não foram abastecidas fisicamente na máquina.</p>
                                 </div>
                                 <div className="p-6">
                                     {pendingRestocks.length === 0 ? (
@@ -5413,9 +5557,153 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* As outras abas continuam idênticas aqui em baixo (critical, validity, history) */}
-                        {/* MANTÉM OS TEUS activeTab === 'critical' E OUTROS EXACTAMENTE COMO TINHAS */}
-                        
+                        {/* CONTEÚDO 2: CRÍTICOS */}
+                        {activeTab === 'critical' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white flex items-center gap-2"><ShoppingCart className="text-orange-500"/> Fila de Compras</h3>
+                                        <p className="text-sm text-gray-400 mt-1">Produtos que atingiram o nível crítico de estoque em <b>{getSelectedCondoName()}</b>.</p>
+                                    </div>
+                                    {criticalItems.length > 0 && (
+                                        <button onClick={startShopping} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 animate-pulse-slow">
+                                            <ShoppingCart size={20}/> INICIAR REPOSIÇÃO
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider">
+                                            <tr>
+                                                <th className="p-6">Produto</th>
+                                                <th className="p-6 text-center">Custo Unt.</th>
+                                                <th className="p-6 text-center">Estoque Atual</th>
+                                                <th className="p-6 text-center">Comprar (Sugestão)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {criticalItems.map(item => {
+                                                const currentStock = parseInt(item.global_stock || item.quantity || 0);
+                                                const suggestion = calculateSmartQuantity(item);
+                                                return (
+                                                    <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                        <td className="p-6 flex items-center gap-4">
+                                                            <img src={item.image_url || 'https://placehold.co/40'} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-800 border border-white/10"/>
+                                                            <span className="font-bold">{item.name}</span>
+                                                        </td>
+                                                        <td className="p-6 text-center text-gray-400">R$ {parseFloat(item.purchase_price || 0).toFixed(2).replace('.', ',')}</td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="bg-red-500/10 text-red-400 font-bold px-3 py-1 rounded-lg border border-red-500/20">{currentStock} un</span>
+                                                        </td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="bg-orange-500/10 text-orange-400 font-bold px-3 py-1 rounded-lg border border-orange-500/20 flex items-center justify-center gap-1 w-fit mx-auto">
+                                                                <TrendingUp size={14}/> {suggestion} un
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {criticalItems.length === 0 && (
+                                                <tr><td colSpan="4" className="p-16 text-center text-gray-500 font-medium text-lg">Estoque abastecido. Ótimo trabalho!</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* CONTEÚDO 3: VALIDADE */}
+                        {activeTab === 'validity' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Calendar className="text-red-500"/> Produtos Perto do Vencimento</h3>
+                                    <p className="text-sm text-gray-400 mt-1">Atenção aos produtos que vencem nos próximos 30 dias em <b>{getSelectedCondoName()}</b>.</p>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider">
+                                            <tr>
+                                                <th className="p-6">Produto</th>
+                                                <th className="p-6 text-center">Estoque Atual</th>
+                                                <th className="p-6 text-center">Data de Validade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5 text-sm text-gray-200">
+                                            {expiringItems.map(item => {
+                                                const expDate = item.nearest_expiration_date || item.expiration_date;
+                                                return (
+                                                    <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                        <td className="p-6 flex items-center gap-4">
+                                                            <img src={item.image_url || 'https://placehold.co/40'} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-800 border border-white/10"/>
+                                                            <span className="font-bold">{item.name}</span>
+                                                        </td>
+                                                        <td className="p-6 text-center font-medium">{parseInt(item.global_stock || item.quantity || 0)} un</td>
+                                                        <td className="p-6 text-center">
+                                                            <span className="text-red-100 bg-red-600 shadow-lg shadow-red-600/20 px-4 py-1.5 rounded-lg font-mono font-bold tracking-widest border border-red-400">
+                                                                {new Date(expDate).toLocaleDateString('pt-BR')}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {expiringItems.length === 0 && (
+                                                <tr><td colSpan="3" className="p-16 text-center text-gray-500 font-medium text-lg">Nenhum produto vencendo nos próximos 30 dias.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* CONTEÚDO 4: HISTÓRICO REAL */}
+                        {activeTab === 'history' && (
+                            <div className="p-6 md:p-8">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2"><History className="text-green-500"/> Relatório de Compras e Economia</h3>
+                                <p className="text-sm text-gray-400 mb-8">Histórico de reposições feitas para <b>{getSelectedCondoName()}</b>.</p>
+                                
+                                {loadingHistory ? (
+                                    <div className="text-center py-16"><Loader2 className="animate-spin mx-auto text-green-500" size={40}/></div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {historyData.map(([month, data]) => (
+                                            <div key={month} className="bg-gray-900/80 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-lg">
+                                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                                                    <h4 className="text-2xl font-black text-white capitalize flex items-center gap-3">
+                                                        <Calendar className="text-gray-500"/> {month}
+                                                    </h4>
+                                                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-bold ${data.totalSavings >= 0 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                        {data.totalSavings >= 0 ? <TrendingUp size={18}/> : <TrendingDown size={18}/>}
+                                                        {data.totalSavings >= 0 ? 'Economia no Mês:' : 'Gasto Extra:'} R$ {Math.abs(data.totalSavings).toFixed(2).replace('.', ',')}
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="bg-black/30 p-5 rounded-2xl border border-white/5 flex items-center gap-4">
+                                                        <div className="p-3 bg-gray-800 rounded-xl text-gray-400"><DollarSign size={24}/></div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Custo Total de Reposição</p>
+                                                            <p className="text-xl font-black text-white mt-1">R$ {data.totalSpent.toFixed(2).replace('.', ',')}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-black/30 p-5 rounded-2xl border border-white/5 flex items-center gap-4">
+                                                        <div className="p-3 bg-gray-800 rounded-xl text-gray-400"><ShoppingCart size={24}/></div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Idas ao Fornecedor</p>
+                                                            <p className="text-xl font-black text-white mt-1">{data.purchases.length} compras registradas</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {historyData.length === 0 && (
+                                            <div className="text-center py-16 bg-gray-900/50 rounded-3xl border border-gray-800">
+                                                <Package className="mx-auto text-gray-600 mb-4" size={48}/>
+                                                <p className="text-gray-400 font-medium text-lg">Nenhum histórico de reposição encontrado.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </>
             )}
