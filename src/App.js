@@ -22,7 +22,7 @@ import {
     Users as UsersIcon, Package, LogOut, CreditCard, QrCode, Shield, Loader2, Edit, 
     PlusCircle, Building2, Copy, ChevronDown, ChevronUp, DollarSign, KeyRound, Calendar, 
     Wallet, Flame, AlertTriangle, Save, Filter, ArrowDownToLine, ArrowRightLeft, Ticket, 
-    Bell, PiggyBank, History, Phone, Refrigerator, historyData, CheckCircle2, Info, Ban, FileText,
+    Bell, PiggyBank, History, Phone, Refrigerator, CheckCircle2, Info, Ban, FileText,
     Instagram, MessageSquare, PieChart, LayoutDashboard, ClipboardCheck, Truck, CheckCircle, XCircle
 } from 'lucide-react';
 
@@ -4944,6 +4944,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     // --- ESTADO PARA OS AVISOS NA TELA (TOASTS) ---
     const [toast, setToast] = React.useState(null);
 
+    // Use a prop API_URL se disponível, senão use o hardcoded
     const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // --- FUNÇÃO PARA MOSTRAR AVISOS NA TELA ---
@@ -5027,8 +5028,31 @@ const CriticalStockPage = ({ condominiums, token }) => {
         return Math.max(1, idealStock - currentStock);
     };
 
+    // --- HELPERS ---
+    const getSelectedCondoName = () => {
+        if (selectedCondoId === 'all') return 'Todas as Máquinas';
+        const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId);
+        return condo ? condo.name : 'Máquina Específica';
+    };
+
+    // DEFINIÇÃO CORRETA DA FUNÇÃO historyData
+    const getHistoryGroupedByMonth = () => {
+        if (!purchaseHistory || purchaseHistory.length === 0) return [];
+        const grouped = {};
+        purchaseHistory.forEach(item => {
+            const dateObj = new Date(item.date || item.created_at);
+            if (isNaN(dateObj.getTime())) return;
+            const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+            if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 };
+            grouped[key].purchases.push(item);
+            grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0);
+            grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0);
+        });
+        return Object.entries(grouped);
+    };
+
     // =========================================================
-    // MODO COMPRAS E AUDITORIA
+    // MODO COMPRAS (Fornecedor)
     // =========================================================
     const startShopping = () => {
         if (selectedCondoId === 'all') {
@@ -5111,6 +5135,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
         }
     };
 
+    // =========================================================
+    // MODO AUDITORIA (Na Máquina)
+    // =========================================================
     const startAudit = (session) => {
         if (!session.items || session.items.length === 0) {
             return showToast("Sessão vazia ou inválida.", "error");
@@ -5164,34 +5191,150 @@ const CriticalStockPage = ({ condominiums, token }) => {
         }
     };
 
-    const getHistoryGroupedByMonth = () => {
-        if (!purchaseHistory || purchaseHistory.length === 0) return [];
-        const grouped = {};
-        purchaseHistory.forEach(item => {
-            const dateObj = new Date(item.date || item.created_at);
-            if (isNaN(dateObj.getTime())) return;
-            const key = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-            if (!grouped[key]) grouped[key] = { purchases: [], totalSavings: 0, totalSpent: 0 };
-            grouped[key].purchases.push(item);
-            grouped[key].totalSavings += parseFloat(item.total_savings || item.totalSavings || 0);
-            grouped[key].totalSpent += parseFloat(item.total_spent || item.totalSpent || 0);
-        });
-        return Object.entries(grouped);
-    };
-
-    const getSelectedCondoName = () => {
-        if (selectedCondoId === 'all') return 'Todas as Máquinas';
-        const condo = condominiums.find(c => c.id === parseInt(selectedCondoId) || c.id === selectedCondoId);
-        return condo ? condo.name : 'Máquina Específica';
-    };
-
     // =========================================================
     // RENDERIZAÇÃO
     // =========================================================
+
+    // RENDER: MODAL DE AUDITORIA (Se ativo, retorna aqui e não renderiza o resto)
+    if (isAuditingMode && currentAuditSession) {
+        if (showAuditSummary) {
+            const inconsistencies = auditResults.filter(r => r.counted_qty !== r.expected_qty);
+            return (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
+                    {/* ... (Conteúdo do Modal de Resumo de Auditoria) ... */}
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                        <div className="mb-6 flex justify-center">
+                            <div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl">
+                                <ClipboardCheck size={40}/>
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
+                        <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
+                            <div className="flex justify-between border-b border-gray-700 pb-2 mb-2">
+                                <span className="text-gray-400">Total de Itens:</span><span className="text-white font-bold">{auditResults.length}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Inconsistências:</span>
+                                <span className={`font-bold ${inconsistencies.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                    {inconsistencies.length}
+                                </span>
+                            </div>
+                        </div>
+                        {inconsistencies.length > 0 && (
+                            <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                As falhas no stock serão registadas para futura verificação nas câmaras.
+                            </p>
+                        )}
+                        <button onClick={finishAudit} disabled={isSavingAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                            {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
+                            {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        const item = currentAuditSession.items[auditStep];
+        return (
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                {/* ... (Conteúdo do Modal de Auditoria Passo a Passo) ... */}
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-blue-500 p-2.5 rounded-xl text-white shadow-lg"><ClipboardCheck size={24}/></div>
+                        <div><h3 className="text-xl font-black text-white leading-tight">Auditoria e Abastecimento</h3><p className="text-xs text-blue-400 font-bold uppercase">{currentAuditSession.condo_name || 'Geral'}</p></div>
+                    </div>
+                    <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
+                </div>
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((auditStep + 1) / currentAuditSession.items.length) * 100}%` }}></div>
+                    </div>
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10 pointer-events-none"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt={item.name}/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <h2 className="text-2xl font-black text-white mb-1">{item.name}</h2>
+                            <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">Você trouxe: +{item.quantity} un</p>
+                        </div>
+                    </div>
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
+                        <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
+                        <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">Não conte com as que tem na mão. Apenas as antigas!</p>
+                        <input 
+                            type="number" autoFocus value={countedQty} onChange={(e) => setCountedQty(e.target.value)} placeholder="Ex: 2"
+                            className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 px-4 text-center text-4xl font-black text-white focus:border-blue-500 outline-none mb-6 shadow-inner"
+                        />
+                        <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                            Registar Contagem <ArrowRight size={20}/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // RENDER: MODO COMPRAS (Se ativo, retorna aqui)
+    if (isShoppingMode) {
+        if (showSummary) {
+            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
+            const totalSavings = cart.reduce((acc, i) => acc + i.savings, 0);
+            const isSaving = totalSavings >= 0;
+            return (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
+                    {/* ... (Conteúdo do Modal de Resumo de Compras) ... */}
+                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${isSaving ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
+                        <h2 className="text-3xl font-black text-white mb-1 mt-4">Reposição Concluída!</h2>
+                        <div className="grid grid-cols-2 gap-4 mb-8 mt-6">
+                            <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700"><p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Custo Total</p><p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p></div>
+                            <div className={`p-4 rounded-2xl border ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}><p className={`text-[10px] uppercase font-bold mb-1 ${isSaving ? 'text-green-400' : 'text-red-400'}`}>{isSaving ? 'Economia' : 'Gasto Extra'}</p><p className={`text-2xl font-black ${isSaving ? 'text-green-400' : 'text-red-400'}`}>R$ {Math.abs(totalSavings).toFixed(2).replace('.', ',')}</p></div>
+                        </div>
+                        <button onClick={finishShopping} disabled={isSavingPurchase} className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                            {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        const item = shoppingQueue[currentStep];
+        return (
+            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                {/* ... (Conteúdo do Modal de Compras Passo a Passo) ... */}
+                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-orange-500 p-2.5 rounded-xl text-white"><ShoppingCart size={24}/></div>
+                        <div><h3 className="text-xl font-black text-white">Lista de Compras</h3><p className="text-xs text-orange-400 font-bold uppercase">{getSelectedCondoName()}</p></div>
+                    </div>
+                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
+                </div>
+                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                    <div className="w-full bg-gray-800 rounded-full h-2"><div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div></div>
+                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
+                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt=""/>
+                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full"><h2 className="text-2xl font-black text-white mb-2">{item.name}</h2></div>
+                    </div>
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><Package size={14} className="text-orange-500"/> Comprados (UN)</label><input type="number" value={qtyInput} onChange={(e) => setQtyInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white outline-none"/></div>
+                            <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><DollarSign size={14} className="text-green-500"/> Custo Unitário</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span><input type="number" autoFocus placeholder="0.00" value={priceInput} onChange={(e) => setPriceInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white outline-none"/></div></div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={handleSkipProduct} className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 font-bold text-sm flex flex-col items-center gap-1"><X size={18}/> Não Achei</button>
+                            <button onClick={handleNextProduct} className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-lg flex items-center justify-center gap-2">Próximo <ArrowRight size={20}/></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- VARIÁVEL QUE CAUSAVA O ERRO AGORA ESTÁ NO ESCOPO CERTO ---
+    const historyData = getHistoryGroupedByMonth();
+
     return (
         <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500 relative">
             
-            {/* --- COMPONENTE FLUTUANTE DE TOAST (AVISOS) --- */}
+            {/* --- TOAST FLUTUANTE --- */}
             {toast && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
                     <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-md ${
@@ -5212,123 +5355,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 </div>
             )}
 
-            {/* --- MODAIS DE TELA CHEIA (Auditoria e Compras) --- */}
-            {isAuditingMode && currentAuditSession && (
-                showAuditSummary ? (
-                    <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
-                        <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-                            <div className="mb-6 flex justify-center">
-                                <div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl">
-                                    <ClipboardCheck size={40}/>
-                                </div>
-                            </div>
-                            <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
-                            <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
-                                <div className="flex justify-between border-b border-gray-700 pb-2 mb-2">
-                                    <span className="text-gray-400">Total de Itens:</span><span className="text-white font-bold">{auditResults.length}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-400">Inconsistências:</span>
-                                    <span className={`font-bold ${auditResults.filter(r => r.counted_qty !== r.expected_qty).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                        {auditResults.filter(r => r.counted_qty !== r.expected_qty).length}
-                                    </span>
-                                </div>
-                            </div>
-                            {auditResults.filter(r => r.counted_qty !== r.expected_qty).length > 0 && (
-                                <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                                    As falhas no stock serão registadas para futura verificação nas câmaras.
-                                </p>
-                            )}
-                            <button onClick={finishAudit} disabled={isSavingAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
-                                {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
-                                {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                        <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-500 p-2.5 rounded-xl text-white shadow-lg"><ClipboardCheck size={24}/></div>
-                                <div><h3 className="text-xl font-black text-white leading-tight">Auditoria e Abastecimento</h3><p className="text-xs text-blue-400 font-bold uppercase">{currentAuditSession.condo_name || 'Geral'}</p></div>
-                            </div>
-                            <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
-                        </div>
-                        <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-                            <div className="w-full bg-gray-800 rounded-full h-2">
-                                <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((auditStep + 1) / currentAuditSession.items.length) * 100}%` }}></div>
-                            </div>
-                            <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10 pointer-events-none"></div>
-                                <img src={currentAuditSession.items[auditStep].image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt={currentAuditSession.items[auditStep].name}/>
-                                <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                                    <h2 className="text-2xl font-black text-white mb-1">{currentAuditSession.items[auditStep].name}</h2>
-                                    <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">Você trouxe: +{currentAuditSession.items[auditStep].quantity} un</p>
-                                </div>
-                            </div>
-                            <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
-                                <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
-                                <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">Não conte com as que tem na mão. Apenas as antigas!</p>
-                                <input 
-                                    type="number" autoFocus value={countedQty} onChange={(e) => setCountedQty(e.target.value)} placeholder="Ex: 2"
-                                    className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 px-4 text-center text-4xl font-black text-white focus:border-blue-500 outline-none mb-6 shadow-inner"
-                                />
-                                <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
-                                    Registar Contagem <ArrowRight size={20}/>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            )}
-
-            {isShoppingMode && !isAuditingMode && (
-                showSummary ? (
-                    <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
-                        <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-                            <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
-                            <h2 className="text-3xl font-black text-white mb-1 mt-4">Reposição Concluída!</h2>
-                            <div className="grid grid-cols-2 gap-4 mb-8 mt-6">
-                                <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700"><p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Custo Total</p><p className="text-2xl font-black text-white">R$ {cart.reduce((acc, i) => acc + i.totalCost, 0).toFixed(2).replace('.', ',')}</p></div>
-                                <div className={`p-4 rounded-2xl border ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}><p className={`text-[10px] uppercase font-bold mb-1 ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'Economia' : 'Gasto Extra'}</p><p className={`text-2xl font-black ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>R$ {Math.abs(cart.reduce((acc, i) => acc + i.savings, 0)).toFixed(2).replace('.', ',')}</p></div>
-                            </div>
-                            <button onClick={finishShopping} disabled={isSavingPurchase} className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2">
-                                {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                        <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-orange-500 p-2.5 rounded-xl text-white"><ShoppingCart size={24}/></div>
-                                <div><h3 className="text-xl font-black text-white">Lista de Compras</h3><p className="text-xs text-orange-400 font-bold uppercase">{getSelectedCondoName()}</p></div>
-                            </div>
-                            <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
-                        </div>
-                        <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-                            <div className="w-full bg-gray-800 rounded-full h-2"><div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div></div>
-                            <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
-                                <img src={shoppingQueue[currentStep].image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt=""/>
-                                <div className="absolute bottom-0 left-0 p-6 z-20 w-full"><h2 className="text-2xl font-black text-white mb-2">{shoppingQueue[currentStep].name}</h2></div>
-                            </div>
-                            <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
-                                <div className="grid grid-cols-2 gap-4 mb-6">
-                                    <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><Package size={14} className="text-orange-500"/> Comprados (UN)</label><input type="number" value={qtyInput} onChange={(e) => setQtyInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white outline-none"/></div>
-                                    <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><DollarSign size={14} className="text-green-500"/> Custo Unitário</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span><input type="number" autoFocus placeholder="0.00" value={priceInput} onChange={(e) => setPriceInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white outline-none"/></div></div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={handleSkipProduct} className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 font-bold text-sm flex flex-col items-center gap-1"><X size={18}/> Não Achei</button>
-                                    <button onClick={handleNextProduct} className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-lg flex items-center justify-center gap-2">Próximo <ArrowRight size={20}/></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            )}
-
-            {/* CABEÇALHO */}
+            {/* CABEÇALHO DA PÁGINA */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
                     <h2 className="text-3xl font-black text-white flex items-center gap-3">
@@ -5349,7 +5376,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div>
             ) : (
                 <>
-                    {/* CARDS DE NAVEGAÇÃO - 5 CARDS */}
+                    {/* CARDS DE NAVEGAÇÃO - AGORA SÃO 5 CARDS */}
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
@@ -5652,7 +5679,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
         </div>
     );
 };
-// App.js -> SUBSTITUA o seu componente UserManagementPage por este
 
 const UserManagementPage = ({ condominiums, token }) => { 
     const [usersData, setUsersData] = React.useState({ users: [], pagination: {} });
