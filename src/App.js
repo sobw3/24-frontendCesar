@@ -4918,8 +4918,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [purchaseHistory, setPurchaseHistory] = React.useState([]);
     const [loadingHistory, setLoadingHistory] = React.useState(false);
 
-    // --- ESTADOS DE REPOSIÇÕES PENDENTES ---
+    // --- ESTADOS DE REPOSIÇÕES PENDENTES E AUDITORIA ---
     const [pendingRestocks, setPendingRestocks] = React.useState([]);
+    const [audits, setAudits] = React.useState([]); 
 
     // --- ESTADOS DO MODO COMPRAS (Fornecedor) ---
     const [isShoppingMode, setIsShoppingMode] = React.useState(false);
@@ -4940,7 +4941,18 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const [showAuditSummary, setShowAuditSummary] = React.useState(false);
     const [isSavingAudit, setIsSavingAudit] = React.useState(false);
 
+    // --- ESTADO PARA OS AVISOS NA TELA (TOASTS) ---
+    const [toast, setToast] = React.useState(null);
+
     const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
+
+    // --- FUNÇÃO PARA MOSTRAR AVISOS NA TELA ---
+    const showToast = (message, type = 'info') => {
+        setToast({ message, type });
+        setTimeout(() => {
+            setToast(null);
+        }, 4000); // Some após 4 segundos
+    };
 
     // --- FETCH DADOS ---
     const fetchData = React.useCallback(async () => {
@@ -4961,9 +4973,16 @@ const CriticalStockPage = ({ condominiums, token }) => {
             const resPending = await fetch(urlPending, { headers: { 'Authorization': `Bearer ${token}` } });
             if (resPending.ok) setPendingRestocks(await resPending.json());
 
+            const urlAudits = selectedCondoId === 'all'
+                ? `${apiUrl}/api/admin/inventory/audits`
+                : `${apiUrl}/api/admin/inventory/audits?condoId=${selectedCondoId}`;
+            const resAudits = await fetch(urlAudits, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (resAudits.ok) setAudits(await resAudits.json());
+
             fetchHistory();
         } catch (error) { 
             console.error("Erro ao buscar dados:", error); 
+            showToast("Erro ao buscar dados do servidor.", "error");
         } finally { 
             setLoading(false); 
         }
@@ -4977,8 +4996,11 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 : `${apiUrl}/api/admin/purchase-history?condoId=${selectedCondoId}`;
             const resHistory = await fetch(urlHistory, { headers: { 'Authorization': `Bearer ${token}` } });
             if (resHistory.ok) setPurchaseHistory(await resHistory.json());
-        } catch (error) { console.error(error); } 
-        finally { setLoadingHistory(false); }
+        } catch (error) { 
+            console.error(error); 
+        } finally { 
+            setLoadingHistory(false); 
+        }
     };
 
     React.useEffect(() => { fetchData(); }, [fetchData]);
@@ -5006,15 +5028,15 @@ const CriticalStockPage = ({ condominiums, token }) => {
     };
 
     // =========================================================
-    // MODO COMPRAS (Fornecedor)
+    // MODO COMPRAS E AUDITORIA
     // =========================================================
     const startShopping = () => {
-        // TRAVA DE SEGURANÇA: Obriga a escolher uma máquina
         if (selectedCondoId === 'all') {
-            return alert("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo da página antes de iniciar a reposição.");
+            return showToast("⚠️ Selecione uma MÁQUINA ESPECÍFICA no topo antes de iniciar a reposição.", "warning");
         }
-        if (criticalItems.length === 0) return alert("Estoque saudável! Nada a repor.");
-        
+        if (criticalItems.length === 0) {
+            return showToast("Estoque saudável! Nada a repor no momento.", "success");
+        }
         setShoppingQueue(criticalItems);
         setCurrentStep(0);
         setCart([]);
@@ -5039,7 +5061,10 @@ const CriticalStockPage = ({ condominiums, token }) => {
         const item = shoppingQueue[currentStep];
         const actualPrice = parseFloat(priceInput);
         const boughtQty = parseInt(qtyInput);
-        if (isNaN(actualPrice) || isNaN(boughtQty) || boughtQty <= 0) return alert("Informe o preço pago e a quantidade.");
+        
+        if (isNaN(actualPrice) || isNaN(boughtQty) || boughtQty <= 0) {
+            return showToast("Por favor, informe o preço pago e a quantidade válida.", "warning");
+        }
 
         const expectedPrice = parseFloat(item.purchase_price) || 0;
         setCart([...cart, {
@@ -5055,9 +5080,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
     };
 
     const finishShopping = async () => {
-        if (cart.length === 0) {
-            setIsShoppingMode(false);
-            return alert("Nenhum item foi comprado.");
+        if (cart.length === 0) { 
+            setIsShoppingMode(false); 
+            return showToast("Nenhum item comprado. Ação cancelada.", "warning"); 
         }
         setIsSavingPurchase(true);
         try {
@@ -5066,35 +5091,29 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 date: new Date().toISOString().split('T')[0],
                 total_spent: cart.reduce((acc, i) => acc + i.totalCost, 0),
                 total_savings: cart.reduce((acc, i) => acc + i.savings, 0),
-                items: cart.map(item => ({
-                    product_id: item.product_id,
-                    quantity: item.boughtQty,
-                    new_price: item.boughtPrice 
-                }))
+                items: cart.map(item => ({ product_id: item.product_id, quantity: item.boughtQty, new_price: item.boughtPrice }))
             };
-
             const response = await fetch(`${apiUrl}/api/admin/inventory/purchase`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
-
             if (!response.ok) throw new Error("Erro ao gravar compra.");
-
-            alert("Compras gravadas! A aguardar abastecimento físico na máquina.");
+            
+            showToast("Compras gravadas! A aguardar abastecimento físico na máquina.", "success");
             setIsShoppingMode(false);
             fetchData(); 
             setActiveTab('pending'); 
-        } catch (error) { alert(`Erro: ${error.message}`); } 
-        finally { setIsSavingPurchase(false); }
+        } catch (error) { 
+            showToast(`Erro: ${error.message}`, "error"); 
+        } finally { 
+            setIsSavingPurchase(false); 
+        }
     };
 
-    // =========================================================
-    // MODO AUDITORIA / ABASTECIMENTO (Na Máquina)
-    // =========================================================
     const startAudit = (session) => {
         if (!session.items || session.items.length === 0) {
-            return alert("Sessão vazia ou inválida. Como foi feita no modo antigo, ignore esta sessão.");
+            return showToast("Sessão vazia ou inválida.", "error");
         }
         setCurrentAuditSession(session);
         setAuditStep(0);
@@ -5108,50 +5127,41 @@ const CriticalStockPage = ({ condominiums, token }) => {
         const item = currentAuditSession.items[auditStep];
         const counted = parseInt(countedQty);
         
-        if (isNaN(counted) || counted < 0) return alert("Insira uma quantidade contada válida.");
+        if (isNaN(counted) || counted < 0) {
+            return showToast("Insira uma quantidade contada válida.", "warning");
+        }
 
-        const result = {
-            product_id: item.product_id,
-            name: item.name,
-            image_url: item.image_url,
-            expected_qty: parseInt(item.expected_current_stock),
-            bought_qty: item.quantity,
-            counted_qty: counted
-        };
-
-        setAuditResults([...auditResults, result]);
-
+        setAuditResults([...auditResults, {
+            product_id: item.product_id, name: item.name, image_url: item.image_url,
+            expected_qty: parseInt(item.expected_current_stock), bought_qty: item.quantity, counted_qty: counted
+        }]);
+        
         if (auditStep + 1 < currentAuditSession.items.length) {
-            setAuditStep(prev => prev + 1);
-            setCountedQty('');
-        } else {
-            setShowAuditSummary(true);
+            setAuditStep(prev => prev + 1); setCountedQty('');
+        } else { 
+            setShowAuditSummary(true); 
         }
     };
 
     const finishAudit = async () => {
         setIsSavingAudit(true);
         try {
-            const payload = {
-                pending_restock_id: currentAuditSession.id,
-                condo_id: currentAuditSession.condo_id,
-                items: auditResults
-            };
-
             const response = await fetch(`${apiUrl}/api/admin/inventory/execute-restock`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ pending_restock_id: currentAuditSession.id, condo_id: currentAuditSession.condo_id, items: auditResults })
             });
-
             if (!response.ok) throw new Error("Erro ao finalizar abastecimento.");
-
-            alert("Abastecimento concluído! As inconsistências (se existirem) foram registadas.");
+            
+            showToast("Abastecimento concluído! Inconsistências (se existirem) foram registadas.", "success");
             setIsAuditingMode(false);
             fetchData();
-            setActiveTab('history');
-        } catch (error) { alert(`Erro: ${error.message}`); } 
-        finally { setIsSavingAudit(false); }
+            setActiveTab('audits'); 
+        } catch (error) { 
+            showToast(`Erro: ${error.message}`, "error"); 
+        } finally { 
+            setIsSavingAudit(false); 
+        }
     };
 
     const getHistoryGroupedByMonth = () => {
@@ -5176,265 +5186,148 @@ const CriticalStockPage = ({ condominiums, token }) => {
     };
 
     // =========================================================
-    // RENDER: MODO AUDITORIA (ECRÃ CHEIO)
+    // RENDERIZAÇÃO
     // =========================================================
-    if (isAuditingMode && currentAuditSession) {
-        if (showAuditSummary) {
-            const inconsistencies = auditResults.filter(r => r.counted_qty !== r.expected_qty);
-            return (
-                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
-                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-                        <div className="mb-6 flex justify-center">
-                            <div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl">
-                                <ClipboardCheck size={40}/>
-                            </div>
-                        </div>
-                        <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
-                        
-                        <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
-                            <p className="text-gray-300 font-bold mb-2 text-center">Resumo da Auditoria:</p>
-                            <div className="flex justify-between border-b border-gray-700 pb-2 mb-2">
-                                <span className="text-gray-400">Total de Itens:</span>
-                                <span className="text-white font-bold">{auditResults.length}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-400">Inconsistências Encontradas:</span>
-                                <span className={`font-bold ${inconsistencies.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                    {inconsistencies.length}
-                                </span>
-                            </div>
-                        </div>
-
-                        {inconsistencies.length > 0 && (
-                            <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                                As falhas no estoque serão registadas para futura verificação nas câmeras.
-                            </p>
-                        )}
-
-                        <button 
-                            onClick={finishAudit}
-                            disabled={isSavingAudit}
-                            className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
-                        >
-                            {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
-                            {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
+    return (
+        <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500 relative">
+            
+            {/* --- COMPONENTE FLUTUANTE DE TOAST (AVISOS) --- */}
+            {toast && (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
+                    <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-md ${
+                        toast.type === 'success' ? 'bg-green-600/95 border-green-400 text-white' :
+                        toast.type === 'error' ? 'bg-red-600/95 border-red-400 text-white' :
+                        toast.type === 'warning' ? 'bg-yellow-500/95 border-yellow-400 text-gray-900' :
+                        'bg-blue-600/95 border-blue-400 text-white'
+                    }`}>
+                        {toast.type === 'success' && <CheckCircle size={24} />}
+                        {toast.type === 'error' && <XCircle size={24} />}
+                        {toast.type === 'warning' && <AlertTriangle size={24} />}
+                        {toast.type === 'info' && <Info size={24} />}
+                        <span className="font-bold text-sm">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="ml-4 opacity-70 hover:opacity-100 transition-opacity">
+                            <X size={18}/>
                         </button>
                     </div>
                 </div>
-            );
-        }
+            )}
 
-        const item = currentAuditSession.items[auditStep];
-        return (
-            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-blue-500 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/20"><ClipboardCheck size={24}/></div>
-                        <div>
-                            <h3 className="text-xl font-black text-white leading-tight">Auditoria e Abastecimento</h3>
-                            <p className="text-xs text-blue-400 font-bold uppercase">{currentAuditSession.condo_name || 'Geral'}</p>
-                        </div>
-                    </div>
-                    <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-red-500/20"><X size={20}/></button>
-                </div>
-
-                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-                    <div className="w-full bg-gray-800 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((auditStep + 1) / currentAuditSession.items.length) * 100}%` }}></div>
-                    </div>
-                    
-                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10 pointer-events-none"></div>
-                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt={item.name}/>
-                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                            <h2 className="text-2xl font-black text-white mb-1">{item.name}</h2>
-                            <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">
-                                Você comprou: +{item.quantity} unidades
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
-                        <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
-                        <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">
-                            Não conte com as que tem na mão. Apenas as antigas!
-                        </p>
-                        
-                        <input 
-                            type="number"
-                            autoFocus
-                            value={countedQty}
-                            onChange={(e) => setCountedQty(e.target.value)}
-                            placeholder="Ex: 2"
-                            className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 px-4 text-center text-4xl font-black text-white focus:border-blue-500 outline-none mb-6 shadow-inner"
-                        />
-
-                        <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
-                            Registar Contagem <ArrowRight size={20}/>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // =========================================================
-    // RENDER: MODO COMPRAS (Fornecedor)
-    // =========================================================
-    if (isShoppingMode) {
-        if (showSummary) {
-            const totalSpent = cart.reduce((acc, i) => acc + i.totalCost, 0);
-            const totalSavings = cart.reduce((acc, i) => acc + i.savings, 0);
-            const isSaving = totalSavings >= 0;
-
-            return (
-                <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
-                    <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${isSaving ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
-                        
-                        <div className="mb-6 flex justify-center">
-                            <div className={`h-20 w-20 rounded-full flex items-center justify-center border-4 shadow-xl ${isSaving ? 'border-green-500 bg-green-500/20 text-green-400' : 'border-red-500 bg-red-500/20 text-red-400'}`}>
-                                {isSaving ? <TrendingUp size={40}/> : <TrendingDown size={40}/>}
+            {/* --- MODAIS DE TELA CHEIA (Auditoria e Compras) --- */}
+            {isAuditingMode && currentAuditSession && (
+                showAuditSummary ? (
+                    <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in">
+                        <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                            <div className="mb-6 flex justify-center">
+                                <div className="h-20 w-20 rounded-full flex items-center justify-center border-4 border-blue-500 bg-blue-500/20 text-blue-400 shadow-xl">
+                                    <ClipboardCheck size={40}/>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <h2 className="text-3xl font-black text-white mb-1">Reposição Concluída!</h2>
-                        <p className="text-gray-400 mb-6 text-sm">Resumo da sua ida ao fornecedor ({getSelectedCondoName()}).</p>
-
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 shadow-inner">
-                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Custo Total</p>
-                                <p className="text-2xl font-black text-white">R$ {totalSpent.toFixed(2).replace('.', ',')}</p>
+                            <h2 className="text-3xl font-black text-white mb-2">Conferência Terminada</h2>
+                            <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700 text-left">
+                                <div className="flex justify-between border-b border-gray-700 pb-2 mb-2">
+                                    <span className="text-gray-400">Total de Itens:</span><span className="text-white font-bold">{auditResults.length}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Inconsistências:</span>
+                                    <span className={`font-bold ${auditResults.filter(r => r.counted_qty !== r.expected_qty).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                        {auditResults.filter(r => r.counted_qty !== r.expected_qty).length}
+                                    </span>
+                                </div>
                             </div>
-                            <div className={`p-4 rounded-2xl border shadow-inner ${isSaving ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                                <p className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
-                                    {isSaving ? 'Economia Gerada' : 'Gasto Extra'}
+                            {auditResults.filter(r => r.counted_qty !== r.expected_qty).length > 0 && (
+                                <p className="text-xs text-red-400 mb-6 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                    As falhas no stock serão registadas para futura verificação nas câmaras.
                                 </p>
-                                <p className={`text-2xl font-black ${isSaving ? 'text-green-400' : 'text-red-400'}`}>
-                                    R$ {Math.abs(totalSavings).toFixed(2).replace('.', ',')}
-                                </p>
+                            )}
+                            <button onClick={finishAudit} disabled={isSavingAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                                {isSavingAudit ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
+                                {isSavingAudit ? 'A Injetar no Estoque...' : 'Confirmar e Guardar no Estoque'}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                        <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-blue-500 p-2.5 rounded-xl text-white shadow-lg"><ClipboardCheck size={24}/></div>
+                                <div><h3 className="text-xl font-black text-white leading-tight">Auditoria e Abastecimento</h3><p className="text-xs text-blue-400 font-bold uppercase">{currentAuditSession.condo_name || 'Geral'}</p></div>
                             </div>
+                            <button onClick={() => setIsAuditingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
                         </div>
-
-                        <button 
-                            onClick={finishShopping}
-                            disabled={isSavingPurchase}
-                            className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-lg shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} 
-                            {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
-                        </button>
-                    </div>
-                </div>
-            );
-        }
-
-        const item = shoppingQueue[currentStep];
-        const currentStock = parseInt(item.global_stock || item.quantity || 0);
-        const suggestedQty = calculateSmartQuantity(item);
-
-        return (
-            <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-orange-500 p-2.5 rounded-xl text-white shadow-lg shadow-orange-500/20"><ShoppingCart size={24}/></div>
-                        <div>
-                            <h3 className="text-xl font-black text-white leading-tight">Lista de Compras</h3>
-                            <p className="text-xs text-orange-400 font-bold tracking-wider uppercase">Repondo: {getSelectedCondoName()}</p>
-                        </div>
-                    </div>
-                    <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors"><X size={20}/></button>
-                </div>
-
-                <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-                    <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div>
-                    </div>
-                    <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
-
-                    <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
-                        <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
-                        <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                            <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block border border-white/10">
-                                {item.category || 'Geral'}
-                            </span>
-                            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2 drop-shadow-md">{item.name}</h2>
-                            <div className="flex items-center gap-4 text-sm font-medium">
-                                <span className="text-red-400">Estoque Crítico: {currentStock} un</span>
-                                <span className="text-green-400">Sugestão de Compra: {suggestedQty} un</span>
+                        <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                            <div className="w-full bg-gray-800 rounded-full h-2">
+                                <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((auditStep + 1) / currentAuditSession.items.length) * 100}%` }}></div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
-                        <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
-                            <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
-                                    <Package size={14} className="text-orange-500"/> Comprados (UN)
-                                </label>
+                            <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10 pointer-events-none"></div>
+                                <img src={currentAuditSession.items[auditStep].image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt={currentAuditSession.items[auditStep].name}/>
+                                <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                                    <h2 className="text-2xl font-black text-white mb-1">{currentAuditSession.items[auditStep].name}</h2>
+                                    <p className="text-green-400 font-bold bg-green-500/20 w-fit px-3 py-1 rounded-lg border border-green-500/30">Você trouxe: +{currentAuditSession.items[auditStep].quantity} un</p>
+                                </div>
+                            </div>
+                            <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-blue-500/30 shadow-lg">
+                                <h4 className="text-lg font-bold text-white mb-2 text-center">Quantas unidades ESTÃO NA MÁQUINA AGORA?</h4>
+                                <p className="text-xs text-red-400 text-center mb-6 font-bold uppercase tracking-widest bg-red-500/10 py-2 rounded-lg border border-red-500/20">Não conte com as que tem na mão. Apenas as antigas!</p>
                                 <input 
-                                    type="number"
-                                    value={qtyInput}
-                                    onChange={(e) => setQtyInput(e.target.value)}
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white focus:border-orange-500 outline-none transition-colors shadow-inner"
+                                    type="number" autoFocus value={countedQty} onChange={(e) => setCountedQty(e.target.value)} placeholder="Ex: 2"
+                                    className="w-full bg-gray-900 border border-gray-600 rounded-xl py-6 px-4 text-center text-4xl font-black text-white focus:border-blue-500 outline-none mb-6 shadow-inner"
                                 />
+                                <button onClick={handleNextAudit} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2">
+                                    Registar Contagem <ArrowRight size={20}/>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                )
+            )}
 
-                            <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
-                                    <DollarSign size={14} className="text-green-500"/> Custo Unitário
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span>
-                                    <input 
-                                        type="number"
-                                        autoFocus
-                                        placeholder="0.00"
-                                        value={priceInput}
-                                        onChange={(e) => setPriceInput(e.target.value)}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white focus:border-green-500 outline-none transition-colors shadow-inner"
-                                    />
+            {isShoppingMode && !isAuditingMode && (
+                showSummary ? (
+                    <div className="fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95">
+                        <div className="bg-gray-900 border border-gray-700 w-full max-w-lg rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+                            <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'from-green-400 to-green-600' : 'from-red-400 to-red-600'}`}></div>
+                            <h2 className="text-3xl font-black text-white mb-1 mt-4">Reposição Concluída!</h2>
+                            <div className="grid grid-cols-2 gap-4 mb-8 mt-6">
+                                <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700"><p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Custo Total</p><p className="text-2xl font-black text-white">R$ {cart.reduce((acc, i) => acc + i.totalCost, 0).toFixed(2).replace('.', ',')}</p></div>
+                                <div className={`p-4 rounded-2xl border ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}><p className={`text-[10px] uppercase font-bold mb-1 ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'Economia' : 'Gasto Extra'}</p><p className={`text-2xl font-black ${cart.reduce((acc, i) => acc + i.savings, 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>R$ {Math.abs(cart.reduce((acc, i) => acc + i.savings, 0)).toFixed(2).replace('.', ',')}</p></div>
+                            </div>
+                            <button onClick={finishShopping} disabled={isSavingPurchase} className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                                {isSavingPurchase ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>} {isSavingPurchase ? 'A Gravar...' : 'Salvar Compra'}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
+                        <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-orange-500 p-2.5 rounded-xl text-white"><ShoppingCart size={24}/></div>
+                                <div><h3 className="text-xl font-black text-white">Lista de Compras</h3><p className="text-xs text-orange-400 font-bold uppercase">{getSelectedCondoName()}</p></div>
+                            </div>
+                            <button onClick={() => setIsShoppingMode(false)} className="bg-white/5 p-2 rounded-full text-gray-400 hover:text-white"><X size={20}/></button>
+                        </div>
+                        <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+                            <div className="w-full bg-gray-800 rounded-full h-2"><div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div></div>
+                            <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
+                                <img src={shoppingQueue[currentStep].image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px]" alt=""/>
+                                <div className="absolute bottom-0 left-0 p-6 z-20 w-full"><h2 className="text-2xl font-black text-white mb-2">{shoppingQueue[currentStep].name}</h2></div>
+                            </div>
+                            <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><Package size={14} className="text-orange-500"/> Comprados (UN)</label><input type="number" value={qtyInput} onChange={(e) => setQtyInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 px-3 text-center text-2xl font-black text-white outline-none"/></div>
+                                    <div><label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2"><DollarSign size={14} className="text-green-500"/> Custo Unitário</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">R$</span><input type="number" autoFocus placeholder="0.00" value={priceInput} onChange={(e) => setPriceInput(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl py-4 pl-10 pr-3 text-2xl font-black text-white outline-none"/></div></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button onClick={handleSkipProduct} className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 font-bold text-sm flex flex-col items-center gap-1"><X size={18}/> Não Achei</button>
+                                    <button onClick={handleNextProduct} className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-lg flex items-center justify-center gap-2">Próximo <ArrowRight size={20}/></button>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="flex justify-between items-center text-sm bg-gray-900 p-4 rounded-xl border border-gray-800 mb-6">
-                            <span className="text-gray-400 font-medium">Ref. Antiga: <b className="text-gray-200">R$ {parseFloat(item.purchase_price||0).toFixed(2).replace('.', ',')}</b></span>
-                            {priceInput && (
-                                <span className={`${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'} font-bold px-3 py-1 rounded-lg border ${(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'border-green-400/20' : 'border-red-400/20'}`}>
-                                    {(parseFloat(item.purchase_price||0) - parseFloat(priceInput)) >= 0 ? 'Lucro Maior ⬆️' : 'Custo Maior ⬇️'}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button 
-                                onClick={handleSkipProduct} 
-                                className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 hover:bg-gray-600 font-bold text-sm shadow-lg flex flex-col items-center justify-center gap-1 active:scale-95 transition-all border border-gray-600"
-                            >
-                                <X size={18}/> Não Achei
-                            </button>
-                            <button 
-                                onClick={handleNextProduct} 
-                                className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
-                            >
-                                Próximo <ArrowRight size={20}/>
-                            </button>
-                        </div>
                     </div>
-                </div>
-            </div>
-        );
-    }
+                )
+            )}
 
-    // =========================================================
-    // RENDER: DASHBOARD NORMAL
-    // =========================================================
-    const historyData = getHistoryGroupedByMonth();
-
-    return (
-        <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-500">
             {/* CABEÇALHO */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
@@ -5445,11 +5338,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 </div>
                 <div className="w-full md:w-auto bg-gray-900 p-2 rounded-xl border border-gray-700 flex items-center gap-3 shadow-inner">
                     <Store className="text-gray-500 ml-3 shrink-0" size={20}/>
-                    <select 
-                        onChange={(e) => setSelectedCondoId(e.target.value)} 
-                        value={selectedCondoId} 
-                        className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold text-sm w-full md:w-56 py-2 pr-4 outline-none"
-                    >
+                    <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold text-sm w-full md:w-56 py-2 pr-4 outline-none">
                         <option value="all">Geral (Todas as Máquinas)</option>
                         {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -5460,57 +5349,110 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 <div className="text-center py-32"><Loader2 className="animate-spin mx-auto text-orange-500" size={48}/></div>
             ) : (
                 <>
-                    {/* CARDS DE NAVEGAÇÃO - AGORA SÃO 4 CARDS */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {/* 1. PARA COMPRAR */}
-                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                    {/* CARDS DE NAVEGAÇÃO - 5 CARDS */}
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div onClick={() => setActiveTab('critical')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'critical' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">Para Comprar</p>
-                                    <h3 className="text-4xl font-black text-white group-hover:text-orange-400">{criticalItems.length}</h3>
-                                </div>
-                                <div className={`p-3 rounded-2xl shadow-inner ${activeTab === 'critical' ? 'bg-orange-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><ShoppingCart size={24}/></div>
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Para Comprar</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-orange-400">{criticalItems.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'critical' ? 'bg-orange-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><ShoppingCart size={20}/></div>
                             </div>
                         </div>
 
-                        {/* 2. PENDENTES (A ABASTECER) */}
-                        <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                        <div onClick={() => setActiveTab('pending')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'pending' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500 shadow-lg shadow-blue-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start relative">
-                                <div>
-                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">A Abastecer</p>
-                                    <h3 className="text-4xl font-black text-white group-hover:text-blue-400">{pendingRestocks.length}</h3>
-                                </div>
-                                <div className={`p-3 rounded-2xl shadow-inner ${activeTab === 'pending' ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Truck size={24}/></div>
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">A Abastecer</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-blue-400">{pendingRestocks.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'pending' ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Truck size={20}/></div>
                                 {pendingRestocks.length > 0 && <span className="absolute -top-2 -right-2 flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>}
                             </div>
                         </div>
 
-                        {/* 3. VALIDADE */}
-                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500 shadow-lg shadow-red-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                        <div onClick={() => setActiveTab('audits')} className={`col-span-2 lg:col-span-1 rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'audits' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-red-500 shadow-lg shadow-red-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">Vencendo (30d)</p>
-                                    <h3 className="text-4xl font-black text-white group-hover:text-red-400">{expiringItems.length}</h3>
+                                <div><p className={`${audits.length > 0 ? 'text-red-400' : 'text-gray-400'} font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1`}>Inconsistências</p><h3 className={`text-3xl md:text-4xl font-black ${audits.length > 0 ? 'text-red-500' : 'text-white'}`}>{audits.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'audits' ? 'bg-red-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                                    <ShieldAlert size={20} className={audits.length > 0 ? 'animate-pulse text-red-500' : ''}/>
                                 </div>
-                                <div className={`p-3 rounded-2xl shadow-inner ${activeTab === 'validity' ? 'bg-red-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Calendar size={24}/></div>
                             </div>
                         </div>
 
-                        {/* 4. HISTÓRICO */}
-                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-green-500 shadow-lg shadow-green-500/20 scale-[1.02]' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                        <div onClick={() => setActiveTab('validity')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'validity' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500 shadow-lg shadow-yellow-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-1">Compras Feitas</p>
-                                    <h3 className="text-4xl font-black text-white group-hover:text-green-400">{purchaseHistory.length}</h3>
-                                </div>
-                                <div className={`p-3 rounded-2xl shadow-inner ${activeTab === 'history' ? 'bg-green-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><History size={24}/></div>
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Vencendo (30d)</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-yellow-400">{expiringItems.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'validity' ? 'bg-yellow-500 text-black' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><Calendar size={20}/></div>
+                            </div>
+                        </div>
+
+                        <div onClick={() => setActiveTab('history')} className={`rounded-3xl p-5 border cursor-pointer transition-all flex flex-col justify-between group ${activeTab === 'history' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-green-500 shadow-lg shadow-green-500/20' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-800'}`}>
+                            <div className="flex justify-between items-start">
+                                <div><p className="text-gray-400 font-bold text-[9px] md:text-[10px] uppercase tracking-wider mb-1">Compras Feitas</p><h3 className="text-3xl md:text-4xl font-black text-white group-hover:text-green-400">{purchaseHistory.length}</h3></div>
+                                <div className={`p-2 md:p-3 rounded-2xl shadow-inner ${activeTab === 'history' ? 'bg-green-500 text-white' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}><History size={20}/></div>
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-3xl border border-white/5 overflow-hidden shadow-xl min-h-[400px]">
                         
-                        {/* CONTEÚDO 1: PENDENTES (A ABASTECER) */}
+                        {/* CONTEÚDO 1: AUDITORIA E FURTOS */}
+                        {activeTab === 'audits' && (
+                            <>
+                                <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><ShieldAlert className="text-red-500"/> Registo de Inconsistências</h3>
+                                    <p className="text-sm text-gray-400 mt-1">Lista de produtos que desapareceram (ou sobraram) entre as sessões de abastecimento físico.</p>
+                                </div>
+                                <div className="p-6">
+                                    {audits.length === 0 ? (
+                                        <div className="text-center py-16 bg-gray-900/50 rounded-3xl border border-gray-800">
+                                            <ShieldAlert className="mx-auto text-green-500 mb-4" size={48}/>
+                                            <p className="text-green-400 font-bold text-lg">Tudo Perfeito!</p>
+                                            <p className="text-gray-400 text-sm">Nenhuma falha de stock registada no seu histórico recente.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {audits.map(audit => (
+                                                <div key={audit.id} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col shadow-lg relative overflow-hidden">
+                                                    <div className={`absolute top-0 left-0 w-1 h-full ${audit.difference_quantity < 0 ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
+                                                    
+                                                    <div className="flex gap-4 items-center mb-4">
+                                                        <img src={audit.image_url || 'https://placehold.co/60'} alt={audit.product_name} className="w-16 h-16 rounded-xl object-cover border border-gray-600" />
+                                                        <div>
+                                                            <h4 className="text-lg font-black text-white leading-tight">{audit.product_name}</h4>
+                                                            <p className="text-xs text-gray-400 font-mono mt-1">{new Date(audit.created_at).toLocaleString('pt-BR')}</p>
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold mt-1 tracking-widest">{audit.condo_name || 'Máquina Geral'}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-gray-900 p-4 rounded-xl border border-gray-700 flex justify-between items-center mb-4">
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Sistema Esperava</p>
+                                                            <p className="text-lg font-bold text-white">{audit.expected_quantity}</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Contagem Física</p>
+                                                            <p className="text-lg font-bold text-white">{audit.actual_quantity}</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Diferença</p>
+                                                            <p className={`text-xl font-black ${audit.difference_quantity < 0 ? 'text-red-500' : 'text-yellow-500'}`}>
+                                                                {audit.difference_quantity > 0 ? '+' : ''}{audit.difference_quantity}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {audit.difference_quantity < 0 && (
+                                                        <div className="mt-auto bg-red-500/10 p-3 rounded-xl border border-red-500/20 text-xs text-red-300">
+                                                            <b className="text-red-400 uppercase tracking-widest">Dica de Segurança:</b><br/>
+                                                            Verifique as câmaras de segurança da máquina <b>{audit.condo_name}</b> nos dias anteriores a <b>{new Date(audit.created_at).toLocaleDateString('pt-BR')}</b>. A probabilidade de identificar o responsável por este furo no stock é 70% maior.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+                        {/* CONTEÚDO 2: PENDENTES (A ABASTECER) */}
                         {activeTab === 'pending' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
@@ -5557,7 +5499,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* CONTEÚDO 2: CRÍTICOS */}
+                        {/* CONTEÚDO 3: CRÍTICOS */}
                         {activeTab === 'critical' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
@@ -5612,11 +5554,11 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* CONTEÚDO 3: VALIDADE */}
+                        {/* CONTEÚDO 4: VALIDADE */}
                         {activeTab === 'validity' && (
                             <>
                                 <div className="p-6 md:p-8 border-b border-white/5 bg-white/5">
-                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Calendar className="text-red-500"/> Produtos Perto do Vencimento</h3>
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Calendar className="text-yellow-500"/> Produtos Perto do Vencimento</h3>
                                     <p className="text-sm text-gray-400 mt-1">Atenção aos produtos que vencem nos próximos 30 dias em <b>{getSelectedCondoName()}</b>.</p>
                                 </div>
                                 <div className="overflow-x-auto">
@@ -5639,7 +5581,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                                         </td>
                                                         <td className="p-6 text-center font-medium">{parseInt(item.global_stock || item.quantity || 0)} un</td>
                                                         <td className="p-6 text-center">
-                                                            <span className="text-red-100 bg-red-600 shadow-lg shadow-red-600/20 px-4 py-1.5 rounded-lg font-mono font-bold tracking-widest border border-red-400">
+                                                            <span className="text-yellow-100 bg-yellow-600 shadow-lg shadow-yellow-600/20 px-4 py-1.5 rounded-lg font-mono font-bold tracking-widest border border-yellow-400">
                                                                 {new Date(expDate).toLocaleDateString('pt-BR')}
                                                             </span>
                                                         </td>
@@ -5655,7 +5597,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             </>
                         )}
 
-                        {/* CONTEÚDO 4: HISTÓRICO REAL */}
+                        {/* CONTEÚDO 5: HISTÓRICO REAL */}
                         {activeTab === 'history' && (
                             <div className="p-6 md:p-8">
                                 <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2"><History className="text-green-500"/> Relatório de Compras e Economia</h3>
@@ -5688,7 +5630,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                                         <div className="p-3 bg-gray-800 rounded-xl text-gray-400"><ShoppingCart size={24}/></div>
                                                         <div>
                                                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Idas ao Fornecedor</p>
-                                                            <p className="text-xl font-black text-white mt-1">{data.purchases.length} compras registradas</p>
+                                                            <p className="text-xl font-black text-white mt-1">{data.purchases.length} compras registadas</p>
                                                         </div>
                                                     </div>
                                                 </div>
