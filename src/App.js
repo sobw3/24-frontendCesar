@@ -4987,11 +4987,17 @@ const CriticalStockPage = ({ condominiums, token }) => {
     const criticalItems = products.filter(p => {
         const stock = parseInt(p.global_stock || p.quantity || 0);
         const critical = parseInt(p.critical_stock_level || 5);
+        
+        // Se uma máquina específica foi selecionada, e o produto tem estoque vazio ou não pertence a ela, ignoramos
+        // (Isso ajuda a blindar o filtro caso o backend mande produtos a mais)
+        if (selectedCondoId !== 'all' && p.global_stock === undefined && p.quantity === undefined) {
+            return false;
+        }
+        
         return stock <= critical;
     });
 
     const expiringItems = products.filter(p => {
-        // Correção principal: buscando a coluna 'nearest_expiration_date'
         const expDate = p.nearest_expiration_date || p.expiration_date;
         if (!expDate) return false;
         
@@ -5002,7 +5008,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
         return diffDays >= 0 && diffDays <= 30; // Vence em até 30 dias
     });
 
-    // --- CÁLCULO DE ESTOQUE IDEAL (INTELIGENTE) ---
+    // --- CÁLCULO DE ESTOQUE IDEAL ---
     const calculateSmartQuantity = (item) => {
         const currentStock = parseInt(item.global_stock || item.quantity || 0);
         const critical = parseInt(item.critical_stock_level || 5);
@@ -5053,6 +5059,19 @@ const CriticalStockPage = ({ condominiums, token }) => {
             setPriceInput(nextItem.purchase_price || '');
             setQtyInput(calculateSmartQuantity(nextItem).toString());
         } else {
+            setShowSummary(true);
+        }
+    };
+
+    // --- NOVA FUNÇÃO: PULAR PRODUTO (NÃO ACHEI) ---
+    const handleSkipProduct = () => {
+        if (currentStep + 1 < shoppingQueue.length) {
+            const nextItem = shoppingQueue[currentStep + 1];
+            setCurrentStep(prev => prev + 1);
+            setPriceInput(nextItem.purchase_price || '');
+            setQtyInput(calculateSmartQuantity(nextItem).toString());
+        } else {
+            // Se pulou o último item, vai direto pro resumo
             setShowSummary(true);
         }
     };
@@ -5175,7 +5194,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
         return (
             <div className="fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
-                {/* Header Compras */}
                 <div className="sticky top-0 p-4 md:p-6 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 flex justify-between items-center z-10">
                     <div className="flex items-center gap-4">
                         <div className="bg-orange-500 p-2.5 rounded-xl text-white shadow-lg shadow-orange-500/20"><ShoppingCart size={24}/></div>
@@ -5189,13 +5207,11 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                 <div className="max-w-xl mx-auto p-4 md:p-8 flex flex-col gap-6">
                     
-                    {/* Barra de Progresso */}
                     <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
                         <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentStep + 1) / shoppingQueue.length) * 100}%` }}></div>
                     </div>
                     <p className="text-center text-xs text-gray-500 font-bold uppercase tracking-widest">Produto {currentStep + 1} de {shoppingQueue.length}</p>
 
-                    {/* FOTO E INFO DO PRODUTO */}
                     <div className="bg-gray-800 rounded-3xl p-1 border border-gray-700 shadow-xl relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10 pointer-events-none"></div>
                         <img src={item.image_url || 'https://placehold.co/400'} className="w-full h-60 object-cover rounded-[22px] group-hover:scale-105 transition-transform duration-700" alt={item.name}/>
@@ -5211,10 +5227,8 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         </div>
                     </div>
 
-                    {/* INPUTS DE COMPRA */}
                     <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-700 shadow-lg">
                         <div className="grid grid-cols-2 gap-4 md:gap-6 mb-6">
-                            {/* QUANTIDADE */}
                             <div>
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
                                     <Package size={14} className="text-orange-500"/> Comprados (UN)
@@ -5227,7 +5241,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 />
                             </div>
 
-                            {/* PREÇO */}
                             <div>
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
                                     <DollarSign size={14} className="text-green-500"/> Custo Unitário
@@ -5255,9 +5268,21 @@ const CriticalStockPage = ({ condominiums, token }) => {
                             )}
                         </div>
 
-                        <button onClick={handleNextProduct} className="w-full py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
-                            Próximo Produto <ArrowRight size={20}/>
-                        </button>
+                        {/* --- NOVOS BOTÕES (INCLUINDO "NÃO ACHEI") --- */}
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={handleSkipProduct} 
+                                className="w-1/3 py-4 rounded-xl bg-gray-700 text-gray-300 hover:bg-gray-600 font-bold text-sm shadow-lg flex flex-col items-center justify-center gap-1 active:scale-95 transition-all border border-gray-600"
+                            >
+                                <X size={18}/> Não Achei
+                            </button>
+                            <button 
+                                onClick={handleNextProduct} 
+                                className="w-2/3 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+                            >
+                                Próximo <ArrowRight size={20}/>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5496,7 +5521,6 @@ const CriticalStockPage = ({ condominiums, token }) => {
         </div>
     );
 };
-
 // App.js -> SUBSTITUA o seu componente UserManagementPage por este
 
 const UserManagementPage = ({ condominiums, token }) => { 
