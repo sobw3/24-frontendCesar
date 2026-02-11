@@ -5555,7 +5555,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-gray-800/30 p-6 rounded-3xl border border-white/5">
                 <div>
                     <h2 className="text-3xl font-black text-white flex items-center gap-3">
-                        <AlertTriangle className="text-orange-500" size={32}/> Central de Riscos
+                        <AlertTriangle className="text-orange-500" size={32}/> Abastecimento e Auditoria 
                     </h2>
                     <p className="text-gray-400 mt-2 font-medium">Controle de validade, reposição, e prevenção de perdas.</p>
                 </div>
@@ -9027,7 +9027,7 @@ const ProductManager = React.memo(({ token, API_URL }) => {
                             {[
                                 { id: 'products', label: 'Catálogo Produtos', icon: Package },
                                 { id: 'stock', label: 'Estoque Geral', icon: ShoppingCart },
-                                { id: 'critical-stock', label: 'Validade / Críticos', icon: AlertTriangle },
+                                { id: 'critical-stock', label: 'Abastecimento', icon: AlertTriangle },
                             ].map(item => (
                                 <button
                                     key={item.id}
