@@ -30,7 +30,7 @@ import {
 
 
 // --- CONFIGURAÇÃO DA API ---
-const API_URL = process.env.REACT_APP_API_URL || 'https://two4hprontobackendcesar.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'https://24hpronto-backend-cesar.vercel.app';
 const MERCADOPAGO_PUBLIC_KEY = process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY;
 
 
@@ -2096,7 +2096,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         setError('');
         
         // 1. Definição explícita da URL para evitar erro de localhost
-        const API_URL = 'https://two4hprontobackendcesar.onrender.com';
+        const API_URL = 'https://24hpronto-backend-cesar.vercel.app';
         const token = localStorage.getItem('token');
 
         // 2. Dados de envio (Log para debug)
@@ -2318,7 +2318,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess, API_URL }) => 
     const [copySuccess, setCopySuccess] = React.useState(false);
     
     // Fallback para API_URL se não for passado
-    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
+    const BASE_URL = API_URL || 'https://24hpronto-backend-cesar.vercel.app';
 
     // --- LÓGICA DE DETETIVE (MANTIDA) ---
     const isDeposit = React.useMemo(() => {
@@ -3899,7 +3899,7 @@ const WalletPage = ({
     updateUserBalance, showToast, cart = [], API_URL
 }) => {
     
-    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
+    const BASE_URL = API_URL || 'https://24hpronto-backend-cesar.vercel.app';
     const [showBalance, setShowBalance] = React.useState(true);
     const [recentTransactions, setRecentTransactions] = React.useState([]);
     const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true);
@@ -4949,7 +4949,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     // --- TOASTS ---
     const [toast, setToast] = React.useState(null);
 
-    const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
+    const apiUrl = window.API_URL || 'https://24hpronto-backend-cesar.vercel.app';
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
@@ -6322,7 +6322,7 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onAdd, token, productsInI
 
 
 const StockManagement = ({ condominiums, token, API_URL }) => { // Receba API_URL aqui ou defina globalmente
-    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';// Fallback se não vier na prop
+    const BASE_URL = API_URL || 'https://24hpronto-backend-cesar.vercel.app';// Fallback se não vier na prop
 
     // --- ESTADOS ---
     const [selectedCondoId, setSelectedCondoId] = React.useState(condominiums[0]?.id || '');
@@ -6811,7 +6811,7 @@ const PerformanceCard = ({ margin, efficiency }) => {
 };
 
 const FinanceReport = ({ condominiums, token, API_URL }) => {
-    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
+    const BASE_URL = API_URL || 'https://24hpronto-backend-cesar.vercel.app';
     
     // Referência para rolar até o extrato
     const extractRef = useRef(null);
@@ -7689,7 +7689,7 @@ const ExpiringSoonWidget = ({ token, condoId }) => {
             setLoading(true);
             try {
                 // Passa o condoId na URL para filtrar
-                const url = new URL('https://two4hprontobackendcesar.onrender.com/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
+                const url = new URL('https://24hpronto-backend-cesar.vercel.app/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
                 if (condoId && condoId !== 'all') {
                     url.searchParams.append('condoId', condoId);
                 }
@@ -8099,7 +8099,7 @@ const ModernStatCard = ({ icon, label, value, subValue, colorName }) => {
 // =================================================================================
 
 const AdminDashboardPage = ({ token, setActiveTab, API_URL }) => {
-    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
+    const BASE_URL = API_URL || 'https://24hpronto-backend-cesar.vercel.app';
 
     // Estados
     const [stats, setStats] = useState(null);
@@ -8451,7 +8451,7 @@ const AdminDashboard = ({ onLogout }) => {
 
 const ProductManager = React.memo(({ token, API_URL }) => {
     // GARANTIA: Se a prop API_URL não vier, tenta usar uma string fixa ou alertar erro
-    const BASE_URL = API_URL || "https://two4hprontobackendcesar.onrender.com"; 
+    const BASE_URL = API_URL || "https://24hpronto-backend-cesar.vercel.app"; 
     
     // --- ESTADOS ---
     const [products, setProducts] = useState([]);
