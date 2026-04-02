@@ -23,7 +23,7 @@ import {
     PlusCircle, Building2, Copy, ChevronDown, ChevronUp, DollarSign, KeyRound, Calendar, 
     Wallet, Flame, AlertTriangle, Save, Filter, ArrowDownToLine, ArrowRightLeft, Ticket, 
     Bell, PiggyBank, History, Phone, Refrigerator, CheckCircle2, Info, Ban, FileText,
-    Instagram, MessageSquare, PieChart, LayoutDashboard, ClipboardCheck, Truck, CheckCircle, XCircle, Video, Receipt, Sparkles, Smile, Lightbulb
+    Instagram, MessageSquare, PieChart, LayoutDashboard, ClipboardCheck, Truck, CheckCircle, XCircle, Video, Receipt, Sparkles, Smile, Lightbulb, UserCheck, UserX
 } from 'lucide-react';
 
 
@@ -4277,6 +4277,8 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
 
 
 
+
+
 const TransferModal = ({ isOpen, onClose, onSubmit, recipientEmail, setRecipientEmail, transferAmount, setTransferAmount, formError, isVerifying }) => {
     
     if (!isOpen) return null;
@@ -4285,122 +4287,162 @@ const TransferModal = ({ isOpen, onClose, onSubmit, recipientEmail, setRecipient
     const handleModalClick = (e) => e.stopPropagation();
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            
-            {/* Backdrop com Blur */}
+        // Layout adaptativo: centralizado no desktop, Bottom Sheet flutuante no mobile
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+                .font-extrabold-id { font-family: 'Inter', sans-serif; font-weight: 900; }
+                
+                /* Remove setas numéricas do input type=number */
+                input[type="number"]::-webkit-inner-spin-button,
+                input[type="number"]::-webkit-outer-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                input[type="number"] {
+                    -moz-appearance: textfield;
+                }
+            `}</style>
+
+            {/* Backdrop Claro e Desfocado */}
             <div 
-                className="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-sm transition-opacity animate-in fade-in" 
+                className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" 
                 onClick={onClose}
             ></div>
 
-            {/* Modal Card */}
+            {/* Modal Card Clean UI Premium */}
             <div 
                 onClick={handleModalClick}
-                className="relative w-full max-w-sm bg-[#1e293b] border border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+                className="relative w-full max-w-sm bg-white border border-gray-100 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 sm:zoom-in-95 duration-300 flex flex-col max-h-[90vh]"
             >
-                {/* Header */}
-                <div className="relative p-5 border-b border-white/5 flex items-center justify-between bg-white/5">
-                    <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span> 
-                        Nova Transferência
+                {/* Efeito Decorativo Topo */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-[100px] pointer-events-none"></div>
+
+                {/* Header Premium Fixo */}
+                <div className="relative p-6 pb-4 flex items-center justify-between shrink-0 z-10 bg-white">
+                    <h3 className="text-lg font-extrabold-id text-gray-900 uppercase tracking-tighter flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-[10px] bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100">
+                            <Sparkles size={16} strokeWidth={2.5}/>
+                        </div>
+                        OwnPix - Enviar pix
                     </h3>
                     <button 
                         onClick={onClose} 
-                        className="w-8 h-8 rounded-full bg-black/20 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                        className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors active:scale-90 border border-gray-100"
                     >
-                        <X size={18} />
+                        <X size={18} strokeWidth={3} />
                     </button>
                 </div>
 
-                <form onSubmit={onSubmit} className="p-6">
-                    
-                    {/* --- INPUT HERO (VALOR) --- */}
-                    <div className="mb-8 relative">
-                        <label className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2 block text-center">
-                            Quanto você quer enviar?
-                        </label>
-                        <div className="relative flex items-center justify-center group">
-                            <span className="text-3xl font-bold text-gray-500 mr-2 mb-1">R$</span>
-                            <input 
-                                type="number" 
-                                value={transferAmount} 
-                                onChange={(e) => setTransferAmount(e.target.value)} 
-                                placeholder="0,00" 
-                                className="w-full bg-transparent border-b-2 border-white/10 py-4 text-center text-5xl font-black text-white placeholder-gray-700 focus:outline-none focus:border-blue-500 transition-all"
-                                autoFocus 
-                            />
+                {/* Corpo do Formulário com Scroll se necessário */}
+                <div className="overflow-y-auto flex-1 pb-4">
+                    <form onSubmit={onSubmit} className="px-6 pb-6 pt-2 text-center">
+                        
+                        {/* --- WIDGET DO VALOR --- */}
+                        <div className="mb-8">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Quanto você quer transferir?</p>
+                            
+                            <div className="relative flex items-center justify-center group bg-gray-50/50 p-4 rounded-[28px] border-2 border-transparent focus-within:border-blue-500/20 focus-within:bg-white transition-all shadow-inner focus-within:shadow-sm w-fit mx-auto">
+                                <span className="text-2xl font-black text-gray-300 mr-2 select-none transition-colors group-focus-within:text-blue-500">
+                                    R$
+                                </span>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    value={transferAmount} 
+                                    onChange={(e) => setTransferAmount(e.target.value)} 
+                                    placeholder="0,00" 
+                                    className="w-full max-w-[160px] bg-transparent text-center text-5xl font-black text-gray-900 placeholder-gray-200 focus:outline-none tracking-tighter"
+                                    autoFocus 
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* --- CARD DE DESTINATÁRIO --- */}
-                    <div className="mb-8">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block ml-1">
-                            Para quem?
-                        </label>
-                        <div className="relative group">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-20 group-focus-within:opacity-100 transition duration-500"></div>
-                            <div className="relative bg-[#0f172a] border border-white/10 rounded-xl p-1 flex items-center">
-                                <div className="p-3 bg-white/5 rounded-lg mr-3 text-blue-400">
-                                    <User size={24} />
-                                </div>
-                                <div className="flex-1 pr-2">
-                                    <input 
-                                        type="email" 
-                                        value={recipientEmail} 
-                                        onChange={(e) => setRecipientEmail(e.target.value)} 
-                                        placeholder="email@destinatario.com" 
-                                        className="w-full bg-transparent text-white font-medium placeholder-gray-500 focus:outline-none h-full py-2"
-                                    />
-                                    <p className="text-[10px] text-gray-500 mt-0.5">Digite o e-mail da conta SmartFridge</p>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="h-px bg-gray-100 flex-1"></div>
+                            <span className="text-[9px] font-extrabold-id text-gray-300 uppercase tracking-widest">Para quem vai?</span>
+                            <div className="h-px bg-gray-100 flex-1"></div>
+                        </div>
+
+                        {/* --- WIDGET DO DESTINATÁRIO --- */}
+                        <div className="mb-8 text-left">
+                            <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest mb-3 block pl-2">
+                                E-mail da Conta OwnMarket
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-[#cb6ce6] rounded-[22px] blur opacity-0 group-focus-within:opacity-20 transition duration-500"></div>
+                                <div className="relative bg-gray-50 border border-gray-100 focus-within:bg-white rounded-[20px] p-1.5 flex items-center transition-colors shadow-sm">
+                                    <div className="p-3.5 bg-white rounded-[14px] mr-3 text-blue-500 border border-gray-100 shadow-sm shrink-0 transition-transform group-focus-within:scale-105">
+                                        <User size={20} strokeWidth={2.5}/>
+                                    </div>
+                                    <div className="flex-1 pr-4 min-w-0">
+                                        <input 
+                                            type="email" 
+                                            value={recipientEmail} 
+                                            onChange={(e) => setRecipientEmail(e.target.value)} 
+                                            placeholder="email@destinatario.com" 
+                                            className="w-full bg-transparent text-gray-900 font-bold text-sm placeholder-gray-300 focus:outline-none py-2 truncate"
+                                            required
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Mensagem de Erro */}
-                    {formError && (
-                        <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 justify-center animate-pulse">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                            <p className="text-red-400 text-xs font-bold">{formError}</p>
-                        </div>
-                    )}
+                        {/* --- FEEDBACK DE ERRO --- */}
+                        {formError && (
+                            <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 justify-center animate-pulse shadow-sm">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+                                <p className="text-red-500 text-[10px] font-extrabold-id uppercase tracking-widest">{formError}</p>
+                            </div>
+                        )}
 
-                    {/* --- BOTÃO DE AÇÃO --- */}
-                    <button 
-                        type="submit" 
-                        disabled={isVerifying} 
-                        className="group w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        <div className="relative z-10 flex items-center justify-center gap-3">
-                            {isVerifying ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    <span className="font-bold">Buscando conta...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="font-bold text-lg">Continuar</span>
-                                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </div>
-                        
-                        {/* Brilho de Fundo */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </button>
+                        {/* --- BOTÃO DE AÇÃO PREMIUM --- */}
+                        <button 
+                            type="submit" 
+                            disabled={isVerifying || !transferAmount || !recipientEmail} 
+                            className="group w-full relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-[20px] shadow-lg shadow-blue-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                        >
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    {isVerifying ? (
+                                        <>
+                                            <div className="w-5 h-5 border-[3px] border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            <span className="font-extrabold-id text-[11px] uppercase tracking-widest">Buscando conta...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="font-extrabold-id text-sm uppercase tracking-tighter">Continuar</span>
+                                        </>
+                                    )}
+                                </div>
+                                {!isVerifying && (
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform backdrop-blur-sm">
+                                        <ArrowRight size={18} strokeWidth={3} />
+                                    </div>
+                                )}
+                            </div>
+                            {/* Brilho de Fundo Animado */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s]"></div>
+                        </button>
 
-                    {/* Footer Info */}
-                    <div className="mt-6 text-center">
-                        <p className="text-[10px] text-gray-500 flex items-center justify-center gap-1.5">
-                            <Wallet size={10} /> Transferência instantânea e segura
-                        </p>
-                    </div>
+                    </form>
+                </div>
+                
+                {/* --- FOOTER SEGURO --- */}
+                <div className="bg-gray-50 p-4 text-center border-t border-gray-100 mt-auto z-10 shrink-0">
+                    <p className="text-[9px] font-extrabold-id text-gray-400 flex items-center justify-center gap-1.5 uppercase tracking-widest">
+                        <Wallet size={12} strokeWidth={2.5} className="text-blue-500" /> Transferência gratuita via OwnMarket
+                    </p>
+                </div>
 
-                </form>
             </div>
         </div>
     );
 };
+
+
 
 const WalletPage = ({ 
     user, setPage, setPaymentData, setDepositData, setPaymentMethod, 
@@ -10823,16 +10865,21 @@ const NavButton = ({ active, onClick, icon, label }) => (
     </button>
 );
 
-
 const MyTicketsPage = ({ setPage }) => {
     const [tickets, setTickets] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
+    
+    // Novo estado para o pop-up rápido local
+    const [localToast, setLocalToast] = React.useState(''); 
+    
     const token = localStorage.getItem('token');
+    const API_URL = window.API_URL || 'http://localhost:5000'; 
 
-    // --- FETCH TICKETS ---
+    // --- FETCH TICKETS (Busca as mensagens do banco) ---
     const fetchTickets = React.useCallback(async () => {
         setIsLoading(true);
+        setError('');
         try {
             const response = await fetch(`${API_URL}/api/user/tickets`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Falha ao buscar notificações.');
@@ -10843,93 +10890,123 @@ const MyTicketsPage = ({ setPage }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [token]);
+    }, [token, API_URL]);
     
     React.useEffect(() => { fetchTickets(); }, [fetchTickets]);
     
-    // --- MARCAR COMO LIDO ---
-    const handleMarkAsRead = async (ticketId) => {
-        try {
-            const response = await fetch(`${API_URL}/api/user/tickets/${ticketId}/read`, {
-                method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error('Falha ao marcar como lido.');
-            
-            // Atualiza UI instantaneamente
-            setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, is_read: true } : t));
-        } catch (err) {
-            // Silencioso ou Toast
-            console.error(err);
-        }
+    // --- MARCAR COMO LIDO (Visual e Temporário) ---
+    const handleMarkAsRead = (ticketId) => {
+        // 1. Muda na tela instantaneamente para cinza
+        setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, is_read: true } : t));
+        
+        // 2. Mostra o pop-up rápido de sucesso
+        setLocalToast('Mensagem marcada como lida!');
+        setTimeout(() => setLocalToast(''), 3000); // Some o toast após 3s
+
+        // 3. Faz a mensagem desaparecer da tela após 2 segundos
+        setTimeout(() => {
+            setTickets(prev => prev.filter(t => t.id !== ticketId));
+        }, 2000);
     };
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col">
-            
-            {/* --- HEADER --- */}
-            <header className="bg-[#0f172a]/90 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 pb-4">
-                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-95">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <h1 className="text-xl font-bold text-white tracking-tight">Notificações</h1>
+        <div className="min-h-screen bg-[#F8FAFC] text-gray-900 font-sans flex flex-col selection:bg-[#cb6ce6]/20">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+                .font-extrabold-id { font-family: 'Inter', sans-serif; font-weight: 900; }
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
+
+            {/* POP-UP RÁPIDO (TOAST LOCAL) */}
+            {localToast && (
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/95 backdrop-blur-md border border-gray-700 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in slide-in-from-top-4 fade-in duration-300">
+                    <CheckCircle2 size={16} strokeWidth={3} className="text-[#cb6ce6]" />
+                    <span className="text-[10px] font-extrabold-id uppercase tracking-widest">{localToast}</span>
+                </div>
+            )}
+
+            {/* --- HEADER CLEAN UI --- */}
+            <header className="bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40 pb-4 pt-6">
+                <div className="container mx-auto px-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="w-10 h-10 rounded-[14px] bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-[#cb6ce6] hover:bg-[#cb6ce6]/5 transition-all active:scale-95 shadow-sm"
+                        >
+                            <ArrowLeft size={20} strokeWidth={2.5} />
+                        </button>
+                        <div>
+                            <h1 className="text-xl md:text-2xl font-extrabold-id text-gray-900 uppercase tracking-tighter leading-none">Notificações</h1>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Centro de Mensagens</p>
+                        </div>
+                    </div>
                 </div>
             </header>
             
-            <main className="container mx-auto px-4 py-6 pb-24 max-w-2xl">
+            <main className="container mx-auto px-4 py-8 pb-36 max-w-2xl flex-1">
                 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="animate-spin text-orange-500 mb-4" size={40} />
-                        <p className="text-gray-500 text-sm">Buscando mensagens...</p>
+                    <div className="flex flex-col items-center justify-center py-32 m-auto">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-6">
+                            <Loader2 className="animate-spin text-[#cb6ce6]" size={32} strokeWidth={3} />
+                        </div>
+                        <p className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest animate-pulse">Sincronizando Mensagens...</p>
                     </div>
                 ) : error ? (
-                    <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-center">
-                        <p className="text-red-400 mb-2 font-bold">Ops, algo deu errado.</p>
-                        <p className="text-sm text-gray-400">{error}</p>
-                        <button onClick={fetchTickets} className="mt-4 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-bold hover:bg-red-500/30">Tentar Novamente</button>
+                    <div className="p-6 rounded-[24px] bg-red-50 border border-red-100 text-center m-auto mt-10 shadow-sm animate-in fade-in">
+                        <div className="w-14 h-14 bg-red-100 text-red-500 rounded-[18px] flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle size={24} strokeWidth={2.5}/>
+                        </div>
+                        <p className="text-red-500 mb-2 font-extrabold-id uppercase tracking-tighter text-lg">Ops, algo deu errado</p>
+                        <p className="text-sm font-bold text-red-400/80 mb-6">{error}</p>
+                        <button 
+                            onClick={fetchTickets} 
+                            className="px-6 py-3.5 bg-red-500 text-white rounded-2xl text-[10px] font-extrabold-id uppercase tracking-widest hover:bg-red-600 transition-colors shadow-md shadow-red-500/20 active:scale-95"
+                        >
+                            Tentar Novamente
+                        </button>
                     </div>
                 ) : tickets.length > 0 ? (
                     <div className="space-y-4">
                         {tickets.map((ticket, index) => (
                             <div 
                                 key={ticket.id}
-                                // Animação de entrada escalonada (stagger) baseada no index
-                                className={`relative group overflow-hidden rounded-2xl transition-all duration-300 animate-in slide-in-from-bottom-4 fade-in fill-mode-forwards
+                                className={`relative group overflow-hidden rounded-[28px] transition-all duration-500 animate-in slide-in-from-bottom-4 fade-in fill-mode-forwards
                                     ${ticket.is_read 
-                                        ? 'bg-white/5 border border-white/5 opacity-80 hover:opacity-100' 
-                                        : 'bg-gradient-to-br from-gray-800 to-[#1e293b] border border-orange-500/30 shadow-lg shadow-orange-500/5'
+                                        ? 'bg-white border border-gray-100 shadow-sm opacity-60 scale-95' 
+                                        : 'bg-white border border-[#cb6ce6]/30 shadow-[0_10px_30px_rgba(203,108,230,0.1)]'
                                     }`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
-                                {/* Indicador de Novo (Glow Lateral) */}
+                                {/* Indicador de Novo (Faixa Lateral Roxa) */}
                                 {!ticket.is_read && (
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)]"></div>
+                                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#cb6ce6] shadow-[0_0_15px_rgba(203,108,230,0.6)]"></div>
                                 )}
 
-                                <div className="p-5 flex gap-4">
-                                    {/* Ícone */}
-                                    <div className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center border
+                                <div className="p-6 flex gap-4 sm:gap-5">
+                                    {/* Ícone Lateral */}
+                                    <div className={`shrink-0 w-14 h-14 rounded-[18px] flex items-center justify-center border shadow-inner transition-colors duration-300
                                         ${ticket.is_read 
-                                            ? 'bg-white/5 border-white/5 text-gray-500' 
-                                            : 'bg-orange-500/10 border-orange-500/20 text-orange-500'
+                                            ? 'bg-gray-50 border-gray-100 text-gray-300' 
+                                            : 'bg-[#cb6ce6]/10 border-[#cb6ce6]/20 text-[#cb6ce6]'
                                         }`}>
-                                        {ticket.is_read ? <CheckCircle2 size={20} /> : <Bell size={20} className={!ticket.is_read ? 'animate-pulse' : ''} />}
+                                        {ticket.is_read ? <CheckCircle2 size={24} strokeWidth={2.5} /> : <Bell size={24} strokeWidth={2.5} className="animate-pulse" />}
                                     </div>
 
-                                    {/* Conteúdo */}
+                                    {/* Conteúdo da Mensagem */}
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className={`font-bold text-sm ${ticket.is_read ? 'text-gray-400' : 'text-white'}`}>
+                                        <div className="flex justify-between items-start mb-2 gap-2">
+                                            <h3 className={`font-extrabold-id text-sm md:text-base uppercase tracking-tighter leading-tight transition-colors ${ticket.is_read ? 'text-gray-400' : 'text-gray-900'}`}>
                                                 {ticket.title || 'Mensagem do Suporte'}
                                             </h3>
-                                            <span className="text-[10px] text-gray-500 flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full whitespace-nowrap ml-2">
-                                                <Clock size={10} />
+                                            <span className="text-[9px] font-bold text-gray-400 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 whitespace-nowrap shrink-0 transition-colors">
+                                                <Clock size={10} strokeWidth={3} />
                                                 {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                             </span>
                                         </div>
                                         
-                                        <p className={`text-sm leading-relaxed ${ticket.is_read ? 'text-gray-500' : 'text-gray-300'}`}>
+                                        <p className={`text-sm leading-relaxed font-medium mb-4 transition-colors ${ticket.is_read ? 'text-gray-400' : 'text-gray-600'}`}>
                                             {ticket.message}
                                         </p>
 
@@ -10937,9 +11014,9 @@ const MyTicketsPage = ({ setPage }) => {
                                         {!ticket.is_read && (
                                             <button 
                                                 onClick={() => handleMarkAsRead(ticket.id)}
-                                                className="mt-4 text-xs font-bold text-orange-400 hover:text-orange-300 flex items-center gap-2 group/btn transition-colors"
+                                                className="text-[10px] font-extrabold-id text-[#cb6ce6] uppercase tracking-widest hover:text-[#b85cd3] flex items-center gap-2 group/btn transition-colors bg-[#cb6ce6]/5 hover:bg-[#cb6ce6]/10 px-4 py-2.5 rounded-xl active:scale-95"
                                             >
-                                                <span className="w-2 h-2 rounded-full bg-orange-500 group-hover/btn:scale-125 transition-transform"></span>
+                                                <span className="w-2 h-2 rounded-full bg-[#cb6ce6] group-hover/btn:scale-125 transition-transform shadow-sm"></span>
                                                 Marcar como lida
                                             </button>
                                         )}
@@ -10949,14 +11026,15 @@ const MyTicketsPage = ({ setPage }) => {
                         ))}
                     </div>
                 ) : (
-                    // --- EMPTY STATE PREMIUM ---
-                    <div className="flex flex-col items-center justify-center py-20 text-center animate-in zoom-in-95 duration-500">
-                        <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 relative">
-                            <MessageSquare size={40} className="text-gray-600" />
-                            <div className="absolute top-0 right-0 w-6 h-6 bg-gray-700 rounded-full border-4 border-[#0f172a]"></div>
+                    // --- EMPTY STATE PREMIUM (CLEAN UI) ---
+                    <div className="flex flex-col items-center justify-center py-20 text-center animate-in zoom-in-95 duration-500 m-auto">
+                        <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center mb-6 border border-gray-100 shadow-[0_10px_30px_rgb(0,0,0,0.04)] relative">
+                            <MessageSquare size={48} strokeWidth={1.5} className="text-gray-300" />
+                            {/* Bolinha fantasma decorativa */}
+                            <div className="absolute top-1 right-1 w-6 h-6 bg-gray-100 rounded-full border-4 border-[#F8FAFC]"></div>
                         </div>
-                        <h2 className="text-xl font-bold text-white mb-2">Tudo limpo por aqui!</h2>
-                        <p className="text-gray-500 max-w-xs mx-auto text-sm">
+                        <h2 className="text-xl md:text-2xl font-extrabold-id text-gray-900 uppercase tracking-tighter mb-2">Tudo limpo por aqui!</h2>
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest max-w-[250px] mx-auto leading-relaxed">
                             Você não tem novas notificações ou mensagens do suporte no momento.
                         </p>
                     </div>
@@ -10966,25 +11044,26 @@ const MyTicketsPage = ({ setPage }) => {
     );
 };
 
-// --- COMPONENTE MODAL DE EDIÇÃO AVANÇADO (PREMIUM) ---
-const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) => {
-    // Estados do Formulário Básico
+
+
+
+const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums, API_URL }) => {
+    // ==========================================
+    // LÓGICA INTOCADA (MANTIDA EXATAMENTE IGUAL)
+    // ==========================================
     const [formData, setFormData] = React.useState({
         name: '', email: '', cpf: '', phone_number: '', apartment: '', condo_id: '', birth_date: '',
         newPassword: '', confirmPassword: ''
     });
 
-    // Estados das Ações Especiais
     const [balanceToAdd, setBalanceToAdd] = React.useState('');
     const [balanceReason, setBalanceReason] = React.useState('');
     const [ticketMessage, setTicketMessage] = React.useState('');
     
-    // Estados de Controle
-    const [activeTab, setActiveTab] = React.useState('info'); // 'info', 'finance', 'ticket'
+    const [activeTab, setActiveTab] = React.useState('info');
     const [isSaving, setIsSaving] = React.useState(false);
-    const [statusMsg, setStatusMsg] = React.useState({ type: '', text: '' }); // type: 'success' | 'error'
+    const [statusMsg, setStatusMsg] = React.useState({ type: '', text: '' });
 
-    // Carregar dados ao abrir
     React.useEffect(() => {
         if (user && isOpen) {
             setFormData({
@@ -11006,13 +11085,11 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
         }
     }, [user, isOpen]);
 
-    // Helper para mensagens
     const showMessage = (type, text) => {
         setStatusMsg({ type, text });
         setTimeout(() => setStatusMsg({ type: '', text: '' }), 4000);
     };
 
-    // --- AÇÃO 1: SALVAR DADOS PESSOAIS ---
     const handleSaveInfo = async (e) => {
         e.preventDefault();
         if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
@@ -11034,7 +11111,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
             if (!res.ok) throw new Error('Erro ao atualizar dados.');
             
             showMessage('success', 'Dados atualizados com sucesso!');
-            onSave(); // Recarrega lista pai
+            onSave(); 
         } catch (err) {
             showMessage('error', err.message);
         } finally {
@@ -11042,7 +11119,6 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
         }
     };
 
-    // --- AÇÃO 2: AJUSTAR SALDO ---
     const handleAdjustBalance = async () => {
         const amount = parseFloat(balanceToAdd);
         if (!amount || amount === 0) return showMessage('error', 'Digite um valor válido.');
@@ -11069,7 +11145,6 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
         }
     };
 
-    // --- AÇÃO 3: ENVIAR TICKET ---
     const handleSendTicket = async () => {
         if (!ticketMessage) return showMessage('error', 'Digite uma mensagem.');
 
@@ -11092,7 +11167,6 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
         }
     };
 
-    // --- AÇÃO 4: BLOQUEAR/DESBLOQUEAR ---
     const handleToggleStatus = async () => {
         const action = user.is_active ? 'bloquear' : 'desbloquear';
         if (!window.confirm(`Tem certeza que deseja ${action} este usuário?`)) return;
@@ -11117,128 +11191,174 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
 
     if (!isOpen || !user) return null;
 
+    // ==========================================
+    // NOVA INTERFACE: CLEAN UI PREMIUM (ADMIN)
+    // ==========================================
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="bg-gray-900 border border-gray-700 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+                .font-extrabold-id { font-family: 'Inter', sans-serif; font-weight: 900; }
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+            `}</style>
+
+            {/* Backdrop Claro e Desfocado */}
+            <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}></div>
+            
+            {/* Container Principal */}
+            <div className="relative bg-white w-full max-w-3xl rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
                 
-                {/* HEADER */}
-                <div className="p-6 bg-gray-800 border-b border-gray-700 flex justify-between items-center shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                {/* HEADER PREMIUM */}
+                <div className="p-6 bg-white border-b border-gray-100 flex justify-between items-center shrink-0 relative overflow-hidden">
+                    {/* Efeito sutil no fundo do header */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[#cb6ce6]/5 to-transparent pointer-events-none"></div>
+                    
+                    <div className="flex items-center gap-5 relative z-10">
+                        {/* Avatar */}
+                        <div className="h-16 w-16 rounded-[20px] bg-gradient-to-br from-[#cb6ce6] to-[#9c4bbb] flex items-center justify-center text-white text-2xl font-black shadow-md shadow-[#cb6ce6]/30">
                             {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-white leading-tight">{user.name}</h3>
-                            <div className="flex items-center gap-2">
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded ${user.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                            <h3 className="text-2xl font-extrabold-id text-gray-900 leading-tight tracking-tighter">{user.name}</h3>
+                            <div className="flex items-center gap-3 mt-1">
+                                <span className={`text-[10px] font-extrabold-id uppercase tracking-widest px-2.5 py-1 rounded-lg flex items-center gap-1 border ${user.is_active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+                                    {user.is_active ? <UserCheck size={12} strokeWidth={3}/> : <UserX size={12} strokeWidth={3}/>}
                                     {user.is_active ? 'ATIVO' : 'BLOQUEADO'}
                                 </span>
-                                <span className="text-xs text-gray-400">{user.email}</span>
+                                <span className="text-[11px] font-bold text-gray-400">{user.email}</span>
                             </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white bg-gray-700 p-2 rounded-full transition"><X size={20}/></button>
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors border border-gray-100 active:scale-95 relative z-10">
+                        <X size={18} strokeWidth={3}/>
+                    </button>
                 </div>
 
-                {/* TABS DE NAVEGAÇÃO */}
-                <div className="flex border-b border-gray-700 bg-gray-800/50">
-                    <button onClick={() => setActiveTab('info')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'info' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-white'}`}>Dados Pessoais</button>
-                    <button onClick={() => setActiveTab('finance')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'finance' ? 'border-green-500 text-green-400' : 'border-transparent text-gray-400 hover:text-white'}`}>Financeiro</button>
-                    <button onClick={() => setActiveTab('ticket')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'ticket' ? 'border-orange-500 text-orange-400' : 'border-transparent text-gray-400 hover:text-white'}`}>Suporte & Ações</button>
-                </div>
-
-                {/* FEEDBACK MENSAGEM */}
-                {statusMsg.text && (
-                    <div className={`p-3 text-center text-sm font-bold animate-pulse ${statusMsg.type === 'error' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
-                        {statusMsg.text}
+                {/* TABS DE NAVEGAÇÃO (Formato Pílula) */}
+                <div className="px-6 pt-6 shrink-0">
+                    <div className="flex p-1.5 bg-gray-50 rounded-[20px] border border-gray-100">
+                        <button onClick={() => setActiveTab('info')} className={`flex-1 py-2.5 text-[11px] font-extrabold-id uppercase tracking-widest rounded-[14px] transition-all duration-300 ${activeTab === 'info' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-700'}`}>
+                            Dados Pessoais
+                        </button>
+                        <button onClick={() => setActiveTab('finance')} className={`flex-1 py-2.5 text-[11px] font-extrabold-id uppercase tracking-widest rounded-[14px] transition-all duration-300 ${activeTab === 'finance' ? 'bg-white shadow-sm text-[#cb6ce6]' : 'text-gray-400 hover:text-gray-700'}`}>
+                            Financeiro
+                        </button>
+                        <button onClick={() => setActiveTab('ticket')} className={`flex-1 py-2.5 text-[11px] font-extrabold-id uppercase tracking-widest rounded-[14px] transition-all duration-300 ${activeTab === 'ticket' ? 'bg-white shadow-sm text-orange-500' : 'text-gray-400 hover:text-gray-700'}`}>
+                            Ações & Suporte
+                        </button>
                     </div>
-                )}
+                </div>
+
+                {/* FEEDBACK MENSAGEM (Toast Interno) */}
+                <div className="px-6 shrink-0 transition-all duration-300">
+                    {statusMsg.text && (
+                        <div className={`mt-4 p-3 rounded-xl text-[11px] font-extrabold-id uppercase tracking-widest flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2 border ${statusMsg.type === 'error' ? 'bg-red-50 text-red-500 border-red-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                            {statusMsg.type === 'error' ? <AlertTriangle size={14} strokeWidth={3}/> : <ShieldCheck size={14} strokeWidth={3}/>}
+                            {statusMsg.text}
+                        </div>
+                    )}
+                </div>
 
                 {/* CONTEÚDO SCROLLÁVEL */}
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-900/50 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                     
                     {/* --- ABA 1: DADOS PESSOAIS --- */}
                     {activeTab === 'info' && (
-                        <form onSubmit={handleSaveInfo} className="space-y-5">
+                        <form onSubmit={handleSaveInfo} className="space-y-6 animate-in fade-in duration-500">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">Nome Completo</label>
-                                    <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Nome Completo</label>
+                                    <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300"/>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">CPF</label>
-                                    <input value={formData.cpf} onChange={e => setFormData({...formData, cpf: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">CPF</label>
+                                    <input value={formData.cpf} onChange={e => setFormData({...formData, cpf: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300"/>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">Email</label>
-                                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Email</label>
+                                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300"/>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">Telefone</label>
-                                    <input value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Telefone</label>
+                                    <input value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300"/>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">Data de Nascimento</label>
-                                    <input type="date" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Nascimento</label>
+                                    <input type="date" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all text-gray-500 uppercase tracking-widest"/>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 mb-1 block">Apartamento</label>
-                                    <input value={formData.apartment} onChange={e => setFormData({...formData, apartment: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-blue-500 outline-none"/>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Apto / Unidade</label>
+                                    <input value={formData.apartment} onChange={e => setFormData({...formData, apartment: e.target.value})} className="w-full bg-gray-50 border-2 border-transparent focus:border-[#cb6ce6]/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300"/>
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-700">
-                                <h4 className="text-sm font-bold text-orange-400 mb-3 flex items-center gap-2"><Lock size={16}/> Alterar Senha (Opcional)</h4>
+                            {/* Seção Senha */}
+                            <div className="pt-6 border-t border-gray-100">
+                                <h4 className="text-[11px] font-extrabold-id text-[#cb6ce6] uppercase tracking-widest mb-4 flex items-center gap-2 pl-1">
+                                    <KeyRound size={16} strokeWidth={2.5}/> Redefinir Senha (Opcional)
+                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input type="password" placeholder="Nova Senha" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-orange-500 outline-none"/>
-                                    <input type="password" placeholder="Confirmar Senha" value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-xl p-3 text-white focus:border-orange-500 outline-none"/>
+                                    <input type="password" placeholder="Nova Senha" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})} className="w-full bg-white border border-gray-200 focus:border-[#cb6ce6] rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all shadow-sm focus:shadow-md placeholder-gray-300"/>
+                                    <input type="password" placeholder="Confirmar Senha" value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} className="w-full bg-white border border-gray-200 focus:border-[#cb6ce6] rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all shadow-sm focus:shadow-md placeholder-gray-300"/>
                                 </div>
                             </div>
 
-                            <button type="submit" disabled={isSaving} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 transition disabled:opacity-50">
-                                {isSaving ? <Loader2 className="animate-spin"/> : <Save size={20}/>} Salvar Dados
+                            <button type="submit" disabled={isSaving} className="w-full bg-gray-900 hover:bg-black text-white font-extrabold-id text-[11px] uppercase tracking-widest py-4 rounded-[20px] shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 mt-4">
+                                {isSaving ? <Loader2 className="animate-spin" size={18}/> : <Save size={18} strokeWidth={2.5}/>} Salvar Alterações
                             </button>
                         </form>
                     )}
 
                     {/* --- ABA 2: FINANCEIRO --- */}
                     {activeTab === 'finance' && (
-                        <div className="space-y-6">
-                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 flex justify-between items-center">
+                        <div className="space-y-6 animate-in fade-in duration-500">
+                            
+                            {/* Card de Saldo */}
+                            <div className="bg-gradient-to-br from-[#cb6ce6] to-[#9c4bbb] p-6 rounded-[28px] border border-[#cb6ce6]/50 flex justify-between items-center shadow-lg shadow-[#cb6ce6]/20">
                                 <div>
-                                    <p className="text-gray-400 text-sm">Saldo Atual em Carteira</p>
-                                    <h2 className="text-3xl font-black text-green-400">R$ {parseFloat(user.wallet_balance || 0).toFixed(2)}</h2>
+                                    <p className="text-white/70 text-[10px] font-extrabold-id uppercase tracking-widest mb-1">Saldo Atual em Carteira</p>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-white/80 font-bold text-lg">R$</span>
+                                        <h2 className="text-4xl font-black text-white tracking-tighter leading-none">{parseFloat(user.wallet_balance || 0).toFixed(2).replace('.', ',')}</h2>
+                                    </div>
                                 </div>
-                                <div className="p-3 bg-green-500/20 rounded-xl text-green-400"><Wallet size={32}/></div>
+                                <div className="p-4 bg-white/20 rounded-[20px] text-white backdrop-blur-sm border border-white/20 shadow-inner">
+                                    <Wallet size={32} strokeWidth={2}/>
+                                </div>
                             </div>
 
-                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700">
-                                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><PlusCircle size={16} className="text-green-500"/> Ajuste Manual de Saldo</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className="text-xs text-gray-400 mb-1 block">Valor (R$)</label>
+                            {/* Card Ajuste Manual */}
+                            <div className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm">
+                                <h4 className="text-[11px] font-extrabold-id text-gray-900 uppercase tracking-widest mb-5 flex items-center gap-2">
+                                    <PlusCircle size={16} className="text-green-500" strokeWidth={3}/> Ajuste Manual de Saldo
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Valor (R$)</label>
                                         <input 
                                             type="number" step="0.01" 
                                             placeholder="Ex: 50.00 ou -20.00"
                                             value={balanceToAdd} 
                                             onChange={e => setBalanceToAdd(e.target.value)} 
-                                            className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-green-500 outline-none font-bold"
+                                            className="w-full bg-gray-50 border-2 border-transparent focus:border-green-500/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-black text-lg outline-none transition-all placeholder-gray-300"
                                         />
-                                        <p className="text-[10px] text-gray-500 mt-1">Use negativo (-) para remover saldo.</p>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-1">Use negativo (-) para remover.</p>
                                     </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400 mb-1 block">Motivo</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-extrabold-id text-gray-400 uppercase tracking-widest pl-1">Motivo / Descrição</label>
                                         <input 
                                             type="text" 
                                             placeholder="Ex: Estorno, Bônus..."
                                             value={balanceReason} 
                                             onChange={e => setBalanceReason(e.target.value)} 
-                                            className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-green-500 outline-none"
+                                            className="w-full bg-gray-50 border-2 border-transparent focus:border-green-500/30 focus:bg-white rounded-[16px] px-4 py-3.5 text-gray-900 font-bold text-sm outline-none transition-all placeholder-gray-300 h-[60px]"
                                         />
                                     </div>
                                 </div>
-                                <button onClick={handleAdjustBalance} disabled={isSaving || !balanceToAdd} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50">
-                                    <CheckCircle2 size={18}/> Confirmar Ajuste
+                                <button onClick={handleAdjustBalance} disabled={isSaving || !balanceToAdd} className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold-id text-[11px] uppercase tracking-widest py-4 rounded-[20px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-green-500/20 active:scale-95">
+                                    {isSaving ? <Loader2 className="animate-spin" size={18}/> : <ShieldCheck size={18} strokeWidth={2.5}/>} Confirmar Ajuste
                                 </button>
                             </div>
                         </div>
@@ -11246,36 +11366,42 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
 
                     {/* --- ABA 3: SUPORTE E AÇÕES --- */}
                     {activeTab === 'ticket' && (
-                        <div className="space-y-6">
-                            {/* Bloqueio */}
-                            <div className={`p-5 rounded-2xl border flex items-center justify-between ${user.is_active ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
+                        <div className="space-y-6 animate-in fade-in duration-500">
+                            
+                            {/* Bloqueio Card */}
+                            <div className={`p-6 rounded-[28px] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${user.is_active ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <div>
-                                    <h4 className={`text-lg font-bold ${user.is_active ? 'text-red-400' : 'text-green-400'}`}>
-                                        {user.is_active ? 'Bloquear Acesso' : 'Desbloquear Conta'}
+                                    <h4 className={`text-base font-extrabold-id uppercase tracking-tighter mb-1 ${user.is_active ? 'text-red-500' : 'text-green-600'}`}>
+                                        {user.is_active ? 'Bloquear Conta do Cliente' : 'Desbloquear Conta do Cliente'}
                                     </h4>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        {user.is_active ? 'O usuário perderá acesso imediato ao sistema.' : 'O usuário poderá voltar a acessar o sistema.'}
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${user.is_active ? 'text-red-400/80' : 'text-green-600/70'}`}>
+                                        {user.is_active ? 'O usuário perderá acesso imediato ao App.' : 'O usuário poderá voltar a acessar o App.'}
                                     </p>
                                 </div>
-                                <button onClick={handleToggleStatus} disabled={isSaving} className={`px-4 py-2 rounded-lg font-bold text-sm transition disabled:opacity-50 ${user.is_active ? 'bg-red-600 text-white hover:bg-red-500' : 'bg-green-600 text-white hover:bg-green-500'}`}>
-                                    {user.is_active ? 'BLOQUEAR' : 'ATIVAR'}
+                                <button onClick={handleToggleStatus} disabled={isSaving} className={`px-6 py-3 rounded-[16px] font-extrabold-id text-[11px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-sm whitespace-nowrap shrink-0 ${user.is_active ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'}`}>
+                                    {user.is_active ? 'Bloquear Agora' : 'Ativar Conta'}
                                 </button>
                             </div>
 
-                            {/* Enviar Mensagem */}
-                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700">
-                                <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Mail size={16} className="text-orange-500"/> Enviar Notificação (Ticket)</h4>
-                                <textarea 
-                                    rows="4"
-                                    placeholder="Digite a mensagem para o usuário..."
-                                    value={ticketMessage}
-                                    onChange={e => setTicketMessage(e.target.value)}
-                                    className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-orange-500 outline-none mb-4 resize-none"
-                                ></textarea>
-                                <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50">
-                                    <Mail size={18}/> Enviar Mensagem
+                            {/* Enviar Mensagem Card */}
+                            <div className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm">
+                                <h4 className="text-[11px] font-extrabold-id text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Mail size={16} className="text-orange-500" strokeWidth={2.5}/> Enviar Notificação Push (Ticket)
+                                </h4>
+                                <div className="bg-gray-50 rounded-[20px] border-2 border-transparent focus-within:border-orange-500/30 focus-within:bg-white p-2 transition-all mb-4">
+                                    <textarea 
+                                        rows="4"
+                                        placeholder="Digite a mensagem que aparecerá no celular do usuário..."
+                                        value={ticketMessage}
+                                        onChange={e => setTicketMessage(e.target.value)}
+                                        className="w-full bg-transparent p-3 text-gray-900 font-medium text-sm outline-none resize-none placeholder-gray-400"
+                                    ></textarea>
+                                </div>
+                                <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold-id text-[11px] uppercase tracking-widest py-4 rounded-[20px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-orange-500/20 active:scale-95">
+                                    {isSaving ? <Loader2 className="animate-spin" size={18}/> : <Mail size={18} strokeWidth={2.5}/>} Enviar para o Cliente
                                 </button>
                             </div>
+
                         </div>
                     )}
                 </div>
@@ -11283,6 +11409,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token, condominiums }) =
         </div>
     );
 };
+
 
 const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
     // ESTADO: 'summary' irá guardar os dados completos vindos do backend.
