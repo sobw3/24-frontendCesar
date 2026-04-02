@@ -30,7 +30,7 @@ import {
 
 
 // --- CONFIGURAÇÃO DA API ---
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://locahttps://two4hprontobackendcesar.onrender.com';
 const MERCADOPAGO_PUBLIC_KEY = process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY;
 
 
@@ -1063,7 +1063,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         setIsLoading(true);
         
         try {
-            const API_URL = window.API_URL || 'http://localhost:5000';
+            const API_URL = window.API_URL || 'http://https://two4hprontobackendcesar.onrender.com';
             
             // TRADUÇÃO EXATA PARA O SEU BACK-END
             const payload = {
@@ -1707,7 +1707,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
             const token = localStorage.getItem('token');
             if (!token) return;
             try {
-                const API_URL = window.API_URL || 'http://localhost:5000';
+                const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
                 const response = await fetch(`${API_URL}/api/user/tickets`, { 
                     headers: { 'Authorization': `Bearer ${token}` } 
                 });
@@ -1731,7 +1731,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
             setIsLoading(true); 
             if (!user?.condoId) { setIsLoading(false); setProducts({}); return; }
             try {
-                const API_URL = window.API_URL || 'http://localhost:5000';
+                const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
                 const response = await fetch(`${API_URL}/api/products?condoId=${user.condoId}`); 
                 if (response.ok) { const data = await response.json(); setProducts(data); }
             } catch (err) { console.error(err); } 
@@ -1746,7 +1746,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, onCondoSe
         setIsSearchLoading(true);
         const delay = setTimeout(async () => {
             try {
-                const API_URL = window.API_URL || 'http://localhost:5000';
+                const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
                 const res = await fetch(`${API_URL}/api/products/search?q=${searchQuery}&condoId=${user?.condoId}`);
                 if (res.ok) { const data = await res.json(); setSearchResults(data); }
             } catch (err) { console.error(err); } 
@@ -2375,7 +2375,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         setIsLoading(true); 
         setError('');
         
-        const API_URL = window.API_URL || 'http://localhost:5000';
+        const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
         const token = localStorage.getItem('token');
 
         const payload = { 
@@ -2649,7 +2649,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess, API_URL }) => 
     const [copySuccess, setCopySuccess] = React.useState(false);
     
     // Fallback para API_URL se não for passado
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // --- LÓGICA DE DETETIVE (MANTIDA) ---
     const isDeposit = React.useMemo(() => {
@@ -3097,7 +3097,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
                                 setIsLoading(true); 
                                 setError('');
                                 const token = localStorage.getItem('token');
-                                const API_URL = window.API_URL || 'http://localhost:5000';
+                                const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
                                 
                                 try {
                                     const response = await fetch(`${API_URL}/api/wallet/deposit-card`, {
@@ -4449,7 +4449,7 @@ const WalletPage = ({
     updateUserBalance, showToast, cart = [], API_URL
 }) => {
     
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
     const [showBalance, setShowBalance] = React.useState(true);
     const [recentTransactions, setRecentTransactions] = React.useState([]);
     const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true);
@@ -5787,7 +5787,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
     // --- TOASTS ---
     const [toast, setToast] = React.useState(null);
 
-    const apiUrl = window.API_URL || 'http://localhost:5000';
+    const apiUrl = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     const showToast = (message, type = 'info') => {
         setToast({ message, type });
@@ -6676,7 +6676,7 @@ const UserManagementPage = ({ condominiums, token, API_URL }) => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(null);
     const [searchQuery, setSearchQuery] = React.useState('');
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // --- FETCH ---
     const fetchUsers = React.useCallback(async (page = 1) => {
@@ -7303,7 +7303,7 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onAdd, token, productsInI
 
 
 const StockManagement = ({ condominiums, token, API_URL }) => {
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // --- ESTADOS ---
     const [selectedCondoId, setSelectedCondoId] = useState(condominiums[0]?.id || '');
@@ -7919,7 +7919,7 @@ const PerformanceCard = ({ margin, efficiency }) => {
 
 
 const FinanceReport = ({ condominiums, token, API_URL }) => {
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
     
     // Referência para rolar até o extrato
     const extractRef = useRef(null);
@@ -9034,7 +9034,7 @@ const ExpiringSoonWidget = ({ token, condoId }) => {
             setLoading(true);
             try {
                 // Passa o condoId na URL para filtrar
-                const url = new URL('http://localhost:5000/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
+                const url = new URL('https://two4hprontobackendcesar.onrender.com/api/admin/dashboard/expiring-products'); // Ajuste sua URL base se necessário
                 if (condoId && condoId !== 'all') {
                     url.searchParams.append('condoId', condoId);
                 }
@@ -9453,7 +9453,7 @@ const ModernStatCard = ({ icon, label, value, subValue, colorName }) => {
 // =================================================================================
 
 const AdminDashboardPage = ({ token, setActiveTab, API_URL }) => {
-    const BASE_URL = API_URL || 'http://localhost:5000';
+    const BASE_URL = API_URL || 'https://two4hprontobackendcesar.onrender.com';
 
     // Estados
     const [stats, setStats] = useState(null);
@@ -9835,7 +9835,7 @@ const EmergencyUnlockModal = ({ isOpen, onClose, onConfirm, condoName, isUnlocki
 
 const ProductManager = React.memo(({ token, API_URL }) => {
     // GARANTIA: Se a prop API_URL não vier, tenta usar uma string fixa ou alertar erro
-    const BASE_URL = API_URL || "http://localhost:5000"; 
+    const BASE_URL = API_URL || "https://two4hprontobackendcesar.onrender.com"; 
     
     // --- ESTADOS ---
     const [products, setProducts] = React.useState([]);
@@ -10874,7 +10874,7 @@ const MyTicketsPage = ({ setPage }) => {
     const [localToast, setLocalToast] = React.useState(''); 
     
     const token = localStorage.getItem('token');
-    const API_URL = window.API_URL || 'http://localhost:5000'; 
+    const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com'; 
 
     // --- FETCH TICKETS (Busca as mensagens do banco) ---
     const fetchTickets = React.useCallback(async () => {
@@ -11612,7 +11612,7 @@ const HistoryPage = ({ setPage, token, cart = [] }) => {
         setIsLoading(true);
         setError('');
         try {
-            const API_URL = window.API_URL || 'http://localhost:5000';
+            const API_URL = window.API_URL || 'https://two4hprontobackendcesar.onrender.com';
             const response = await fetch(`${API_URL}/api/user/history?page=${page}&limit=10`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
