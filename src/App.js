@@ -79,7 +79,7 @@ const Toast = ({ message, show }) => {
         <>
             <style>{keyframes}</style>
             <div className="fixed bottom-5 left-1/2 -translate-x-1/2 
-                            bg-gray-800/80 backdrop-blur-sm 
+                            bg-[#1a1a1a]/80 backdrop-blur-sm 
                             border border-green-500/50 
                             text-white py-3 px-6 rounded-lg 
                             shadow-2xl flex items-center gap-3 
@@ -118,7 +118,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1343,7 +1343,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             <SideMenu />
             {showMenu && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowMenu(false)}></div>}
             
-            <header className="sticky top-0 bg-gray-800/80 backdrop-blur-sm shadow-md z-30">
+            <header className="sticky top-0 bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md z-30">
                 <div className="container mx-auto px-4 py-3 flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setShowMenu(true)} className="md:hidden relative">
@@ -1523,7 +1523,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-[#f2bd46] rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1681,7 +1681,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                 userBalance={userBalance}
             />
 
-            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
+            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Carrinho</h1>
@@ -2211,7 +2211,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700/50 shadow-md sticky top-0 z-10">
+            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm border-b border-gray-700/50 shadow-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('wallet')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Depositar com Cartão</h1>
@@ -2657,7 +2657,7 @@ const EditProfileModal = ({ user, isOpen, onClose, onSave, token }) => {
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={handleSubmit} className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -2779,7 +2779,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSave, token, user }) => {
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={handleSubmit} className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -2876,7 +2876,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
         
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
+                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Conta</h1>
@@ -3129,7 +3129,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-green-500/20 border-2 border-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -3229,7 +3229,7 @@ const TransferModal = ({
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={onSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={onSubmit} className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-[#f2bd46] rounded-full flex items-center justify-center mx-auto mb-6">
@@ -3531,7 +3531,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
 
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
+                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Carteira</h1>
@@ -6753,7 +6753,7 @@ const MyTicketsPage = ({ setPage }) => {
             <style>{keyframes}</style>
             
             {/* --- HEADER (Glassmorphism) --- */}
-            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
+            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meus Tiquetes</h1>
@@ -7464,7 +7464,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
             <TransactionReceiptModal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} transactionId={selectedTransactionId} token={token} />
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
+                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Histórico</h1>
