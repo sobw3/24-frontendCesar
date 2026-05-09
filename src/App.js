@@ -118,7 +118,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -567,8 +567,8 @@ const ForgotPasswordPage = ({ setPage }) => {
             
             {/* Card de Vidro (Glassmorphism) */}
             <div className="w-full max-w-md 
-                            bg-[#1a1a1a]/80 backdrop-blur-sm 
-                            border bg-[#1a1a1a]/80/50 
+                            border-gray-700 backdrop-blur-sm 
+                            border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             animate-surgir relative"
             >
@@ -740,7 +740,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                 <div className="w-full max-w-md">
                     
                     {/* Card de Vidro (Glassmorphism) */}
-                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-2xl shadow-2xl animate-surgir">
+                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-8 rounded-2xl shadow-2xl animate-surgir">
                         
                         {/* ============================================== */}
                         {/* --- ALTERAÇÃO AQUI (Logo de Imagem) --- */}
@@ -799,7 +799,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                         </div>
                         
                         {/* 6. Admin (Ícone Sutil) */}
-                        <div className="text-center mt-4 border-t bg-[#1a1a1a]/80/50 pt-4 animate-surgir" style={{ animationDelay: '400ms' }}>
+                        <div className="text-center mt-4 border-t border-gray-700/50 pt-4 animate-surgir" style={{ animationDelay: '400ms' }}>
                             <button 
                                 onClick={() => setShowAdminModal(true)} 
                                 className="text-gray-500 hover:text-white transition p-2 rounded-full hover:bg-gray-700/50"
@@ -926,8 +926,8 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
             
             {/* Card de Vidro (Glassmorphism) */}
             <div className="w-full max-w-xl 
-                            bg-[#1a1a1a]/80 backdrop-blur-sm 
-                            border bg-[#1a1a1a]/80/50 
+                            border-gray-700 backdrop-blur-sm 
+                            border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             animate-surgir"
             >
@@ -1055,7 +1055,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                 {success && <p className="text-green-400 text-sm text-center mt-4">{success}</p>}
                 
                 {/* --- "Já tenho conta" movido para cá (centralizado) --- */}
-                <div className="text-center mt-6 pt-6 border-t bg-[#1a1a1a]/80/50">
+                <div className="text-center mt-6 pt-6 border-t border-gray-700/50">
                     <button 
                         onClick={onSwitchToLogin} 
                         className="text-gray-400 hover:text-[#f2bd46] transition font-medium"
@@ -1246,8 +1246,8 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             .neon-text-orange { animation: neon-pulse-text-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
             .neon-text-red { animation: neon-pulse-text-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         `;
-        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 bg-[#1a1a1a]/80 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
-        if (isOnSale) { cardClasses += ` border-orange-500/50`; } else { cardClasses += ` bg-[#1a1a1a]/80/50`; }
+        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 border-gray-700 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
+        if (isOnSale) { cardClasses += ` border-orange-500/50`; } else { cardClasses += ` border-gray-700/50`; }
         if (!isOutOfStock) { cardClasses += ` hover:shadow-xl hover:border-gray-600`; }
         const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50 transition-all `;
         const StockIndicator = () => {
@@ -1297,7 +1297,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         const otherMachines = condos.filter(c => c.id !== userCondoId);
         if (otherMachines.length === 0) return null;
         return (
-            <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg mb-8" style={{ animationDelay: '100ms' }}>
+            <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg mb-8" style={{ animationDelay: '100ms' }}>
                 <h3 className="text-lg font-semibold text-gray-300 mb-3">Ver produtos em:</h3>
                 <div className="flex flex-wrap gap-2">
                     {otherMachines.map(machine => (
@@ -1400,7 +1400,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             </header>
             
             <main className="container mx-auto p-4 md:p-8">
-                <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
+                <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
                     <div>
                         <h1 className="text-xl md:text-2xl">Olá, <span className="font-bold text-[#f2bd46]">{user?.name}</span>!</h1>
                         <p className="text-gray-300">Confira os produtos disponíveis em <span className="font-semibold">{currentCondo?.name || '...'}</span>.</p>
@@ -1415,14 +1415,14 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 {!isLoading && !error && (
                     <div className="flex flex-col gap-10 pb-24">
                         {!currentCondo && (
-                            <div className="animate-surgir text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg">
+                            <div className="animate-surgir text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                 <Refrigerator size={48} className="mx-auto mb-4" />
                                 <p className="text-xl font-semibold">Nenhuma máquina selecionada</p>
                                 <p>Por favor, selecione uma máquina na seção "Ver produtos em:" acima para começar a comprar.</p>
                             </div>
                         )}
                         {currentCondo && Object.keys(categories).length === 0 && (
-                            <div className="animate-surgir text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg">
+                            <div className="animate-surgir text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                 <Refrigerator size={48} className="mx-auto mb-4" />
                                 <p className="text-xl font-semibold">Máquina Vazia!</p>
                                 <p>Parece que não há produtos disponíveis nesta máquina no momento.</p>
@@ -1523,7 +1523,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1681,7 +1681,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                 userBalance={userBalance}
             />
 
-            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b bg-[#1a1a1a]/80/50">
+            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Carrinho</h1>
@@ -1690,7 +1690,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
             <main className="container mx-auto p-4 md:p-8">
                 {cart.length === 0 ? (
                     // --- CARD VAZIO (Estilo de Vidro) ---
-                    <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg animate-surgir">
+                    <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
                         <ShoppingCart size={48} className="mx-auto mb-4" />
                         <h2 className="text-2xl font-semibold mb-2">Seu carrinho está vazio</h2>
                         <p>Adicione produtos da loja para começar a comprar.</p>
@@ -1702,7 +1702,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                         <div className="lg:col-span-2 flex flex-col gap-4">
                             {cart.map(item => (
                                 // --- CARD DO ITEM (Estilo de Vidro) ---
-                                <div key={item.id} className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 rounded-lg p-4 flex items-center gap-4 animate-surgir">
+                                <div key={item.id} className="border-gray-700 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 flex items-center gap-4 animate-surgir">
                                     {/* Imagem (Maior e Quadrada) */}
                                     <img 
                                         src={item.image_url || `https://placehold.co/100x100/374151/ffffff?text=${item.name.replace(' ', '+')}`} 
@@ -1725,13 +1725,13 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                         </div>
                         
                         {/* --- RESUMO DE PAGAMENTO (Estilo de Vidro e Neon) --- */}
-                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 rounded-lg p-6 h-fit sticky top-24 animate-surgir">
-                            <h2 className="text-xl font-bold mb-4 border-b bg-[#1a1a1a]/80 pb-4">Resumo do Pedido</h2>
+                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 h-fit sticky top-24 animate-surgir">
+                            <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-4">Resumo do Pedido</h2>
                             <div className="flex justify-between mb-2 text-gray-300"><span>Subtotal</span><span>R$ {cartTotal.toFixed(2).replace('.', ',')}</span></div>
                             <div className="flex justify-between mb-4 text-gray-300"><span>Taxas</span><span>R$ 0,00</span></div>
                             
                             {/* --- TOTAL (Sem Neon) --- */}
-                            <div className="flex justify-between text-white items-center font-bold text-3xl mb-4 border-t bg-[#1a1a1a]/80 pt-4">
+                            <div className="flex justify-between text-white items-center font-bold text-3xl mb-4 border-t border-gray-700 pt-4">
                                 <span>Total</span>
                                 <span className="text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                             </div>
@@ -1908,7 +1908,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                     </div>
                 </div>
 
-                <div className="mt-8 border-t bg-[#1a1a1a]/80 pt-6">
+                <div className="mt-8 border-t border-gray-700 pt-6">
                     <div className="flex justify-center items-center gap-3 text-[#f2bd46]">
                         <Loader2 className="animate-spin" />
                         <span>A aguardar confirmação do pagamento...</span>
@@ -2211,7 +2211,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-gray-800/80 backdrop-blur-sm border-b bg-[#1a1a1a]/80/50 shadow-md sticky top-0 z-10">
+            <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700/50 shadow-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('wallet')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Depositar com Cartão</h1>
@@ -2222,7 +2222,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
                     <p className="text-center text-lg text-gray-300 mb-6">Valor do depósito: <span className="font-bold text-[#f2bd46]">R$ {depositAmount.toFixed(2).replace('.', ',')}</span></p>
                     
                     {/* Container do Brick (Glassmorphism) */}
-                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-6 rounded-lg">
+                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg">
                         
                         {/* 1. O Brick será renderizado aqui */}
                         <div id="cardPaymentBrick_container"></div>
@@ -2427,8 +2427,8 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
             
             {/* --- CARD PRINCIPAL (Glassmorphism) --- */}
             <div className="w-full max-w-md 
-                            bg-[#1a1a1a]/80 backdrop-blur-sm 
-                            border bg-[#1a1a1a]/80/50 
+                            border-gray-700 backdrop-blur-sm 
+                            border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             flex flex-col items-center justify-center 
                             min-h-[450px] overflow-hidden relative 
@@ -2551,8 +2551,8 @@ const DepositSuccessPage = ({ setPage }) => {
             
             {/* --- CARD REDESENHADO (Glassmorphism) --- */}
             <div className="w-full max-w-md 
-                            bg-[#1a1a1a]/80 backdrop-blur-sm 
-                            border bg-[#1a1a1a]/80/50 
+                            border-gray-700 backdrop-blur-sm 
+                            border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             flex flex-col items-center justify-center 
                             min-h-[400px] overflow-hidden relative 
@@ -2657,7 +2657,7 @@ const EditProfileModal = ({ user, isOpen, onClose, onSave, token }) => {
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -2779,7 +2779,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSave, token, user }) => {
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={handleSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -2876,7 +2876,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
         
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b bg-[#1a1a1a]/80/50">
+                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Conta</h1>
@@ -2887,7 +2887,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                     <div className="max-w-2xl mx-auto flex flex-col gap-8">
                     
                         {/* --- Seção 1: Meus Dados (Glassmorphism + Animação) --- */}
-                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
+                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold text-[#f2bd46]">Meus Dados</h3>
                                 {/* Botão Editar (Neon Azul) */}
@@ -2918,7 +2918,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                         </div>
                         
                         {/* --- Seção 2: Segurança (Glassmorphism + Animação) --- */}
-                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
+                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
                             <h3 className="text-xl font-bold text-[#f2bd46] mb-4">Segurança</h3>
                             {/* Botão Alterar Senha (Redesenhado) */}
                             <button 
@@ -2969,7 +2969,7 @@ const Footer = () => {
     
     return (
         // --- RODAPÉ REDESENHADO (Glassmorphism) ---
-        <footer className="bg-[#1a1a1a]/80 backdrop-blur-sm border-t bg-[#1a1a1a]/80/50 mt-12">
+        <footer className="border-gray-700 backdrop-blur-sm border-t border-gray-700/50 mt-12">
             <style>{keyframes}</style>
             
             <div className="container mx-auto px-4 md:px-8 py-8 text-center animate-surgir">
@@ -3004,7 +3004,7 @@ const Footer = () => {
                 </div>
 
                 {/* PARTE DE BAIXO: Direitos Autorais (Separado por uma linha) */}
-                <div className="border-t bg-[#1a1a1a]/80/50 pt-6">
+                <div className="border-t border-gray-700/50 pt-6">
                     <p className="text-sm text-gray-400">&copy; {new Date().getFullYear()} SmartFridge. Todos os direitos reservados.</p>
                 </div>
 
@@ -3129,7 +3129,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-green-500/20 border-2 border-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -3229,7 +3229,7 @@ const TransferModal = ({
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             <style>{keyframes}</style>
             {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <form onSubmit={onSubmit} className="bg-gray-800/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            <form onSubmit={onSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -3450,7 +3450,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
         return (
             // O card agora usa 'flex' para alinhar o ícone e o conteúdo
             <div 
-                className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg flex items-center gap-4"
+                className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4"
                 // Não há necessidade de 'onClick' aqui, pois é apenas um resumo
             >
                 {/* Ícone (Neon e Colorido) */}
@@ -3483,7 +3483,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
     const WalletActionCard = ({ icon, label, onClick }) => (
         <div 
             onClick={onClick} 
-            className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-xl 
+            className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-xl 
                        flex flex-col items-center justify-center gap-2 
                        hover:bg-gray-700/60 hover:border-gray-600 cursor-pointer transition"
         >
@@ -3531,7 +3531,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
 
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b bg-[#1a1a1a]/80/50">
+                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Carteira</h1>
@@ -3541,7 +3541,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 <main className="container mx-auto p-4 md:p-8 flex flex-col gap-8 max-w-2xl">
                     
                     {/* --- CARD DE SALDO (Glassmorphism + Neon) --- */}
-                    <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
+                    <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
                         <div className="flex justify-between items-start mb-10">
                             <div>
                                 <p className="text-sm text-gray-300">Saldo Disponível</p>
@@ -3721,7 +3721,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold">Relatório de Vendas</h2>
             
             {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-gray-800 p-4 rounded-xl shadow-md border bg-[#1a1a1a]/80">
+            <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -3761,7 +3761,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
             {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-orange-500" size={40} /></div> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
                 <>
                     {/* --- VERSÃO DESKTOP (Tabela Completa) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border bg-[#1a1a1a]/80">
+                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
                         <table className="w-full text-left whitespace-nowrap">
                             <thead className="bg-gray-700 text-gray-200">
                                 <tr>
@@ -3797,11 +3797,11 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                         {expandedRow === item.id && (
                                             <tr className="bg-black/50">
                                                 <td colSpan="7" className="p-4 pl-12">
-                                                    <div className="bg-gray-800 p-4 rounded-lg border bg-[#1a1a1a]/80">
+                                                    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
                                                         <h4 className="font-bold text-[#f2bd46] text-sm mb-2">Detalhes do Pedido #{item.id}</h4>
                                                         <ul className="space-y-1 text-sm text-gray-300">
                                                             {item.items.map((prod, idx) => (
-                                                                <li key={idx} className="flex justify-between border-b bg-[#1a1a1a]/80 pb-1 last:border-0">
+                                                                <li key={idx} className="flex justify-between border-b border-gray-700 pb-1 last:border-0">
                                                                     <span>{prod.quantity}x {prod.product_name}</span>
                                                                     <span className="font-mono text-gray-400">R$ {parseFloat(prod.price).toFixed(2)}</span>
                                                                 </li>
@@ -3820,7 +3820,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                     {/* --- VERSÃO MOBILE (Cards) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {reportData.log?.length > 0 ? reportData.log.map(item => (
-                            <div key={item.id} className={`bg-gray-800 rounded-xl p-4 shadow-md border bg-[#1a1a1a]/80 ${item.status === 'refunded' ? 'opacity-75 border-red-900/30' : ''}`}>
+                            <div key={item.id} className={`bg-gray-800 rounded-xl p-4 shadow-md border border-gray-700 ${item.status === 'refunded' ? 'opacity-75 border-red-900/30' : ''}`}>
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
                                         <h4 className="font-bold text-white text-lg">{item.user_name}</h4>
@@ -3844,8 +3844,8 @@ const EntradasVendasPage = ({ condominiums, token }) => {
 
                                 {/* Área Expansível Mobile */}
                                 {expandedRow === item.id && (
-                                    <div className="mb-4 bg-black/30 p-3 rounded border bg-[#1a1a1a]/80/50 animate-surgir">
-                                        <p className="text-xs font-bold text-[#f2bd46] mb-2 border-b bg-[#1a1a1a]/80 pb-1">Itens Comprados:</p>
+                                    <div className="mb-4 bg-black/30 p-3 rounded border border-gray-700/50 animate-surgir">
+                                        <p className="text-xs font-bold text-[#f2bd46] mb-2 border-b border-gray-700 pb-1">Itens Comprados:</p>
                                         <ul className="space-y-2">
                                             {item.items.map((prod, idx) => (
                                                 <li key={idx} className="flex justify-between text-xs text-gray-300">
@@ -3988,7 +3988,7 @@ const CentralCashierPage = ({ token }) => {
                     </div>
 
                     {/* --- TABELA OTIMIZADA COM PAGINAÇÃO --- */}
-                    <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden border bg-[#1a1a1a]/80 flex flex-col">
+                    <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-700 flex flex-col">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left whitespace-nowrap">
                                 <thead className="bg-gray-700/50">
@@ -4041,7 +4041,7 @@ const CentralCashierPage = ({ token }) => {
 
                         {/* --- RODAPÉ DE PAGINAÇÃO (NOVO) --- */}
                         {history.length > 0 && (
-                            <div className="bg-gray-800 p-4 border-t bg-[#1a1a1a]/80 flex justify-between items-center">
+                            <div className="bg-gray-800 p-4 border-t border-gray-700 flex justify-between items-center">
                                 <span className="text-sm text-gray-400">
                                     Página <span className="text-white font-bold">{currentPage}</span> de {totalPages}
                                 </span>
@@ -4070,7 +4070,7 @@ const CentralCashierPage = ({ token }) => {
             {/* Modal de Retirada */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border bg-[#1a1a1a]/80">
+                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
                         <h2 className="text-xl font-bold mb-6 text-white">Registrar Saída</h2>
                         <form onSubmit={handleWithdrawalSubmit}>
                             <div className="mb-4">
@@ -4163,7 +4163,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold text-white">Gestão de Riscos (Estoque/Validade)</h2>
             
             {/* --- SELETOR DE CONDOMÍNIO --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-md">
+            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
                 <label className="text-sm text-gray-400 mb-1 block">Analisar Condomínio:</label>
                 <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-orange-500 outline-none transition">
                     {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -4183,7 +4183,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         {expiringSoonItems.length > 0 ? (
                             <>
                                 {/* VISÃO PC */}
-                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border bg-[#1a1a1a]/80 shadow-md">
+                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-md">
                                     <table className="w-full text-left">
                                         <thead className="bg-gray-700 text-gray-200">
                                             <tr>
@@ -4225,7 +4225,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 </div>
                             </>
                         ) : (
-                            <div className="bg-[#1a1a1a]/80 p-6 rounded-lg text-center border border-dashed border-gray-600">
+                            <div className="border-gray-700 p-6 rounded-lg text-center border border-dashed border-gray-600">
                                 <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
                                 <p className="text-gray-400">Tudo certo! Nenhum produto vencendo nos próximos 30 dias.</p>
                             </div>
@@ -4242,11 +4242,11 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 flex items-center gap-4">
+                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center gap-4">
                                 <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-400"><DollarSign size={24} /></div>
                                 <div><p className="text-sm text-gray-400">Custo Est. Reposição</p><p className="text-xl font-bold text-white">R$ {totalReorderCost.toFixed(2)}</p></div>
                             </div>
-                            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 flex items-center gap-4">
+                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center gap-4">
                                 <div className="p-3 bg-blue-500/20 rounded-full text-blue-400"><Package size={24} /></div>
                                 <div><p className="text-sm text-gray-400">Itens a Comprar</p><p className="text-xl font-bold text-white">{totalReorderItems} un.</p></div>
                             </div>
@@ -4255,7 +4255,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         {criticalItems.length > 0 ? (
                             <>
                                 {/* VISÃO PC */}
-                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border bg-[#1a1a1a]/80 shadow-md">
+                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-md">
                                     <table className="w-full text-left">
                                         <thead className="bg-gray-700 text-gray-200">
                                             <tr>
@@ -4289,7 +4289,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 {/* VISÃO MOBILE (Action Cards) */}
                                 <div className="md:hidden flex flex-col gap-4">
                                     {criticalItems.map((item) => (
-                                        <div key={item.product_id} className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-lg relative">
+                                        <div key={item.product_id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
                                             {/* Badge de Sugestão */}
                                             <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                                                 Comprar +{item.suggested_reorder_quantity}
@@ -4300,7 +4300,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                                 <p className="text-xs text-gray-400">Custo Est: <span className="text-yellow-400 font-bold">R$ {parseFloat(item.reorder_cost).toFixed(2)}</span></p>
                                             </div>
                                             
-                                            <div className="bg-black/50 p-3 rounded-lg border bg-[#1a1a1a]/80/50 mb-3 flex justify-between items-center">
+                                            <div className="bg-black/50 p-3 rounded-lg border border-gray-700/50 mb-3 flex justify-between items-center">
                                                 <span className="text-xs text-gray-400">Mínimo Ideal: <strong className="text-gray-200">{item.critical_stock_level}</strong></span>
                                                 <span className="text-xs text-red-400 font-bold flex items-center gap-1"><ArrowDownToLine size={12}/> Abaixo do nível</span>
                                             </div>
@@ -4327,7 +4327,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 </div>
                             </>
                         ) : (
-                            <div className="bg-[#1a1a1a]/80 p-6 rounded-lg text-center border border-dashed border-gray-600">
+                            <div className="border-gray-700 p-6 rounded-lg text-center border border-dashed border-gray-600">
                                 <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
                                 <p className="text-gray-400">Estoque saudável! Nenhum produto abaixo do nível crítico.</p>
                             </div>
@@ -4387,7 +4387,7 @@ const UserManagementPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold">Gestão de Utilizadores</h2>
             
             {/* --- BARRA DE PESQUISA RESPONSIVA --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-md">
+            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
                 <label className="text-sm text-gray-400 mb-1 block">Procurar Utilizador</label>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -4404,7 +4404,7 @@ const UserManagementPage = ({ condominiums, token }) => {
             {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : error ? <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p> : (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border bg-[#1a1a1a]/80">
+                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
                         <table className="w-full text-left whitespace-nowrap">
                             <thead className="bg-gray-700 text-gray-200">
                                 <tr>
@@ -4452,7 +4452,7 @@ const UserManagementPage = ({ condominiums, token }) => {
                     {/* --- VISÃO MOBILE (Cards de Perfil) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                            <div key={user.id} className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-lg relative">
+                            <div key={user.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
                                 {/* Status Dot */}
                                 <div className={`absolute top-4 right-4 h-3 w-3 rounded-full ${user.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`}></div>
 
@@ -4467,7 +4467,7 @@ const UserManagementPage = ({ condominiums, token }) => {
                                     </div>
                                 </div>
                                 
-                                <div className="bg-black/50 p-3 rounded-lg border bg-[#1a1a1a]/80/50 mb-4 flex justify-between items-center">
+                                <div className="bg-black/50 p-3 rounded-lg border border-gray-700/50 mb-4 flex justify-between items-center">
                                     <div>
                                         <p className="text-xs text-gray-500 uppercase">Saldo em Carteira</p>
                                         <p className="text-xl font-bold text-green-400">R$ {parseFloat(user.wallet_balance || 0).toFixed(2)}</p>
@@ -4486,7 +4486,7 @@ const UserManagementPage = ({ condominiums, token }) => {
                                 </button>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border bg-[#1a1a1a]/80">
+                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
                                 <UsersIcon size={48} className="mx-auto mb-3 opacity-20" />
                                 <p>Nenhum utilizador encontrado.</p>
                             </div>
@@ -4545,7 +4545,7 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
                     </thead>
                     <tbody>
                         {condominiums.map(condo => (
-                            <tr key={condo.id} className="border-b bg-[#1a1a1a]/80">
+                            <tr key={condo.id} className="border-b border-gray-700">
                                 {/* --- DADOS DO CONDOMÍNIO RESTAURADOS --- */}
                                 <td className="p-4">{condo.name}</td>
                                 <td className="p-4 font-mono">{condo.fridge_id}</td>
@@ -4820,7 +4820,7 @@ const StockManagement = ({ condominiums, token }) => {
             </div>
             
             {/* --- FILTROS E PESQUISA --- */}
-            <div className="bg-gray-800 p-4 rounded-xl shadow-md border bg-[#1a1a1a]/80">
+            <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full md:w-1/3">
                         <label className="text-sm text-gray-400 mb-1 block">Selecionar Condomínio</label>
@@ -4850,7 +4850,7 @@ const StockManagement = ({ condominiums, token }) => {
             {isStockLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : selectedCondoId && (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden shadow-md border bg-[#1a1a1a]/80">
+                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden shadow-md border border-gray-700">
                         <table className="w-full text-left">
                             <thead className="bg-gray-700 text-gray-200">
                                 <tr>
@@ -4888,7 +4888,7 @@ const StockManagement = ({ condominiums, token }) => {
                     {/* --- VISÃO MOBILE (Cards de Edição) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {filteredInventory.length > 0 ? filteredInventory.map(product => (
-                            <div key={product.id} className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-lg">
+                            <div key={product.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
                                         <img src={product.image_url || 'https://placehold.co/60x60'} className="h-14 w-14 rounded-lg object-cover bg-black" alt=""/>
@@ -4929,7 +4929,7 @@ const StockManagement = ({ condominiums, token }) => {
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border bg-[#1a1a1a]/80">
+                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
                                 <Package size={48} className="mx-auto mb-3 opacity-20" />
                                 <p>Nenhum produto encontrado neste condomínio.</p>
                             </div>
@@ -5049,7 +5049,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
     // Componente de Card
     const StatCard = ({ label, value, colorClass = 'text-white', icon: Icon, subLabel }) => (
-        <div className="bg-gray-800 p-4 rounded-xl shadow-md border bg-[#1a1a1a]/80 flex flex-col justify-between h-full">
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700 flex flex-col justify-between h-full">
             <div className="flex justify-between items-start mb-2">
                 <p className="text-sm text-gray-400">{label}</p>
                 {Icon && <Icon size={20} className="text-gray-500" />}
@@ -5066,7 +5066,7 @@ const FinanceReport = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold text-white">Relatórios Financeiros</h2>
 
             {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-md">
+            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -5092,7 +5092,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
             {/* --- RELATÓRIO DRE (CARDS) --- */}
             <div>
-                <h3 className="text-xl font-bold mb-4 text-[#f2bd46] border-b bg-[#1a1a1a]/80 pb-2">Demonstrativo (DRE)</h3>
+                <h3 className="text-xl font-bold mb-4 text-[#f2bd46] border-b border-gray-700 pb-2">Demonstrativo (DRE)</h3>
                 {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : error ? <p className="text-red-400">{error}</p> : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard label="Faturamento Bruto" value={`R$ ${summaryCards.gross_revenue.toFixed(2)}`} colorClass="text-green-400" icon={DollarSign} />
@@ -5113,7 +5113,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
             {/* --- SEÇÃO 2: DESPESAS --- */}
             <div className="mt-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b bg-[#1a1a1a]/80 pb-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-700 pb-4">
                     <div>
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                             <FileText className="text-orange-500" /> Contas a Pagar
@@ -5126,7 +5126,7 @@ const FinanceReport = ({ condominiums, token }) => {
                 </div>
 
                 {/* VISÃO PC (Tabela) */}
-                <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border bg-[#1a1a1a]/80">
+                <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
                     <table className="w-full text-left whitespace-nowrap">
                         <thead className="bg-gray-700 text-gray-200">
                             <tr>
@@ -5166,7 +5166,7 @@ const FinanceReport = ({ condominiums, token }) => {
                 {/* VISÃO MOBILE (Cards) */}
                 <div className="md:hidden flex flex-col gap-4">
                     {expenses.length > 0 ? expenses.map(expense => (
-                        <div key={expense.id} className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-lg relative">
+                        <div key={expense.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
                             {/* Status Stripe */}
                             <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${expense.status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                             
@@ -5183,7 +5183,7 @@ const FinanceReport = ({ condominiums, token }) => {
                                     <span className="font-bold text-white text-lg">R$ {parseFloat(expense.amount).toFixed(2)}</span>
                                 </div>
                                 
-                                <div className="flex gap-2 border-t bg-[#1a1a1a]/80 pt-3">
+                                <div className="flex gap-2 border-t border-gray-700 pt-3">
                                     {expense.status === 'pending' && (
                                         <button onClick={() => handleMarkAsPaid(expense.id)} className="flex-1 bg-green-600/10 text-green-400 hover:bg-green-600/20 py-2 rounded-lg flex items-center justify-center gap-2 font-bold text-sm transition border border-green-600/20">
                                             <CheckCircle2 size={16} /> Pagar
@@ -5196,7 +5196,7 @@ const FinanceReport = ({ condominiums, token }) => {
                             </div>
                         </div>
                     )) : (
-                        <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border bg-[#1a1a1a]/80">
+                        <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
                             <FileText size={48} className="mx-auto mb-3 opacity-20" />
                             <p>Nenhuma despesa encontrada.</p>
                         </div>
@@ -5207,7 +5207,7 @@ const FinanceReport = ({ condominiums, token }) => {
             {/* Modal de Despesa */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border bg-[#1a1a1a]/80">
+                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
                         <h2 className="text-xl font-bold mb-6 text-white">Nova Despesa</h2>
                         <form onSubmit={handleCreateExpense}>
                             <div className="space-y-4">
@@ -5353,12 +5353,12 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                         <div className="md:col-span-2"><label className="text-sm text-gray-400">Descrição</label><textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" rows="3"></textarea></div>
                         <div className="md:col-span-2"><label className="text-sm text-gray-400">URL da Imagem</label><input name="image_url" value={formData.image_url || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
                         
-                        <div className="md:col-span-2 border-t bg-[#1a1a1a]/80 mt-4 pt-4 font-bold text-[#f2bd46]">Precificação</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Precificação</div>
                         
                         <div><label className="text-sm text-gray-400">Preço de Compra (Custo)</label><input name="purchase_price" type="number" step="0.01" value={formData.purchase_price || ''} onChange={handleChange} placeholder="Ex: 5.50" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                         <div><label className="text-sm text-gray-400">Preço de Venda Padrão</label><input name="sale_price" type="number" step="0.01" value={formData.sale_price || ''} onChange={handleChange} placeholder="Ex: 9.99" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                         
-                        <div className="md:col-span-2 border-t bg-[#1a1a1a]/80 mt-4 pt-4 font-bold text-[#f2bd46]">Promoção (Opcional)</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Promoção (Opcional)</div>
 
                         {/* --- CAMPO DE PREÇO PROMOCIONAL ATUALIZADO (MANUAL) --- */}
                         <div>
@@ -5397,7 +5397,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                         <div><label className="text-sm text-gray-400">Início da Promoção</label><input name="promotion_start_date" type="date" value={formData.promotion_start_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
                         <div><label className="text-sm text-gray-400">Fim da Promoção</label><input name="promotion_end_date" type="date" value={formData.promotion_end_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
 
-                        <div className="md:col-span-2 border-t bg-[#1a1a1a]/80 mt-4 pt-4 font-bold text-[#f2bd46]">Estoque</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Estoque</div>
                         <div><label className="text-sm text-gray-400">Nível Crítico de Estoque</label><input name="critical_stock_level" type="number" value={formData.critical_stock_level || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                     </div>
                     <div className="flex justify-end gap-4 mt-6">
@@ -5521,8 +5521,8 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
             <div className="w-full max-w-md">
 
                 {/* --- CARD DE VIDRO (Layout do Login) --- */}
-                <div className="bg-[#1a1a1a]/80 backdrop-blur-sm 
-                                border bg-[#1a1a1a]/80/50 
+                <div className="border-gray-700 backdrop-blur-sm 
+                                border border-gray-700/50 
                                 p-8 rounded-2xl shadow-2xl 
                                 animate-surgir"
                 >
@@ -5592,7 +5592,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                     </form>
                     
                     {/* --- Botão Sair (Sutil) --- */}
-                    <div className="text-center mt-6 border-t bg-[#1a1a1a]/80/50 pt-6">
+                    <div className="text-center mt-6 border-t border-gray-700/50 pt-6">
                         <button 
                             onClick={onLogout} 
                             className="text-sm text-red-500 hover:text-red-400 transition 
@@ -6185,7 +6185,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                 <h3 className="text-xl md:text-2xl font-bold border-b-2 border-orange-500 pb-2 mb-4">Performance de Vendas</h3>
 
                 {/* --- FILTROS RESPONSIVOS --- */}
-                <div className="bg-gray-800 p-4 rounded-xl mb-6 shadow-md border bg-[#1a1a1a]/80">
+                <div className="bg-gray-800 p-4 rounded-xl mb-6 shadow-md border border-gray-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                         <div className="w-full">
                             <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -6361,7 +6361,7 @@ const AdminDashboard = ({ onLogout }) => {
                 </div>
                 
                 {/* --- FILTROS RESPONSIVOS --- */}
-                <div className="bg-gray-800 p-4 rounded-xl shadow-md border bg-[#1a1a1a]/80">
+                <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
                     <div className="flex flex-col md:flex-row gap-4 items-end">
                         <div className="w-full md:flex-grow">
                             <label className="text-sm text-gray-400 mb-1 block">Pesquisar Produto</label>
@@ -6386,7 +6386,7 @@ const AdminDashboard = ({ onLogout }) => {
                 {isLoading && activeTab === 'products' ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : (
                     <>
                         {/* --- VISÃO PC (Tabela) --- */}
-                        <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border bg-[#1a1a1a]/80">
+                        <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
                             <table className="w-full text-left whitespace-nowrap">
                                 <thead className="bg-gray-700 text-gray-300">
                                     <tr>
@@ -6435,7 +6435,7 @@ const AdminDashboard = ({ onLogout }) => {
                         {/* --- VISÃO MOBILE (Cards Estilo iFood) --- */}
                         <div className="md:hidden flex flex-col gap-4">
                             {currentItems.map(product => (
-                                <div key={product.id} className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 shadow-lg relative overflow-hidden">
+                                <div key={product.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden">
                                     {/* Etiqueta de Promoção */}
                                     {product.promotional_price && (
                                         <div className="absolute top-0 right-0 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
@@ -6475,7 +6475,7 @@ const AdminDashboard = ({ onLogout }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-2 mt-4 pt-3 border-t bg-[#1a1a1a]/80">
+                                    <div className="flex gap-2 mt-4 pt-3 border-t border-gray-700">
                                         <button 
                                             onClick={() => handleOpenProductModal(product)} 
                                             className="flex-1 bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition"
@@ -6495,7 +6495,7 @@ const AdminDashboard = ({ onLogout }) => {
 
                         {/* --- PAGINAÇÃO (Visível em Mobile e Desktop) --- */}
                         {filteredProducts.length > itemsPerPage && (
-                            <div className="bg-gray-800 p-4 rounded-xl border bg-[#1a1a1a]/80 flex justify-between items-center shadow-md">
+                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center shadow-md">
                                 <span className="text-sm text-gray-400">
                                     Página <span className="text-white font-bold">{currentPage}</span> de {totalPages}
                                 </span>
@@ -6565,7 +6565,7 @@ const AdminDashboard = ({ onLogout }) => {
                             </thead>
                             <tbody>
                                 {condominiums.map(condo => (
-                                    <tr key={condo.id} className="border-b bg-[#1a1a1a]/80">
+                                    <tr key={condo.id} className="border-b border-gray-700">
                                         <td className="p-4">{condo.name}</td>
                                         <td className="p-4 font-mono">{condo.fridge_id}</td>
                                         <td className="p-4 text-center">{condo.user_count}</td>
@@ -6623,7 +6623,7 @@ const AdminDashboard = ({ onLogout }) => {
             <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
             
             {/* --- HEADER MOBILE (Novo) --- */}
-            <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center border-b bg-[#1a1a1a]/80 sticky top-0 z-30">
+            <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
                 <div className="flex items-center gap-2">
                     <span className="text-xl font-bold text-orange-500">Pronto</span>
                     <span className="text-xl font-light">Admin</span>
@@ -6640,7 +6640,7 @@ const AdminDashboard = ({ onLogout }) => {
             
             {/* --- SIDEBAR RESPONSIVA --- */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-4 flex flex-col shrink-0 border-r bg-[#1a1a1a]/80
+                fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-4 flex flex-col shrink-0 border-r border-gray-700
                 transform transition-transform duration-300 ease-in-out
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0 md:static md:block
@@ -6655,20 +6655,20 @@ const AdminDashboard = ({ onLogout }) => {
                     <NavButton active={activeTab === 'sales'} onClick={() => handleNavClick('sales')} icon={<DollarSign size={20} />} label="Entradas e Vendas" />
                     <NavButton active={activeTab === 'central-cashier'} onClick={() => handleNavClick('central-cashier')} icon={<PiggyBank size={20} />} label="Caixa Central" />
                     
-                    <div className="my-2 border-t bg-[#1a1a1a]/80/50"></div>
+                    <div className="my-2 border-t border-gray-700/50"></div>
                     
                     <NavButton active={activeTab === 'products'} onClick={() => handleNavClick('products')} icon={<Package size={20} />} label="Catálogo Produtos" />
                     <NavButton active={activeTab === 'stock'} onClick={() => handleNavClick('stock')} icon={<ShoppingCart size={20} />} label="Estoque Geral" />
                     <NavButton active={activeTab === 'critical-stock'} onClick={() => handleNavClick('critical-stock')} icon={<AlertTriangle size={20} />} label="Validade / Críticos" />
                     
-                    <div className="my-2 border-t bg-[#1a1a1a]/80/50"></div>
+                    <div className="my-2 border-t border-gray-700/50"></div>
 
                     <NavButton active={activeTab === 'condominiums'} onClick={() => handleNavClick('condominiums')} icon={<Building2 size={20} />} label="Condomínios" />
                     <NavButton active={activeTab === 'users'} onClick={() => handleNavClick('users')} icon={<UsersIcon size={20} />} label="Utilizadores" />
                     <NavButton active={activeTab === 'finance'} onClick={() => handleNavClick('finance')} icon={<BarChart size={20} />} label="Relatórios" />
                 </nav>
                 
-                <div className="mt-4 pt-4 border-t bg-[#1a1a1a]/80">
+                <div className="mt-4 pt-4 border-t border-gray-700">
                     <button onClick={onLogout} className="flex items-center w-full gap-3 p-3 rounded-md text-red-400 hover:bg-red-500/10 transition">
                         <LogOut size={20} /> Sair
                     </button>
@@ -6753,7 +6753,7 @@ const MyTicketsPage = ({ setPage }) => {
             <style>{keyframes}</style>
             
             {/* --- HEADER (Glassmorphism) --- */}
-            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b bg-[#1a1a1a]/80/50">
+            <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meus Tiquetes</h1>
@@ -6769,9 +6769,9 @@ const MyTicketsPage = ({ setPage }) => {
                                 // --- CARD DE TICKET (Redesenhado) ---
                                 <div 
                                     key={ticket.id} 
-                                    className={`animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
+                                    className={`animate-surgir border-gray-700 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
                                                 ${ticket.is_read 
-                                                    ? 'bg-[#1a1a1a]/80/50' // LIDO
+                                                    ? 'border-gray-700/50' // LIDO
                                                     : 'border-orange-500/50 shadow-lg shadow-orange-500/10' // NÃO LIDO
                                                 }`}
                                 >
@@ -6805,7 +6805,7 @@ const MyTicketsPage = ({ setPage }) => {
                             
                             )) : (
                                 // --- "Empty State" (Redesenhado) ---
-                                <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg animate-surgir">
+                                <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
                                     <Ticket size={48} className="mx-auto mb-4" />
                                     <h2 className="text-2xl font-semibold mb-2">Nenhum tiquete por aqui</h2>
                                     <p>Você não recebeu nenhuma mensagem ou notificação do administrador.</p>
@@ -6979,7 +6979,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                 {/* --- LAYOUT ATUALIZADO: Coluna única --- */}
                 <div>
                     {/* --- SEÇÃO DE INFORMAÇÕES ATUALIZADA --- */}
-                    <div className="mb-6 pb-6 border-b bg-[#1a1a1a]/80">
+                    <div className="mb-6 pb-6 border-b border-gray-700">
                         <h3 className="text-lg font-semibold mb-4">Informações do Utilizador</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -7023,7 +7023,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     </div>
                     
                     {/* --- SEÇÃO DE SENHA ADICIONADA --- */}
-                    <div className="mb-6 pb-6 border-b bg-[#1a1a1a]/80">
+                    <div className="mb-6 pb-6 border-b border-gray-700">
                         <h3 className="text-lg font-semibold mb-4 text-[#f2bd46]">Alterar Senha (Opcional)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -7040,7 +7040,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     {/* --- SEÇÃO DE CRÉDITO REMOVIDA --- */}
                     
                     {/* Botões de Ação (Salvar / Bloquear) */}
-                    <div className="flex flex-wrap gap-4 items-center mb-6 pb-6 border-b bg-[#1a1a1a]/80">
+                    <div className="flex flex-wrap gap-4 items-center mb-6 pb-6 border-b border-gray-700">
                          <button onClick={handleSaveInfo} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-gray-500"> <Save size={18} /> Salvar Informações </button>
                          <button onClick={handleToggleUserStatus} disabled={isSaving} className={`font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-gray-500 ${user.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}>
                              {user.is_active ? <><Ban size={18} /> Bloquear Conta</> : <><CheckCircle2 size={18} /> Desbloquear Conta</>}
@@ -7050,7 +7050,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     {/* --- SEÇÃO DE AÇÕES DA FATURA REMOVIDA --- */}
                     
                     {/* Seção Ajustar Saldo (sem alteração) */}
-                    <div className="mb-6 pb-6 border-b bg-[#1a1a1a]/80">
+                    <div className="mb-6 pb-6 border-b border-gray-700">
                          <h3 className="text-lg font-semibold mb-4">Ajustar Saldo Manualmente</h3>
                          <div className="flex gap-4 mb-2">
                              <input 
@@ -7224,7 +7224,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
                     <h3 className="text-xl font-bold mb-4">Pagar Fatura</h3>
                     {summary.totalToPay > 0 ? (
                         <>
-                            <div className="space-y-2 text-gray-300 mb-4 border-b bg-[#1a1a1a]/80 pb-4">
+                            <div className="space-y-2 text-gray-300 mb-4 border-b border-gray-700 pb-4">
                                 <p className="flex justify-between"><span>Faturas Pendentes:</span> <span>R$ {summary.pendingInvoicesAmount.toFixed(2).replace('.', ',')}</span></p>
                                 <p className="flex justify-between"><span>Gastos do ciclo atual:</span> <span>R$ {summary.currentSpending.toFixed(2).replace('.', ',')}</span></p>
                                 <p className="flex justify-between"><span>Taxa de Serviço (10%):</span> <span>R$ {summary.serviceFee.toFixed(2).replace('.', ',')}</span></p>
@@ -7358,7 +7358,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
     const PurchaseItem = ({ tx }) => (
         <div 
             onClick={() => openReceiptModal(tx.id)} 
-            className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+            className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
         >
             {/* Imagem */}
             <div className="flex-shrink-0 w-16 h-16 relative">
@@ -7400,7 +7400,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         return (
             <div 
                 onClick={() => openReceiptModal(tx.id)} 
-                className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+                className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
             >
                 {/* Ícone (Neon e Colorido) */}
                 <div className={`flex-shrink-0 ${iconClass}`}>
@@ -7431,7 +7431,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         if (activeTab === 'compras') {
             return (
                 <div className="animate-surgir mb-8">
-                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg">
+                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Total em Compras (pág.)</p>
                         <p className="text-2xl font-bold text-[#f2bd46]">R$ {summary.totalPurchases.toFixed(2).replace('.', ',')}</p>
                     </div>
@@ -7443,11 +7443,11 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         if (activeTab === 'carteira') {
             return (
                 <div className="animate-surgir grid grid-cols-2 gap-4 mb-8">
-                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg">
+                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Entradas (pág.)</p>
                         <p className="text-2xl font-bold text-green-400">R$ {summary.totalWalletIn.toFixed(2).replace('.', ',')}</p>
                     </div>
-                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 p-4 rounded-lg">
+                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Saídas (pág.)</p>
                         <p className="text-2xl font-bold text-red-400">R$ {summary.totalWalletOut.toFixed(2).replace('.', ',')}</p>
                     </div>
@@ -7464,7 +7464,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
             <TransactionReceiptModal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} transactionId={selectedTransactionId} token={token} />
             <div className="min-h-screen bg-black text-white">
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b bg-[#1a1a1a]/80/50">
+                <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Histórico</h1>
@@ -7507,7 +7507,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                                                 {purchases.map(tx => <PurchaseItem key={tx.id} tx={tx} />)}
                                             </div>
                                         ) : (
-                                            <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg">
+                                            <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                                 <ShoppingCart size={48} className="mx-auto mb-4" />
                                                 <h2 className="text-2xl font-semibold mb-2">Sem compras por aqui</h2>
                                                 <p>Seu histórico de pedidos aparecerá aqui.</p>
@@ -7522,7 +7522,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                                                 {walletActivity.map(tx => <WalletActivityItem key={tx.id} tx={tx} />)}
                                             </div>
                                         ) : (
-                                            <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border bg-[#1a1a1a]/80/50 text-gray-400 rounded-lg">
+                                            <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                                 <Wallet size={48} className="mx-auto mb-4" />
                                                 <h2 className="text-2xl font-semibold mb-2">Sem atividade na carteira</h2>
                                                 <p>Seu extrato de depósitos e transferências aparecerá aqui.</p>
