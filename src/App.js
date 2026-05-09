@@ -107,7 +107,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
         neon-button-orange
     `;
@@ -447,7 +447,7 @@ const AdminLoginModal = ({ show, onClose, onAdminLogin }) => {
                     {/* Botão Laranja Sólido */}
                     <button 
                         type="submit" 
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transform hover:scale-105 flex justify-center items-center transition" 
+                        className="w-full bg-[#f2bd46] hover:bg-orange-700 text-white font-bold py-3 rounded-lg transform hover:scale-105 flex justify-center items-center transition" 
                         disabled={isLoading}
                     >
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Entrar no Painel'}
@@ -938,7 +938,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                 <div className="w-full bg-gray-700/50 rounded-full h-2.5 mb-8">
                     <div 
                         className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out 
-                                   shadow-lg shadow-orange-500/30" 
+                                   shadow-lg shadow-[#f2bd46]/30" 
                         style={{ width: `${(step / 3) * 100}%` }}
                     ></div>
                 </div>
@@ -1249,7 +1249,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 border-gray-700 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
         if (isOnSale) { cardClasses += ` border-orange-500/50`; } else { cardClasses += ` border-gray-700/50`; }
         if (!isOutOfStock) { cardClasses += ` hover:shadow-xl hover:border-gray-600`; }
-        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50 transition-all `;
+        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50 transition-all `;
         const StockIndicator = () => {
             if (isOutOfStock) return null;
             if (product.stock <= product.critical_stock_level) {
@@ -1332,7 +1332,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     </div>
                 </div>
             </div>
-            <button className="bg-[#f2bd46] p-2 rounded-full text-white shadow-lg hover:bg-orange-600 transition transform group-hover:scale-110 flex-shrink-0">
+            <button className="bg-[#f2bd46] p-2 rounded-full text-white shadow-lg hover:bg-[#f2bd46] transition transform group-hover:scale-110 flex-shrink-0">
                 <Plus size={16} />
             </button>
         </div>
@@ -1604,7 +1604,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105
     `;
@@ -1694,7 +1694,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                         <ShoppingCart size={48} className="mx-auto mb-4" />
                         <h2 className="text-2xl font-semibold mb-2">Seu carrinho está vazio</h2>
                         <p>Adicione produtos da loja para começar a comprar.</p>
-                        <button onClick={() => setPage('home')} className="mt-6 bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition">Voltar para a Loja</button>
+                        <button onClick={() => setPage('home')} className="mt-6 bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-6 rounded-lg transition">Voltar para a Loja</button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1755,7 +1755,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                                         <span>Saldo insuficiente!</span>
                                     </div>
                                     <p className="text-sm mt-2">Faltam R$ {difference.toFixed(2).replace('.', ',')} para completar a compra.</p>
-                                    <button onClick={() => setPage('wallet')} className="font-bold bg-[#f2bd46] text-white rounded-md py-2 px-4 text-sm mt-3 hover:bg-orange-600">
+                                    <button onClick={() => setPage('wallet')} className="font-bold bg-[#f2bd46] text-white rounded-md py-2 px-4 text-sm mt-3 hover:bg-[#f2bd46]">
                                         Adicionar Saldo
                                     </button>
                                 </div>
@@ -1896,7 +1896,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                             className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all duration-300 ease-in-out 
                                         ${copySuccess 
                                             ? 'bg-green-600 text-white shadow-lg shadow-green-500/30' 
-                                            : 'bg-[#f2bd46] hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30 transform hover:scale-105'
+                                            : 'bg-[#f2bd46] hover:bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/30 transform hover:scale-105'
                                         }`}
                         >
                             {copySuccess ? (
@@ -3147,7 +3147,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
                             onClick={() => setDepositAmount(value.toString())}
                             className={`py-3 px-2 font-bold rounded-lg transition
                                         ${parseFloat(depositAmount) === value 
-                                            ? 'bg-[#f2bd46] text-white shadow-lg shadow-orange-500/30' 
+                                            ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/30' 
                                             : 'bg-gray-700/50 border border-gray-600/50 hover:bg-gray-700'
                                         }`}
                         >
@@ -3218,7 +3218,7 @@ const TransferModal = ({
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
         neon-button-orange
     `;
@@ -3739,7 +3739,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                     </div>
                     
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -3982,7 +3982,7 @@ const CentralCashierPage = ({ token }) => {
                             <History size={24} className="text-orange-500"/>
                             Histórico de Movimentações
                         </h3>
-                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                             <PlusCircle size={20} /> Nova Retirada
                         </button>
                     </div>
@@ -4056,7 +4056,7 @@ const CentralCashierPage = ({ token }) => {
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-orange-600'}`}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46]'}`}
                                     >
                                         Próxima
                                     </button>
@@ -4090,7 +4090,7 @@ const CentralCashierPage = ({ token }) => {
                             </div>
                             <div className="flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
-                                <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
+                                <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
                             </div>
                         </form>
                     </div>
@@ -4528,7 +4528,7 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
             {/* --- BOTÃO "NOVO CONDOMÍNIO" RESTAURADO --- */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
-                <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                     <PlusCircle size={20} /> Novo Condomínio
                 </button>
             </div>
@@ -5084,7 +5084,7 @@ const FinanceReport = ({ condominiums, token }) => {
                         <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
                     </div>
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -5120,7 +5120,7 @@ const FinanceReport = ({ condominiums, token }) => {
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">Total Pendente: <span className="text-yellow-400 font-bold">R$ {totalPendingExpenses.toFixed(2)}</span></p>
                     </div>
-                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition hover:scale-105">
+                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition hover:scale-105">
                         <PlusCircle size={20} /> Nova Despesa
                     </button>
                 </div>
@@ -5233,7 +5233,7 @@ const FinanceReport = ({ condominiums, token }) => {
                             {modalError && <p className="text-red-400 text-sm mt-4 text-center">{modalError}</p>}
                             <div className="flex justify-end gap-3 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
-                                <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
+                                <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
                             </div>
                         </form>
                     </div>
@@ -5286,7 +5286,7 @@ const CondoModal = ({ isOpen, onClose, onSave, condo }) => {
                     <input name="monthly_fixed_cost" type="number" step="0.01" value={formData.monthly_fixed_cost || ''} onChange={handleChange} placeholder="Custo Fixo Mensal" className="bg-gray-700 p-2 rounded-md md:col-span-2" />
                     <div className="md:col-span-2 flex justify-end gap-4 mt-4">
                         <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Cancelar</button>
-                        <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 py-2 px-4 rounded-md">Salvar</button>
+                        <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] py-2 px-4 rounded-md">Salvar</button>
                     </div>
                 </form>
             </div>
@@ -5754,7 +5754,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                 <div><label className="text-sm text-gray-400 mb-1 block">De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
                 <div><label className="text-sm text-gray-400 mb-1 block">Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
                 <button onClick={handleFilterToday} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Hoje</button>
-                <button onClick={handleApplyFilters} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><Filter size={16} /> Aplicar</button>
+                <button onClick={handleApplyFilters} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><Filter size={16} /> Aplicar</button>
             </div>
             {/* --- FIM DOS FILTROS --- */}
 
@@ -6355,7 +6355,7 @@ const AdminDashboard = ({ onLogout }) => {
                 {/* --- HEADER --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 className="text-2xl md:text-3xl font-bold">Catálogo de Produtos</h2>
-                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:scale-105">
+                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:scale-105">
                         <PlusCircle size={20} /> Novo Produto
                     </button>
                 </div>
@@ -6510,7 +6510,7 @@ const AdminDashboard = ({ onLogout }) => {
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-orange-600 hover:shadow'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46] hover:shadow'}`}
                                     >
                                         Próxima
                                     </button>
@@ -6547,7 +6547,7 @@ const AdminDashboard = ({ onLogout }) => {
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
-                    <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                    <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                         <PlusCircle size={20} /> Novo Condomínio
                     </button>
                 </div>
@@ -7081,7 +7081,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Enviar Tíquete / Notificação</h3>
                         <textarea value={ticketMessage} onChange={e => setTicketMessage(e.target.value)} placeholder="Digite sua mensagem para o usuário aqui..." className="w-full bg-gray-700 p-2 rounded-md mb-2" rows="3"></textarea>
-                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"><Ticket size={18} /> Enviar Tíquete</button>
+                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-[#f2bd46] hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"><Ticket size={18} /> Enviar Tíquete</button>
                     </div>
                 </div>
                 
