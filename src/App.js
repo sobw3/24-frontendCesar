@@ -240,7 +240,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
             >
                 {/* --- LOGO DE IMAGEM --- */}
                 <img 
-                    src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" // Caminho para a pasta /public
+                    src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho para a pasta /public
                     alt="SmartFridge Logo" 
                     className="h-10 w-auto mx-auto mb-6 print:h-12"
                 />
@@ -747,7 +747,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                         {/* ============================================== */}
                         <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '100ms' }}>
                             <img 
-                                src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" // Caminho direto para a pasta /public
+                                src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho direto para a pasta /public
                                 alt="SmartFridge Logo" 
                                 className="h-15 w-auto mx-auto" // Ajuste a altura (h-12) como preferir
                             />
@@ -1351,7 +1351,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                             {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-2 w-2 rounded-full"></span>}
                         </button>
                         <div className="cursor-pointer" onClick={() => setPage('home')}>
-                            <img src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" alt="SmartFridge Logo" className="h-8 w-auto" />
+                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-8 w-auto" />
                         </div>
                     </div>
                     
@@ -1851,7 +1851,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                 
                 <div className="text-center mb-6">
                     <img 
-                        src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" 
+                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
                         alt="SmartFridge Logo" 
                         className="h-10 w-auto mx-auto mb-4"
                     />
@@ -2979,7 +2979,7 @@ const Footer = () => {
                     
                     {/* Logo (Imagem) */}
                     <img 
-                        src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" // Caminho para a pasta /public
+                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho para a pasta /public
                         alt="SmartFridge Logo" 
                         className="h-11 w-auto mx-auto" // h-10 (40px)
                     />
@@ -5530,7 +5530,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                     {/* Logo (Imagem) */}
                     <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '100ms' }}>
                         <img 
-                            src="https://i.postimg.cc/44zWGjYx/Design-sem-nome.png" // Caminho para a pasta /public
+                            src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho para a pasta /public
                             alt="SmartFridge Logo" 
                             className="h-12 w-auto mx-auto" // h-12 (48px)
                         />
