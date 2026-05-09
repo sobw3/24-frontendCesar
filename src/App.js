@@ -1351,7 +1351,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                             {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-2 w-2 rounded-full"></span>}
                         </button>
                         <div className="cursor-pointer" onClick={() => setPage('home')}>
-                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-12 w-auto" />
+                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-15 w-auto" />
                         </div>
                     </div>
                     
