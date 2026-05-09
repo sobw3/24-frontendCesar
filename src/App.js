@@ -495,7 +495,7 @@ const ForgotPasswordPage = ({ setPage }) => {
     `;
     
     // --- Classe do Botão Neon (Laranja) ---
-    const neonButtonClass[#f2bd46] = `
+    const neonButtonClassOrange = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
@@ -623,7 +623,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                         {/* Botão Laranja (Neon) */}
                         <button 
                             type="submit" 
-                            className={`w-full ${neonButtonClass[#f2bd46]}`} 
+                            className={`w-full ${neonButtonClassOrange}`} 
                             disabled={isLoading}
                         >
                             {isLoading ? <Loader2 className="animate-spin" /> : 'Verificar'}
@@ -845,7 +845,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     `;
     
     // --- Classe do Botão Neon (Laranja) ---
-    const neonButtonClass[#f2bd46] = `
+    const neonButtonClassOrange = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
@@ -974,7 +974,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={() => setStep(step + 1)} 
                                     disabled={!validateStep1()} 
-                                    className={`flex items-center gap-2 ${neonButtonClass[#f2bd46]}`}
+                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
                                 >
                                     Avançar <ArrowRight size={16} />
                                 </button>
@@ -1015,7 +1015,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={() => setStep(step + 1)} 
                                     disabled={!validateStep2()} 
-                                    className={`flex items-center gap-2 ${neonButtonClass[#f2bd46]}`}
+                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
                                 >
                                     Avançar <ArrowRight size={16} />
                                 </button>
@@ -1042,7 +1042,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={handleRegisterSubmit} 
                                     disabled={!validateStep3() || isLoading} 
-                                    className={`flex items-center justify-center gap-2 px-6 ${neonButtonClass[#f2bd46]}`}
+                                    className={`flex items-center justify-center gap-2 px-6 ${neonButtonClassOrange}`}
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" /> : <>Finalizar <Check size={16} /></>}
                                 </button>
