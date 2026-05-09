@@ -108,7 +108,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
         bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         neon-button-[#f2bd46]
     `;
 
@@ -129,13 +129,13 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
                 <p className="text-gray-300 text-center mb-6">Você está prestes a transferir <span className="font-bold text-[#f2bd46]">R$ {parseFloat(amount || 0).toFixed(2).replace('.', ',')}</span> para:</p>
                 
                 {/* Card de Destinatário */}
-                <div className="bg-gray-700/80 p-4 rounded-lg text-left space-y-2 border border-gray-600/50">
+                <div className="bg-[#1a1a1a]/80 p-4 rounded-lg text-left space-y-2 border border-gray-600/50">
                     <p><span className="text-gray-400 font-medium">Nome:</span> <span className="text-white">{recipient?.name}</span></p>
                     <p><span className="text-gray-400 font-medium">E-mail:</span> <span className="text-white">{recipient?.email}</span></p>
                 </div>
                 
                 <div className="flex justify-center gap-4 mt-8">
-                    <button onClick={onClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">Cancelar</button>
+                    <button onClick={onClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-3 px-6 rounded-lg transition-colors">Cancelar</button>
                     <button 
                         onClick={onConfirm} 
                         disabled={isTransferring} 
@@ -189,7 +189,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
         bg-blue-500 text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
 
@@ -301,7 +301,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
                 <div className="flex justify-center gap-4 mt-8 print:hidden">
                     <button 
                         onClick={onClose} 
-                        className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                        className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
                         Fechar
                     </button>
@@ -360,9 +360,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (!totalPages || totalPages <= 1) return null;
     return (
         <div className="flex justify-center items-center gap-2 mt-6">
-            <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 bg-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-600 transition"><ArrowLeft size={16} /></button>
+            <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 bg-[#1a1a1a] rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowLeft size={16} /></button>
             <span className="text-gray-400">Página {currentPage} de {totalPages}</span>
-            <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 bg-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-600 transition"><ArrowRight size={16} /></button>
+            <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 bg-[#1a1a1a] rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowRight size={16} /></button>
         </div>
     );
 };
@@ -370,7 +370,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 const ProgressBar = ({ currentStep, totalSteps }) => {
     const progress = (currentStep / totalSteps) * 100;
     return (
-        <div className="w-full bg-gray-700 rounded-full h-2.5 mb-8">
+        <div className="w-full bg-[#1a1a1a] rounded-full h-2.5 mb-8">
             <div className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
         </div>
     );
@@ -499,7 +499,7 @@ const ForgotPasswordPage = ({ setPage }) => {
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
     
@@ -508,7 +508,7 @@ const ForgotPasswordPage = ({ setPage }) => {
         bg-green-600 text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-green-500/40 hover:shadow-green-500/60
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
     
@@ -578,7 +578,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                     onClick={() => setPage('login')} 
                     className="absolute top-4 left-4 text-gray-400 hover:text-[#f2bd46] 
                                flex items-center gap-2 font-medium transition
-                               bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-lg"
+                               bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] px-3 py-2 rounded-lg"
                     style={{ animationDelay: '100ms' }}
                 >
                     <ArrowLeft size={16} /> 
@@ -601,7 +601,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Seu CPF" 
                                 value={cpf} 
                                 onChange={(e) => setCpf(formatCPF(e.target.value))} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -613,7 +613,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Data de Nascimento (DD/MM/AAAA)"
                                 value={birthDate} 
                                 onChange={handleDateChange} // Usa a máscara
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -643,7 +643,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Nova senha (mín. 6 caracteres)" 
                                 value={newPassword} 
                                 onChange={(e) => setNewPassword(e.target.value)} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -654,7 +654,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Confirme a nova senha" 
                                 value={confirmPassword} 
                                 onChange={(e) => setConfirmPassword(e.target.value)} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -710,7 +710,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60 /* Sombra neon estática */
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105 /* Animação de hover */
     `;
     
@@ -764,7 +764,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                                     placeholder="Seu CPF" 
                                     value={cpf} 
                                     onChange={handleCpfChange} 
-                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                    className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                     required 
                                 />
                             </div>
@@ -775,7 +775,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                                     placeholder="Senha" 
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
-                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                    className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                     required 
                                 />
                             </div>
@@ -802,7 +802,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                         <div className="text-center mt-4 border-t border-gray-700/50 pt-4 animate-surgir" style={{ animationDelay: '400ms' }}>
                             <button 
                                 onClick={() => setShowAdminModal(true)} 
-                                className="text-gray-500 hover:text-white transition p-2 rounded-full hover:bg-gray-700/50"
+                                className="text-gray-500 hover:text-white transition p-2 rounded-full hover:bg-[#1a1a1a]/50"
                                 title="Acessar como Administrador"
                             >
                                 <Shield size={20} />
@@ -849,7 +849,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
     
@@ -935,7 +935,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                 <p className="text-gray-400 text-center mb-6">Siga as etapas para ter acesso às máquinas.</p>
                 
                 {/* Barra de Progresso Estilizada */}
-                <div className="w-full bg-gray-700/50 rounded-full h-2.5 mb-8">
+                <div className="w-full bg-[#1a1a1a]/50 rounded-full h-2.5 mb-8">
                     <div 
                         className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out 
                                    shadow-lg shadow-[#f2bd46]/30" 
@@ -956,15 +956,15 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         <div className="w-full flex-shrink-0 px-1">
                             <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">1. Informações Pessoais</h3>
                             <div className="flex flex-col gap-4">
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
                                 <div>
                                     <label className="text-sm text-gray-400 mb-2 block">Data de Nascimento</label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input type="text" name="birthDate" placeholder="DD/MM/AAAA" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
+                                        <input type="text" name="birthDate" placeholder="DD/MM/AAAA" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                 </div>
                             </div>
@@ -993,12 +993,12 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                     <div className="relative">
                                         <label className="text-sm text-gray-400 mb-2 block">Bloco / Torre</label>
                                         <Building2 className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
+                                        <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                     <div className="relative">
                                         <label className="text-sm text-gray-400 mb-2 block">Nº do Apartamento</label>
                                         <Home className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
+                                        <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                 </div>
                                 {/* --- FIM DA ALTERAÇÃO --- */}
@@ -1008,7 +1008,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                             <div className="mt-8 flex justify-between items-center">
                                 <button 
                                     onClick={() => setStep(step - 1)} 
-                                    className="flex items-center gap-2 bg-gray-600/50 hover:bg-gray-600 text-white font-bold py-3 px-5 rounded-lg transition"
+                                    className="flex items-center gap-2 bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] text-white font-bold py-3 px-5 rounded-lg transition"
                                 >
                                     <ArrowLeft size={16} /> Voltar
                                 </button>
@@ -1026,16 +1026,16 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         <div className="w-full flex-shrink-0 px-1">
                             <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">3. Segurança</h3>
                             <div className="flex flex-col gap-4">
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="flex items-center"><input id="terms" name="terms" type="checkbox" checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="h-4 w-4 text-[#f2bd46]-600 bg-gray-700 border-gray-600 rounded focus:ring-[#f2bd46]" /><label htmlFor="terms" className="ml-2 text-sm text-gray-300">Eu declaro que as informações são verdadeiras.</label></div>
+                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="flex items-center"><input id="terms" name="terms" type="checkbox" checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="h-4 w-4 text-[#f2bd46]-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-[#f2bd46]" /><label htmlFor="terms" className="ml-2 text-sm text-gray-300">Eu declaro que as informações são verdadeiras.</label></div>
                             </div>
                             
                             {/* --- BOTÕES MOVIDOS PARA DENTRO DA ETAPA --- */}
                             <div className="mt-8 flex justify-between items-center">
                                 <button 
                                     onClick={() => setStep(step - 1)} 
-                                    className="flex items-center gap-2 bg-gray-600/50 hover:bg-gray-600 text-white font-bold py-3 px-5 rounded-lg transition"
+                                    className="flex items-center gap-2 bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] text-white font-bold py-3 px-5 rounded-lg transition"
                                 >
                                     <ArrowLeft size={16} /> Voltar
                                 </button>
@@ -1208,17 +1208,17 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
 
     // --- SideMenu ---
     const SideMenu = () => (
-        <div className={`fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-xl z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
+        <div className={`fixed top-0 left-0 h-full w-64 bg-[#1a1a1a] shadow-xl z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
             <div className="p-4">
                 <div className="flex justify-between items-center mb-8"><span className="text-lg font-bold text-[#f2bd46]">Menu</span><button onClick={() => setShowMenu(false)}><X className="text-white" /></button></div>
                 <nav className="flex flex-col gap-4">
-                    <button onClick={() => setPage('wallet')} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-700 transition"><Wallet size={20} /> Minha Carteira</button>
-                    <button onClick={() => setPage('history')} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-700 transition"><History size={20} /> Meu Histórico</button>
-                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-gray-700 transition">
+                    <button onClick={() => setPage('wallet')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><Wallet size={20} /> Minha Carteira</button>
+                    <button onClick={() => setPage('history')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><History size={20} /> Meu Histórico</button>
+                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition">
                         <div className="flex items-center gap-3"><Ticket size={20} /> Meus Tiquetes</div>
                         {unreadTickets > 0 && <span className="bg-red-500 text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{unreadTickets}</span>}
                     </button>
-                    <button onClick={() => setPage('my-account')} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-700 transition"><User size={20} /> Minha Conta</button>
+                    <button onClick={() => setPage('my-account')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><User size={20} /> Minha Conta</button>
                 </nav>
             </div>
             <button onClick={onLogout} className="absolute bottom-0 left-0 w-full flex items-center gap-3 p-4 bg-black text-red-400 hover:bg-red-500/20 transition"><LogOut size={20} /> Sair</button>
@@ -1281,9 +1281,9 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     <StockIndicator />
                 </div>
                 <div className="flex-shrink-0 w-full md:w-auto">
-                    {isOutOfStock ? ( <span className="w-full block text-sm bg-gray-700 text-gray-400 font-semibold p-3 text-center rounded-md">ESGOTADO</span> ) : (
+                    {isOutOfStock ? ( <span className="w-full block text-sm bg-[#1a1a1a] text-gray-400 font-semibold p-3 text-center rounded-md">ESGOTADO</span> ) : (
                         <div className="flex flex-col md:flex-row items-center gap-3">
-                            <button onClick={(e) => onAddToCart(e, product)} className="w-full md:w-auto bg-gray-700 text-white font-bold p-3 text-sm flex items-center justify-center gap-2 hover:bg-gray-600 transition rounded-lg"> <Plus size={16} /> Adicionar ao Carrinho </button>
+                            <button onClick={(e) => onAddToCart(e, product)} className="w-full md:w-auto bg-[#1a1a1a] text-white font-bold p-3 text-sm flex items-center justify-center gap-2 hover:bg-[#1a1a1a] transition rounded-lg"> <Plus size={16} /> Adicionar ao Carrinho </button>
                             <button onClick={(e) => onBuyNow(e, product)} className={`${neonButtonClass} w-full md:w-auto transform hover:scale-105`}> <ShoppingCart size={16} /> Comprar </button>
                         </div>
                     )}
@@ -1301,7 +1301,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 <h3 className="text-lg font-semibold text-gray-300 mb-3">Ver produtos em:</h3>
                 <div className="flex flex-wrap gap-2">
                     {otherMachines.map(machine => (
-                        <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 px-4 flex items-center gap-2 hover:bg-gray-700 hover:border-gray-600 transition-all text-white">
+                        <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-2 px-4 flex items-center gap-2 hover:bg-[#1a1a1a] hover:border-gray-600 transition-all text-white">
                             <Refrigerator size={18} className="text-[#f2bd46]" /> <span>{machine.name}</span>
                         </button>
                     ))}
@@ -1313,11 +1313,11 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
     // --- NOVO: Componente para Renderizar Resultados da Pesquisa ---
     const SearchResultItem = ({ product }) => (
         <div 
-            className="p-3 flex items-center justify-between gap-3 hover:bg-gray-600/50 transition border-b border-gray-600/30 last:border-0 cursor-pointer group" 
+            className="p-3 flex items-center justify-between gap-3 hover:bg-[#1a1a1a]/50 transition border-b border-gray-600/30 last:border-0 cursor-pointer group" 
             onClick={() => { addToCart(product); setSearchQuery(''); }}
         >
             <div className="flex items-center gap-3 overflow-hidden">
-                <img src={product.image_url || `https://placehold.co/100x100/374151/ffffff?text=Sem+Foto`} alt={product.name} className="w-12 h-12 rounded-md object-cover bg-gray-800 flex-shrink-0" />
+                <img src={product.image_url || `https://placehold.co/100x100/374151/ffffff?text=Sem+Foto`} alt={product.name} className="w-12 h-12 rounded-md object-cover bg-[#1a1a1a] flex-shrink-0" />
                 <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-white truncate text-sm">{product.name}</span>
                     <div className="flex items-center gap-2 text-xs">
@@ -1358,9 +1358,9 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     {/* BARRA DE PESQUISA (DESKTOP) - ATUALIZADA */}
                     <div className="flex-1 mx-4 max-w-lg relative hidden md:block">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
                         {isSearchFocused && searchQuery && (
-                            <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-2xl z-40 max-h-80 overflow-y-auto">
+                            <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-gray-600 rounded-lg shadow-2xl z-40 max-h-80 overflow-y-auto">
                                 {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
                                     searchResults.map(product => <SearchResultItem key={product.id} product={product} />)
                                 ) : ( <div className="p-4 text-center text-gray-400">Nenhum resultado encontrado.</div> )}
@@ -1375,7 +1375,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                             <button onClick={() => setPage('my-tickets')} className="text-gray-300 hover:text-[#f2bd46] transition relative"> Tiquetes {unreadTickets > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">{unreadTickets}</span>} </button>
                             <button onClick={() => setPage('my-account')} className="text-gray-300 hover:text-[#f2bd46] transition">Minha Conta</button>
                         </nav>
-                        <div className="h-6 w-px bg-gray-600 hidden md:block"></div>
+                        <div className="h-6 w-px bg-[#1a1a1a] hidden md:block"></div>
                         <button className="relative" onClick={() => setPage('cart')}>
                             <ShoppingCart />
                             {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-[#f2bd46] text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{totalItemsInCart}</span>}
@@ -1387,9 +1387,9 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 <div className="container mx-auto px-4 pb-3 md:hidden">
                     <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
                         {isSearchFocused && searchQuery && (
-                            <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-2xl z-40 max-h-60 overflow-y-auto">
+                            <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-gray-600 rounded-lg shadow-2xl z-40 max-h-60 overflow-y-auto">
                                 {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
                                     searchResults.map(product => <SearchResultItem key={product.id} product={product} />)
                                 ) : ( <div className="p-4 text-center text-gray-400">Nenhum resultado encontrado.</div> )}
@@ -1515,7 +1515,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         neon-button-[#f2bd46] 
     `;
 
@@ -1534,7 +1534,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
                 <p className="text-gray-300 text-center mb-6">Você está prestes a finalizar sua compra. Por favor, confirme os valores.</p>
                 
                 {/* Resumo Financeiro (Mais Estilizado) */}
-                <div className="bg-gray-700/80 p-4 rounded-lg space-y-3 border border-gray-600/50">
+                <div className="bg-[#1a1a1a]/80 p-4 rounded-lg space-y-3 border border-gray-600/50">
                     <p className="flex justify-between text-lg">
                         <span className="text-gray-300">Valor Total da Compra:</span> 
                         <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
@@ -1553,7 +1553,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
                 <div className="flex justify-center gap-4 mt-8">
                     <button 
                         onClick={onClose} 
-                        className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                        className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
                         Cancelar
                     </button>
@@ -1605,7 +1605,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
 
@@ -1714,10 +1714,10 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                                         <p className="text-[#f2bd46] font-bold text-xl">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
                                     </div>
                                     {/* Botões de Quantidade (Estilo Moderno) */}
-                                    <div className="flex items-center gap-3 bg-gray-700/80 rounded-lg p-1">
-                                        <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-gray-600 rounded-md"><Minus size={16} /></button>
+                                    <div className="flex items-center gap-3 bg-[#1a1a1a]/80 rounded-lg p-1">
+                                        <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-[#1a1a1a] rounded-md"><Minus size={16} /></button>
                                         <span className="font-bold w-6 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-gray-600 rounded-md"><Plus size={16} /></button>
+                                        <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-[#1a1a1a] rounded-md"><Plus size={16} /></button>
                                     </div>
                                     <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500 p-2"><Trash2 size={20} /></button>
                                 </div>
@@ -1737,7 +1737,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                             </div>
                             
                             {/* --- SALDO (Design "Mais Bonito") --- */}
-                            <div className="bg-gray-700/80 p-4 rounded-lg flex items-center justify-between mb-6">
+                            <div className="bg-[#1a1a1a]/80 p-4 rounded-lg flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <Wallet size={20} className="text-green-400" />
                                     <span className="text-gray-300">Saldo em Carteira</span>
@@ -1847,7 +1847,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
-            <div className="w-full max-w-lg bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl">
+            <div className="w-full max-w-lg bg-[#1a1a1a] p-6 md:p-8 rounded-2xl shadow-2xl">
                 
                 <div className="text-center mb-6">
                     <img 
@@ -1873,7 +1873,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     
                     {/* OPÇÃO 1: QR CODE */}
-                    <div className="flex flex-col items-center gap-4 p-4 bg-gray-700/50 rounded-lg">
+                    <div className="flex flex-col items-center gap-4 p-4 bg-[#1a1a1a]/50 rounded-lg">
                         <h3 className="font-semibold text-white">1. Escanear o QR Code</h3>
                         <div className='p-2 bg-white rounded-lg inline-block'>
                             <img src={`data:image/jpeg;base64,${paymentData.pix_qr_code}`} alt="PIX QR Code" className="w-44 h-44 mx-auto" />
@@ -1882,7 +1882,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                     </div>
 
                     {/* OPÇÃO 2: PIX COPIA E COLA */}
-                    <div className="flex flex-col items-center gap-4 p-4 bg-gray-700/50 rounded-lg">
+                    <div className="flex flex-col items-center gap-4 p-4 bg-[#1a1a1a]/50 rounded-lg">
                         <h3 className="font-semibold text-white">2. PIX Copia e Cola</h3>
                         <p className="text-xs text-gray-400 text-center mb-2">Use a opção "PIX Copia e Cola" no seu banco.</p>
                         <div className="w-full p-3 bg-black rounded-lg">
@@ -1915,7 +1915,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                     </div>
                     <button 
                         onClick={handleCancel} 
-                        className="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors"
+                        className="w-full mt-4 bg-[#1a1a1a] hover:bg-[#1a1a1a] text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors"
                     >
                         Cancelar e Voltar
                     </button>
@@ -1998,14 +1998,14 @@ const CardPaymentPage = ({ user, cart, setPage, onPaymentSuccess, setPaymentData
 
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-gray-800 shadow-md">
+            <header className="bg-[#1a1a1a] shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Pagamento com Cartão</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
-                <div className="max-w-md mx-auto bg-gray-800 p-8 rounded-lg">
+                <div className="max-w-md mx-auto bg-[#1a1a1a] p-8 rounded-lg">
                     <p className="text-center text-lg text-gray-300 mb-4">Valor da compra: <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span></p>
                     {!isMpReady && !error && <div className="flex justify-center items-center flex-col gap-4"><Loader2 className="animate-spin" /><span>A carregar formulário...</span></div>}
                     {error && <p className="text-red-400 text-center mt-4">{error}</p>}
@@ -2497,7 +2497,7 @@ const EnjoyPage = ({ setPage, user }) => {
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4 text-center">
-            <div className="w-full max-w-md bg-gray-800 p-8 rounded-xl shadow-2xl">
+            <div className="w-full max-w-md bg-[#1a1a1a] p-8 rounded-xl shadow-2xl">
                 <Check size={80} className="text-green-500 mx-auto mb-4" />
                 <h1 className="text-3xl font-bold mb-2">Porta Destravada!</h1>
                 <p className="text-gray-300 mb-6">Retire os seus produtos e feche a porta. Bom apetite!</p>
@@ -2576,7 +2576,7 @@ const DepositSuccessPage = ({ setPage }) => {
                 <p className="text-gray-400 mt-1 text-sm">A redirecionar para a carteira...</p>
                 
                 {/* --- BARRA DE PROGRESSO DE REDIRECIONAMENTO (5s) --- */}
-                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-gray-700/50">
+                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-[#1a1a1a]/50">
                     <div className="h-full bg-green-500 animate-fill-redirect"
                          style={{ filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.5))' }}
                     ></div>
@@ -2613,7 +2613,7 @@ const EditProfileModal = ({ user, isOpen, onClose, onSave, token }) => {
         bg-blue-500 text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         neon-button-blue
     `;
 
@@ -2668,17 +2668,17 @@ const EditProfileModal = ({ user, isOpen, onClose, onSave, token }) => {
                 
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Nome Completo</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-gray-300 mb-1">E-mail</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 
                 {error && <p className="text-red-400 text-center mb-4">{error}</p>}
                 
                 <div className="flex justify-end gap-4">
-                    <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-3 px-6 rounded-lg font-medium">Cancelar</button>
+                    <button type="button" onClick={onClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] py-3 px-6 rounded-lg font-medium">Cancelar</button>
                     <button type="submit" disabled={isLoading} className={neonButtonClass}>
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Salvar'}
                     </button>
@@ -2712,7 +2712,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSave, token, user }) => {
         bg-blue-500 text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         neon-button-blue
     `;
 
@@ -2790,22 +2790,22 @@ const ChangePasswordModal = ({ isOpen, onClose, onSave, token, user }) => {
                 
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Senha Atual</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Nova Senha</label>
-                    <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Mínimo 6 caracteres" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
+                    <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Mínimo 6 caracteres" className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-gray-300 mb-1">Confirmar Nova Senha</label>
-                    <input type="password" name="confirmNewPassword" value={formData.confirmNewPassword} onChange={handleChange} placeholder="Repita a nova senha" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
+                    <input type="password" name="confirmNewPassword" value={formData.confirmNewPassword} onChange={handleChange} placeholder="Repita a nova senha" className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 
                 {error && <p className="text-red-400 text-center mb-4">{error}</p>}
                 {success && <p className="text-green-400 text-center mb-4">{success}</p>}
                 
                 <div className="flex justify-end gap-4">
-                    <button type="button" onClick={onModalClose} className="bg-gray-600 hover:bg-gray-500 py-3 px-6 rounded-lg font-medium">Cancelar</button>
+                    <button type="button" onClick={onModalClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] py-3 px-6 rounded-lg font-medium">Cancelar</button>
                     <button type="submit" disabled={isLoading} className={neonButtonClass}>
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Alterar Senha'}
                     </button>
@@ -2923,7 +2923,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                             {/* Botão Alterar Senha (Redesenhado) */}
                             <button 
                                 onClick={() => setShowPasswordModal(true)} 
-                                className="w-full bg-gray-700/80 border border-gray-600/50 hover:bg-gray-700 
+                                className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 hover:bg-[#1a1a1a] 
                                            text-white font-medium py-4 px-4 rounded-lg 
                                            flex justify-between items-center transition"
                             >
@@ -2992,9 +2992,9 @@ const Footer = () => {
                             href="https://instagram.com/pronto24h.oficial" 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="bg-gray-700/50 border border-gray-600/50 rounded-lg 
+                            className="bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg 
                                        py-2 px-4 flex items-center gap-2
-                                       hover:bg-gray-700 hover:border-gray-600 transition-all"
+                                       hover:bg-[#1a1a1a] hover:border-gray-600 transition-all"
                         >
                             <Instagram size={20} className="text-[#f2bd46]" />
                             <span>Instagram</span>
@@ -3052,24 +3052,24 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
     };
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-gray-800 shadow-md">
+            <header className="bg-[#1a1a1a] shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Mudar de Condomínio</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
-                <div className="max-w-md mx-auto bg-gray-800 p-8 rounded-lg">
+                <div className="max-w-md mx-auto bg-[#1a1a1a] p-8 rounded-lg">
                     <h2 className="text-xl font-semibold mb-4">Selecione o seu novo condomínio</h2>
                     <div className="flex flex-col gap-3">
                         {condos.map(condo => (
-                            <button key={condo.id} onClick={() => setSelectedCondoId(condo.id)} className={`w-full text-left p-4 rounded-lg transition ${selectedCondoId === condo.id ? 'bg-[#f2bd46] font-bold' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                            <button key={condo.id} onClick={() => setSelectedCondoId(condo.id)} className={`w-full text-left p-4 rounded-lg transition ${selectedCondoId === condo.id ? 'bg-[#f2bd46] font-bold' : 'bg-[#1a1a1a] hover:bg-[#1a1a1a]'}`}>
                                 {condo.name}
                             </button>
                         ))}
                     </div>
                     {error && <p className="text-red-400 text-center mt-4">{error}</p>}
-                    <button onClick={handleUpdateCondo} disabled={isLoading || selectedCondoId === user.condoId} className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500 disabled:cursor-not-allowed">
+                    <button onClick={handleUpdateCondo} disabled={isLoading || selectedCondoId === user.condoId} className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a] disabled:cursor-not-allowed">
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Confirmar Mudança'}
                     </button>
                 </div>
@@ -3092,7 +3092,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
         bg-green-600 text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-green-500/40 hover:shadow-green-500/60
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
     // --- Classe do Botão Neon (Cartão - Azul) ---
@@ -3100,7 +3100,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
         bg-blue-600 text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-blue-500/40 hover:shadow-blue-500/60
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105
     `;
 
@@ -3148,7 +3148,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
                             className={`py-3 px-2 font-bold rounded-lg transition
                                         ${parseFloat(depositAmount) === value 
                                             ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/30' 
-                                            : 'bg-gray-700/50 border border-gray-600/50 hover:bg-gray-700'
+                                            : 'bg-[#1a1a1a]/50 border border-gray-600/50 hover:bg-[#1a1a1a]'
                                         }`}
                         >
                             {value.toFixed(2).replace('.', ',')}
@@ -3165,7 +3165,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
                         placeholder="0,00" 
                         value={depositAmount} 
                         onChange={(e) => setDepositAmount(e.target.value)} 
-                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                        className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                     />
                 </div>
                 {formError && <p className="text-red-400 text-sm text-center mb-4">{formError}</p>}
@@ -3219,7 +3219,7 @@ const TransferModal = ({
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         neon-button-[#f2bd46]
     `;
 
@@ -3246,7 +3246,7 @@ const TransferModal = ({
                         placeholder="email@exemplo.com" 
                         value={recipientEmail} 
                         onChange={(e) => setRecipientEmail(e.target.value)} 
-                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                        className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                         required 
                     />
                 </div>
@@ -3258,7 +3258,7 @@ const TransferModal = ({
                         placeholder="0,00" 
                         value={transferAmount} 
                         onChange={(e) => setTransferAmount(e.target.value)} 
-                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                        className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                         required 
                     />
                 </div>
@@ -3485,7 +3485,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
             onClick={onClick} 
             className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-xl 
                        flex flex-col items-center justify-center gap-2 
-                       hover:bg-gray-700/60 hover:border-gray-600 cursor-pointer transition"
+                       hover:bg-[#1a1a1a]/60 hover:border-gray-600 cursor-pointer transition"
         >
             {/* Ícone Neon */}
             <div className="text-[#f2bd46]" style={{ filter: 'drop-shadow(0 0 5px rgba(249, 115, 22, 0.7))' }}>
@@ -3592,8 +3592,8 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
     );
 };
 const AdminStatCard = ({ icon, label, value, colorClass = 'text-[#f2bd46]' }) => (
-    <div className="bg-gray-800 p-6 rounded-lg flex items-center gap-4">
-        <div className={`p-3 rounded-lg bg-gray-700 ${colorClass}`}>{icon}</div>
+    <div className="bg-[#1a1a1a] p-6 rounded-lg flex items-center gap-4">
+        <div className={`p-3 rounded-lg bg-[#1a1a1a] ${colorClass}`}>{icon}</div>
         <div><p className="text-gray-400 text-sm">{label}</p><p className="text-2xl font-bold">{value}</p></div>
     </div>
 );
@@ -3622,12 +3622,12 @@ const DailyPromotionsWidget = ({ token }) => {
     }, [token]);
 
     return (
-        <div className="bg-gray-800 p-4 rounded-lg">
+        <div className="bg-[#1a1a1a] p-4 rounded-lg">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Flame className="text-[#f2bd46]" /> Promoções do Dia</h3>
             {isLoading ? <Loader2 className="animate-spin" /> : promotions.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {promotions.map(p => (
-                        <div key={p.id} className="bg-gray-700 p-2 rounded-md text-center">
+                        <div key={p.id} className="bg-[#1a1a1a] p-2 rounded-md text-center">
                             <img src={p.image_url || 'https://placehold.co/100x100/374151/ffffff?text=Sem+Foto'} alt={p.name} className="w-full h-20 object-cover rounded-md mb-2" />
                             <p className="text-sm font-semibold truncate">{p.name}</p>
                             <p className="text-xs text-gray-400 line-through">R$ {parseFloat(p.sale_price).toFixed(2)}</p>
@@ -3721,7 +3721,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold">Relatório de Vendas</h2>
             
             {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -3761,9 +3761,9 @@ const EntradasVendasPage = ({ condominiums, token }) => {
             {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={40} /></div> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
                 <>
                     {/* --- VERSÃO DESKTOP (Tabela Completa) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
+                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
                         <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-gray-700 text-gray-200">
+                            <thead className="bg-[#1a1a1a] text-gray-200">
                                 <tr>
                                     <th className="p-4 w-10"></th>
                                     <th className="p-4">Cliente</th>
@@ -3777,7 +3777,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                             <tbody className="divide-y divide-gray-700">
                                 {reportData.log?.length > 0 ? reportData.log.map(item => (
                                     <React.Fragment key={item.id}>
-                                        <tr className={`transition ${item.status === 'refunded' ? 'bg-red-900/10 opacity-70' : 'hover:bg-gray-700/50'}`}>
+                                        <tr className={`transition ${item.status === 'refunded' ? 'bg-red-900/10 opacity-70' : 'hover:bg-[#1a1a1a]/50'}`}>
                                             <td className="p-4"><button onClick={() => toggleRow(item.id)} className="text-gray-400 hover:text-white transition">{expandedRow === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</button></td>
                                             <td className="p-4 font-medium">{item.user_name} <span className="text-gray-500 text-xs block">{item.user_cpf}</span></td>
                                             <td className="p-4 text-sm text-gray-300">{new Date(item.created_at).toLocaleString('pt-BR')}</td>
@@ -3797,7 +3797,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                         {expandedRow === item.id && (
                                             <tr className="bg-black/50">
                                                 <td colSpan="7" className="p-4 pl-12">
-                                                    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                                                    <div className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-700">
                                                         <h4 className="font-bold text-[#f2bd46] text-sm mb-2">Detalhes do Pedido #{item.id}</h4>
                                                         <ul className="space-y-1 text-sm text-gray-300">
                                                             {item.items.map((prod, idx) => (
@@ -3820,7 +3820,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                     {/* --- VERSÃO MOBILE (Cards) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {reportData.log?.length > 0 ? reportData.log.map(item => (
-                            <div key={item.id} className={`bg-gray-800 rounded-xl p-4 shadow-md border border-gray-700 ${item.status === 'refunded' ? 'opacity-75 border-red-900/30' : ''}`}>
+                            <div key={item.id} className={`bg-[#1a1a1a] rounded-xl p-4 shadow-md border border-gray-700 ${item.status === 'refunded' ? 'opacity-75 border-red-900/30' : ''}`}>
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
                                         <h4 className="font-bold text-white text-lg">{item.user_name}</h4>
@@ -3858,7 +3858,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                 )}
 
                                 <div className="flex gap-2">
-                                    <button onClick={() => toggleRow(item.id)} className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-sm font-medium transition">
+                                    <button onClick={() => toggleRow(item.id)} className="flex-1 bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white py-2 rounded-lg text-sm font-medium transition">
                                         {expandedRow === item.id ? 'Ocultar Itens' : 'Ver Itens'}
                                     </button>
                                     <button 
@@ -3871,7 +3871,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-gray-800 rounded-lg text-gray-400">Nenhuma venda encontrada.</div>
+                            <div className="text-center p-8 bg-[#1a1a1a] rounded-lg text-gray-400">Nenhuma venda encontrada.</div>
                         )}
                     </div>
                     
@@ -3988,10 +3988,10 @@ const CentralCashierPage = ({ token }) => {
                     </div>
 
                     {/* --- TABELA OTIMIZADA COM PAGINAÇÃO --- */}
-                    <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-700 flex flex-col">
+                    <div className="bg-[#1a1a1a] rounded-lg shadow-md overflow-hidden border border-gray-700 flex flex-col">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left whitespace-nowrap">
-                                <thead className="bg-gray-700/50">
+                                <thead className="bg-[#1a1a1a]/50">
                                     <tr>
                                         <th className="p-4 text-gray-300 font-medium">Data</th>
                                         <th className="p-4 text-gray-300 font-medium">Tipo</th>
@@ -4003,7 +4003,7 @@ const CentralCashierPage = ({ token }) => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-700">
                                     {currentItems.length > 0 ? currentItems.map((item, index) => (
-                                        <tr key={`${item.type}-${item.id}-${index}`} className="hover:bg-gray-700/30 transition">
+                                        <tr key={`${item.type}-${item.id}-${index}`} className="hover:bg-[#1a1a1a]/30 transition">
                                             <td className="p-4 text-sm text-gray-400">
                                                 {new Date(item.created_at).toLocaleDateString('pt-BR')} <span className="text-xs opacity-70">{new Date(item.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
                                             </td>
@@ -4041,7 +4041,7 @@ const CentralCashierPage = ({ token }) => {
 
                         {/* --- RODAPÉ DE PAGINAÇÃO (NOVO) --- */}
                         {history.length > 0 && (
-                            <div className="bg-gray-800 p-4 border-t border-gray-700 flex justify-between items-center">
+                            <div className="bg-[#1a1a1a] p-4 border-t border-gray-700 flex justify-between items-center">
                                 <span className="text-sm text-gray-400">
                                     Página <span className="text-white font-bold">{currentPage}</span> de {totalPages}
                                 </span>
@@ -4049,14 +4049,14 @@ const CentralCashierPage = ({ token }) => {
                                     <button 
                                         onClick={prevPage} 
                                         disabled={currentPage === 1}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === 1 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === 1 ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#1a1a1a] text-white hover:bg-[#1a1a1a]'}`}
                                     >
                                         Anterior
                                     </button>
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46]'}`}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46]'}`}
                                     >
                                         Próxima
                                     </button>
@@ -4070,7 +4070,7 @@ const CentralCashierPage = ({ token }) => {
             {/* Modal de Retirada */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
+                    <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
                         <h2 className="text-xl font-bold mb-6 text-white">Registrar Saída</h2>
                         <form onSubmit={handleWithdrawalSubmit}>
                             <div className="mb-4">
@@ -4089,7 +4089,7 @@ const CentralCashierPage = ({ token }) => {
                                 <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none" placeholder="Ex: Retirada de sócios" required />
                             </div>
                             <div className="flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#1a1a1a]">Cancelar</button>
                                 <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
                             </div>
                         </form>
@@ -4163,7 +4163,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold text-white">Gestão de Riscos (Estoque/Validade)</h2>
             
             {/* --- SELETOR DE CONDOMÍNIO --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
                 <label className="text-sm text-gray-400 mb-1 block">Analisar Condomínio:</label>
                 <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-[#f2bd46] outline-none transition">
                     {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -4183,9 +4183,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         {expiringSoonItems.length > 0 ? (
                             <>
                                 {/* VISÃO PC */}
-                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-md">
+                                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700 shadow-md">
                                     <table className="w-full text-left">
-                                        <thead className="bg-gray-700 text-gray-200">
+                                        <thead className="bg-[#1a1a1a] text-gray-200">
                                             <tr>
                                                 <th className="p-4">Produto</th>
                                                 <th className="p-4 text-center">Quantidade no Lote</th>
@@ -4194,7 +4194,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-700">
                                             {expiringSoonItems.map((item) => (
-                                                <tr key={item.product_id} className="hover:bg-gray-700/50 transition">
+                                                <tr key={item.product_id} className="hover:bg-[#1a1a1a]/50 transition">
                                                     <td className="p-4 font-medium">{item.product_name}</td>
                                                     <td className="p-4 text-center">{item.quantity} un.</td>
                                                     <td className="p-4 text-center font-bold text-red-400 bg-red-900/10">
@@ -4209,7 +4209,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 {/* VISÃO MOBILE (Cards de Alerta) */}
                                 <div className="md:hidden flex flex-col gap-3">
                                     {expiringSoonItems.map((item) => (
-                                        <div key={item.product_id} className="bg-gray-800 border-l-4 border-red-500 rounded-r-lg p-4 shadow-md flex justify-between items-center">
+                                        <div key={item.product_id} className="bg-[#1a1a1a] border-l-4 border-red-500 rounded-r-lg p-4 shadow-md flex justify-between items-center">
                                             <div>
                                                 <h4 className="font-bold text-white text-lg">{item.product_name}</h4>
                                                 <p className="text-sm text-gray-400">Lote com: <span className="text-white font-bold">{item.quantity} un.</span></p>
@@ -4242,11 +4242,11 @@ const CriticalStockPage = ({ condominiums, token }) => {
 
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center gap-4">
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 flex items-center gap-4">
                                 <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-400"><DollarSign size={24} /></div>
                                 <div><p className="text-sm text-gray-400">Custo Est. Reposição</p><p className="text-xl font-bold text-white">R$ {totalReorderCost.toFixed(2)}</p></div>
                             </div>
-                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center gap-4">
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 flex items-center gap-4">
                                 <div className="p-3 bg-blue-500/20 rounded-full text-blue-400"><Package size={24} /></div>
                                 <div><p className="text-sm text-gray-400">Itens a Comprar</p><p className="text-xl font-bold text-white">{totalReorderItems} un.</p></div>
                             </div>
@@ -4255,9 +4255,9 @@ const CriticalStockPage = ({ condominiums, token }) => {
                         {criticalItems.length > 0 ? (
                             <>
                                 {/* VISÃO PC */}
-                                <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border border-gray-700 shadow-md">
+                                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700 shadow-md">
                                     <table className="w-full text-left">
-                                        <thead className="bg-gray-700 text-gray-200">
+                                        <thead className="bg-[#1a1a1a] text-gray-200">
                                             <tr>
                                                 <th className="p-4">Produto</th>
                                                 <th className="p-4 text-center">Nível Mínimo</th>
@@ -4269,7 +4269,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-700">
                                             {criticalItems.map((item) => (
-                                                <tr key={item.product_id} className="hover:bg-gray-700/50 transition">
+                                                <tr key={item.product_id} className="hover:bg-[#1a1a1a]/50 transition">
                                                     <td className="p-4 font-medium">{item.product_name}</td>
                                                     <td className="p-4 text-center text-gray-400">{item.critical_stock_level}</td>
                                                     <td className="p-4 text-center font-bold text-blue-400">+{item.suggested_reorder_quantity}</td>
@@ -4289,7 +4289,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 {/* VISÃO MOBILE (Action Cards) */}
                                 <div className="md:hidden flex flex-col gap-4">
                                     {criticalItems.map((item) => (
-                                        <div key={item.product_id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
+                                        <div key={item.product_id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
                                             {/* Badge de Sugestão */}
                                             <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                                                 Comprar +{item.suggested_reorder_quantity}
@@ -4387,7 +4387,7 @@ const UserManagementPage = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold">Gestão de Utilizadores</h2>
             
             {/* --- BARRA DE PESQUISA RESPONSIVA --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
                 <label className="text-sm text-gray-400 mb-1 block">Procurar Utilizador</label>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -4404,9 +4404,9 @@ const UserManagementPage = ({ condominiums, token }) => {
             {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : error ? <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p> : (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
+                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
                         <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-gray-700 text-gray-200">
+                            <thead className="bg-[#1a1a1a] text-gray-200">
                                 <tr>
                                     <th className="p-4">Utilizador</th>
                                     <th className="p-4">CPF</th>
@@ -4419,9 +4419,9 @@ const UserManagementPage = ({ condominiums, token }) => {
                             </thead>
                             <tbody className="divide-y divide-gray-700">
                                 {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                                    <tr key={user.id} className="hover:bg-gray-700/50 transition">
+                                    <tr key={user.id} className="hover:bg-[#1a1a1a]/50 transition">
                                         <td className="p-4 flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-lg">
+                                            <div className="h-10 w-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg">
                                                 {user.name.charAt(0).toUpperCase()}
                                             </div>
                                             <span className="font-medium">{user.name}</span>
@@ -4452,12 +4452,12 @@ const UserManagementPage = ({ condominiums, token }) => {
                     {/* --- VISÃO MOBILE (Cards de Perfil) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                            <div key={user.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
+                            <div key={user.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
                                 {/* Status Dot */}
                                 <div className={`absolute top-4 right-4 h-3 w-3 rounded-full ${user.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`}></div>
 
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-16 w-16 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-2xl border-2 border-gray-600">
+                                    <div className="h-16 w-16 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-2xl border-2 border-gray-600">
                                         {user.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -4486,7 +4486,7 @@ const UserManagementPage = ({ condominiums, token }) => {
                                 </button>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
+                            <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
                                 <UsersIcon size={48} className="mx-auto mb-3 opacity-20" />
                                 <p>Nenhum utilizador encontrado.</p>
                             </div>
@@ -4532,10 +4532,10 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
                     <PlusCircle size={20} /> Novo Condomínio
                 </button>
             </div>
-            <div className="bg-gray-800 rounded-lg overflow-x-auto">
+            <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
                 <table className="w-full text-left">
                     {/* --- CABEÇALHOS DA TABELA RESTAURADOS --- */}
-                    <thead className="bg-gray-700">
+                    <thead className="bg-[#1a1a1a]">
                         <tr>
                             <th className="p-4">Nome</th>
                             <th className="p-4">ID da Geladeira</th>
@@ -4633,7 +4633,7 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onSave, token, condoId, p
 
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
-            <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="bg-[#1a1a1a] p-8 rounded-xl shadow-2xl w-full max-w-lg">
                 <h2 className="text-xl font-bold mb-6">Adicionar Produto ao Inventário</h2>
                 {isLoading ? (
                     <Loader2 className="animate-spin" />
@@ -4646,7 +4646,7 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onSave, token, condoId, p
                             <select 
                                 value={selectedProductId} 
                                 onChange={(e) => setSelectedProductId(e.target.value)} 
-                                className="w-full bg-gray-700 p-2 rounded-md" 
+                                className="w-full bg-[#1a1a1a] p-2 rounded-md" 
                                 required
                             >
                                 <option value="">-- Selecione um produto global --</option>
@@ -4665,12 +4665,12 @@ const AddProductToInventoryModal = ({ isOpen, onClose, onSave, token, condoId, p
                                 type="number"
                                 value={quantity}
                                 onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                                className="w-full bg-gray-700 p-2 rounded-md"
+                                className="w-full bg-[#1a1a1a] p-2 rounded-md"
                             />
                         </div>
                         
                         <div className="flex justify-end gap-4 mt-4">
-                            <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Cancelar</button>
+                            <button type="button" onClick={onClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] py-2 px-4 rounded-md">Cancelar</button>
                             <button type="submit" className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded-md">Adicionar ao Inventário</button>
                         </div>
                     </form>
@@ -4809,10 +4809,10 @@ const StockManagement = ({ condominiums, token }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 className="text-2xl md:text-3xl font-bold">Gestão de Estoque</h2>
                 <div className="flex w-full md:w-auto gap-3">
-                    <button onClick={() => setIsAddModalOpen(true)} disabled={!selectedCondoId} className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-700 disabled:opacity-50">
+                    <button onClick={() => setIsAddModalOpen(true)} disabled={!selectedCondoId} className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a] disabled:opacity-50">
                         <PlusCircle size={20} /> <span className="md:hidden">Adicionar</span> <span className="hidden md:inline">Adicionar Produto</span>
                     </button>
-                    <button onClick={handleSaveAllChanges} disabled={isSaving || isStockLoading} className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-700 disabled:opacity-50 shadow-lg shadow-green-600/20">
+                    <button onClick={handleSaveAllChanges} disabled={isSaving || isStockLoading} className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a] disabled:opacity-50 shadow-lg shadow-green-600/20">
                         {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
                         <span className="md:hidden">Salvar</span> <span className="hidden md:inline">Salvar Alterações</span>
                     </button>
@@ -4820,7 +4820,7 @@ const StockManagement = ({ condominiums, token }) => {
             </div>
             
             {/* --- FILTROS E PESQUISA --- */}
-            <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700">
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full md:w-1/3">
                         <label className="text-sm text-gray-400 mb-1 block">Selecionar Condomínio</label>
@@ -4850,9 +4850,9 @@ const StockManagement = ({ condominiums, token }) => {
             {isStockLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : selectedCondoId && (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden shadow-md border border-gray-700">
+                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden shadow-md border border-gray-700">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-700 text-gray-200">
+                            <thead className="bg-[#1a1a1a] text-gray-200">
                                 <tr>
                                     <th className="p-4">Produto</th>
                                     <th className="p-4 w-48">Quantidade</th>
@@ -4862,7 +4862,7 @@ const StockManagement = ({ condominiums, token }) => {
                             </thead>
                             <tbody className="divide-y divide-gray-700">
                                 {filteredInventory.map(product => (
-                                    <tr key={product.id} className="hover:bg-gray-700/50 transition">
+                                    <tr key={product.id} className="hover:bg-[#1a1a1a]/50 transition">
                                         <td className="p-4 flex items-center gap-3">
                                             <img src={product.image_url || 'https://placehold.co/40x40'} className="h-10 w-10 rounded object-cover bg-black" alt=""/>
                                             <span className="font-medium text-white">{product.name}</span>
@@ -4888,7 +4888,7 @@ const StockManagement = ({ condominiums, token }) => {
                     {/* --- VISÃO MOBILE (Cards de Edição) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {filteredInventory.length > 0 ? filteredInventory.map(product => (
-                            <div key={product.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg">
+                            <div key={product.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
                                         <img src={product.image_url || 'https://placehold.co/60x60'} className="h-14 w-14 rounded-lg object-cover bg-black" alt=""/>
@@ -4929,7 +4929,7 @@ const StockManagement = ({ condominiums, token }) => {
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
+                            <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
                                 <Package size={48} className="mx-auto mb-3 opacity-20" />
                                 <p>Nenhum produto encontrado neste condomínio.</p>
                             </div>
@@ -5049,7 +5049,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
     // Componente de Card
     const StatCard = ({ label, value, colorClass = 'text-white', icon: Icon, subLabel }) => (
-        <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700 flex flex-col justify-between h-full">
+        <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700 flex flex-col justify-between h-full">
             <div className="flex justify-between items-start mb-2">
                 <p className="text-sm text-gray-400">{label}</p>
                 {Icon && <Icon size={20} className="text-gray-500" />}
@@ -5066,7 +5066,7 @@ const FinanceReport = ({ condominiums, token }) => {
             <h2 className="text-2xl md:text-3xl font-bold text-white">Relatórios Financeiros</h2>
 
             {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -5126,9 +5126,9 @@ const FinanceReport = ({ condominiums, token }) => {
                 </div>
 
                 {/* VISÃO PC (Tabela) */}
-                <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
+                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
                     <table className="w-full text-left whitespace-nowrap">
-                        <thead className="bg-gray-700 text-gray-200">
+                        <thead className="bg-[#1a1a1a] text-gray-200">
                             <tr>
                                 <th className="p-4">Vencimento</th>
                                 <th className="p-4">Descrição</th>
@@ -5140,7 +5140,7 @@ const FinanceReport = ({ condominiums, token }) => {
                         </thead>
                         <tbody className="divide-y divide-gray-700">
                             {expenses.length > 0 ? expenses.map(expense => (
-                                <tr key={expense.id} className="hover:bg-gray-700/50 transition">
+                                <tr key={expense.id} className="hover:bg-[#1a1a1a]/50 transition">
                                     <td className="p-4 text-gray-300">{new Date(expense.due_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
                                     <td className="p-4 font-medium">
                                         {expense.description}
@@ -5166,7 +5166,7 @@ const FinanceReport = ({ condominiums, token }) => {
                 {/* VISÃO MOBILE (Cards) */}
                 <div className="md:hidden flex flex-col gap-4">
                     {expenses.length > 0 ? expenses.map(expense => (
-                        <div key={expense.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative">
+                        <div key={expense.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
                             {/* Status Stripe */}
                             <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${expense.status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                             
@@ -5196,7 +5196,7 @@ const FinanceReport = ({ condominiums, token }) => {
                             </div>
                         </div>
                     )) : (
-                        <div className="text-center p-8 bg-gray-800 rounded-xl text-gray-500 border border-gray-700">
+                        <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
                             <FileText size={48} className="mx-auto mb-3 opacity-20" />
                             <p>Nenhuma despesa encontrada.</p>
                         </div>
@@ -5207,7 +5207,7 @@ const FinanceReport = ({ condominiums, token }) => {
             {/* Modal de Despesa */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
+                    <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
                         <h2 className="text-xl font-bold mb-6 text-white">Nova Despesa</h2>
                         <form onSubmit={handleCreateExpense}>
                             <div className="space-y-4">
@@ -5232,7 +5232,7 @@ const FinanceReport = ({ condominiums, token }) => {
                             </div>
                             {modalError && <p className="text-red-400 text-sm mt-4 text-center">{modalError}</p>}
                             <div className="flex justify-end gap-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#1a1a1a]">Cancelar</button>
                                 <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
                             </div>
                         </form>
@@ -5273,19 +5273,19 @@ const CondoModal = ({ isOpen, onClose, onSave, condo }) => {
 
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
-            <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg">
+            <div className="bg-[#1a1a1a] p-8 rounded-xl shadow-2xl w-full max-w-lg">
                 <h2 className="text-xl font-bold mb-6">{condo ? 'Editar' : 'Novo'} Condomínio</h2>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Nome do Condomínio" className="bg-gray-700 p-2 rounded-md md:col-span-2" required />
-                    <input name="fridge_id" value={formData.fridge_id || ''} onChange={handleChange} placeholder="ID da Geladeira (Ex: SF001)" className="bg-gray-700 p-2 rounded-md" required />
-                    <input name="address" value={formData.address || ''} onChange={handleChange} placeholder="Endereço" className="bg-gray-700 p-2 rounded-md" />
-                    <input name="syndic_name" value={formData.syndic_name || ''} onChange={handleChange} placeholder="Nome do Síndico" className="bg-gray-700 p-2 rounded-md" />
-                    <input name="syndic_contact" value={formData.syndic_contact || ''} onChange={handleChange} placeholder="Contacto do Síndico" className="bg-gray-700 p-2 rounded-md" />
-                    <input name="syndic_profit_percentage" type="number" step="0.01" value={formData.syndic_profit_percentage || ''} onChange={handleChange} placeholder="% Lucro Síndico" className="bg-gray-700 p-2 rounded-md" />
-                    <input name="initial_investment" type="number" step="0.01" value={formData.initial_investment || ''} onChange={handleChange} placeholder="Investimento Inicial" className="bg-gray-700 p-2 rounded-md" />
-                    <input name="monthly_fixed_cost" type="number" step="0.01" value={formData.monthly_fixed_cost || ''} onChange={handleChange} placeholder="Custo Fixo Mensal" className="bg-gray-700 p-2 rounded-md md:col-span-2" />
+                    <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Nome do Condomínio" className="bg-[#1a1a1a] p-2 rounded-md md:col-span-2" required />
+                    <input name="fridge_id" value={formData.fridge_id || ''} onChange={handleChange} placeholder="ID da Geladeira (Ex: SF001)" className="bg-[#1a1a1a] p-2 rounded-md" required />
+                    <input name="address" value={formData.address || ''} onChange={handleChange} placeholder="Endereço" className="bg-[#1a1a1a] p-2 rounded-md" />
+                    <input name="syndic_name" value={formData.syndic_name || ''} onChange={handleChange} placeholder="Nome do Síndico" className="bg-[#1a1a1a] p-2 rounded-md" />
+                    <input name="syndic_contact" value={formData.syndic_contact || ''} onChange={handleChange} placeholder="Contacto do Síndico" className="bg-[#1a1a1a] p-2 rounded-md" />
+                    <input name="syndic_profit_percentage" type="number" step="0.01" value={formData.syndic_profit_percentage || ''} onChange={handleChange} placeholder="% Lucro Síndico" className="bg-[#1a1a1a] p-2 rounded-md" />
+                    <input name="initial_investment" type="number" step="0.01" value={formData.initial_investment || ''} onChange={handleChange} placeholder="Investimento Inicial" className="bg-[#1a1a1a] p-2 rounded-md" />
+                    <input name="monthly_fixed_cost" type="number" step="0.01" value={formData.monthly_fixed_cost || ''} onChange={handleChange} placeholder="Custo Fixo Mensal" className="bg-[#1a1a1a] p-2 rounded-md md:col-span-2" />
                     <div className="md:col-span-2 flex justify-end gap-4 mt-4">
-                        <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Cancelar</button>
+                        <button type="button" onClick={onClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] py-2 px-4 rounded-md">Cancelar</button>
                         <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] py-2 px-4 rounded-md">Salvar</button>
                     </div>
                 </form>
@@ -5345,18 +5345,18 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
 
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
-            <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-[#1a1a1a] p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <h2 className="text-xl font-bold mb-6">{product ? 'Editar' : 'Novo'} Produto</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div className="md:col-span-2"><label className="text-sm text-gray-400">Nome do Produto</label><input name="name" value={formData.name || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
-                        <div className="md:col-span-2"><label className="text-sm text-gray-400">Descrição</label><textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" rows="3"></textarea></div>
-                        <div className="md:col-span-2"><label className="text-sm text-gray-400">URL da Imagem</label><input name="image_url" value={formData.image_url || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
+                        <div className="md:col-span-2"><label className="text-sm text-gray-400">Nome do Produto</label><input name="name" value={formData.name || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" required /></div>
+                        <div className="md:col-span-2"><label className="text-sm text-gray-400">Descrição</label><textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" rows="3"></textarea></div>
+                        <div className="md:col-span-2"><label className="text-sm text-gray-400">URL da Imagem</label><input name="image_url" value={formData.image_url || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" /></div>
                         
                         <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Precificação</div>
                         
-                        <div><label className="text-sm text-gray-400">Preço de Compra (Custo)</label><input name="purchase_price" type="number" step="0.01" value={formData.purchase_price || ''} onChange={handleChange} placeholder="Ex: 5.50" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
-                        <div><label className="text-sm text-gray-400">Preço de Venda Padrão</label><input name="sale_price" type="number" step="0.01" value={formData.sale_price || ''} onChange={handleChange} placeholder="Ex: 9.99" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
+                        <div><label className="text-sm text-gray-400">Preço de Compra (Custo)</label><input name="purchase_price" type="number" step="0.01" value={formData.purchase_price || ''} onChange={handleChange} placeholder="Ex: 5.50" className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" required /></div>
+                        <div><label className="text-sm text-gray-400">Preço de Venda Padrão</label><input name="sale_price" type="number" step="0.01" value={formData.sale_price || ''} onChange={handleChange} placeholder="Ex: 9.99" className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" required /></div>
                         
                         <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Promoção (Opcional)</div>
 
@@ -5370,12 +5370,12 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                                 value={formData.promotional_price || ''} 
                                 onChange={handleChange} 
                                 placeholder="Ex: 8.49" 
-                                className="w-full bg-gray-700 p-2 rounded-md mt-1" 
+                                className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" 
                             />
                         </div>
                         {/* --- CAMPO DE CATEGORIA (Já existia no seu modal) --- */}
                         <div><label className="text-sm text-gray-400">Categoria</label>
-                            <select name="category" value={formData.category || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1">
+                            <select name="category" value={formData.category || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1">
                                 <option value="">Nenhuma</option>
                                 <option value="Refrigerantes">Refrigerantes</option>
                                 <option value="Energéticos">Energéticos</option>
@@ -5394,14 +5394,14 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                                 <option value="Mercearia">Mercearia</option>
                             </select>
                         </div>
-                        <div><label className="text-sm text-gray-400">Início da Promoção</label><input name="promotion_start_date" type="date" value={formData.promotion_start_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
-                        <div><label className="text-sm text-gray-400">Fim da Promoção</label><input name="promotion_end_date" type="date" value={formData.promotion_end_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
+                        <div><label className="text-sm text-gray-400">Início da Promoção</label><input name="promotion_start_date" type="date" value={formData.promotion_start_date || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" /></div>
+                        <div><label className="text-sm text-gray-400">Fim da Promoção</label><input name="promotion_end_date" type="date" value={formData.promotion_end_date || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" /></div>
 
                         <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Estoque</div>
-                        <div><label className="text-sm text-gray-400">Nível Crítico de Estoque</label><input name="critical_stock_level" type="number" value={formData.critical_stock_level || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
+                        <div><label className="text-sm text-gray-400">Nível Crítico de Estoque</label><input name="critical_stock_level" type="number" value={formData.critical_stock_level || ''} onChange={handleChange} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" required /></div>
                     </div>
                     <div className="flex justify-end gap-4 mt-6">
-                        <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Cancelar</button>
+                        <button type="button" onClick={onClose} className="bg-[#1a1a1a] hover:bg-[#1a1a1a] py-2 px-4 rounded-md">Cancelar</button>
                         <button type="submit" className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded-md">Salvar Produto</button>
                     </div>
                 </form>
@@ -5442,7 +5442,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60 /* Sombra neon estática */
-        transition-all disabled:bg-gray-500 disabled:shadow-none
+        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
         transform hover:scale-105 /* Animação de hover */
     `;
 
@@ -5553,7 +5553,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                                 value={selectedCondoId}
                                 onChange={(e) => setSelectedCondoId(e.target.value)}
                                 // --- CORREÇÃO DO FUNDO ---
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-4 pl-12 pr-4 
+                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-4 pl-12 pr-4 
                                            text-white text-base
                                            focus:outline-none focus:ring-2 focus:ring-[#f2bd46]
                                            appearance-none"
@@ -5562,7 +5562,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                             >
                                 <option value="">{isLoading ? 'A carregar...' : 'Selecione um condomínio'}</option>
                                 {condos.map(condo => (
-                                    <option key={condo.id} value={condo.id} className="bg-gray-800">{condo.name}</option>
+                                    <option key={condo.id} value={condo.id} className="bg-[#1a1a1a]">{condo.name}</option>
                                 ))}
                             </select>
                         </div>
@@ -5574,7 +5574,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                                 type="checkbox"
                                 checked={rememberSelection}
                                 onChange={(e) => setRememberSelection(e.target.checked)}
-                                className="h-4 w-4 text-[#f2bd46]-600 bg-gray-700 border-gray-600 rounded focus:ring-[#f2bd46] focus:ring-offset-gray-900"
+                                className="h-4 w-4 text-[#f2bd46]-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-[#f2bd46] focus:ring-offset-gray-900"
                             />
                             <label htmlFor="remember" className="ml-2 text-sm text-gray-300">Lembrar minha seleção</label>
                         </div>
@@ -5682,7 +5682,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
         if (percentage < 25) bgColor = 'bg-red-500';
 
         return (
-            <div className="w-full bg-gray-700 rounded-full h-2.5">
+            <div className="w-full bg-[#1a1a1a] rounded-full h-2.5">
                 <div className={`${bgColor} h-2.5 rounded-full`} style={{ width: `${percentage}%` }}></div>
             </div>
         );
@@ -5690,7 +5690,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
 
     // --- COMPONENTE DE INSIGHTS ATUALIZADO ---
     const AIInsights = ({ insights }) => (
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
+        <div className="bg-[#1a1a1a] rounded-lg p-6 mb-8">
             <h3 className="text-2xl font-bold mb-4 text-[#f2bd46]">Insights do Assistente (Período)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
@@ -5699,7 +5699,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                     <h4 className="font-semibold text-lg mb-2">🏆 Mais Vendidos (un.)</h4>
                     <div className="flex flex-col gap-2 text-sm">
                         {insights.topSellers?.length > 0 ? insights.topSellers.map(p => (
-                            <p key={p.id} className="bg-gray-700 p-2 rounded-md">{p.name} <span className="font-bold float-right">{p.units_sold_in_period} un.</span></p>
+                            <p key={p.id} className="bg-[#1a1a1a] p-2 rounded-md">{p.name} <span className="font-bold float-right">{p.units_sold_in_period} un.</span></p>
                         )) : <p className="text-sm text-gray-500">Nenhuma venda no período.</p>}
                     </div>
                 </div>
@@ -5709,7 +5709,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                     <h4 className="font-semibold text-lg mb-2">💰 Mais Lucrativos (R$)</h4>
                      <div className="flex flex-col gap-2 text-sm">
                         {insights.topLucrative?.length > 0 ? insights.topLucrative.map(p => (
-                            <p key={p.id} className="bg-gray-700 p-2 rounded-md">{p.name} 
+                            <p key={p.id} className="bg-[#1a1a1a] p-2 rounded-md">{p.name} 
                                 <span className="font-bold float-right text-teal-300">
                                     {/* --- INÍCIO DA CORREÇÃO --- */}
                                     {/* Adiciona parseFloat() para corrigir o erro */}
@@ -5727,7 +5727,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                     <div className="flex flex-col gap-2 text-sm text-gray-300">
                         <p>Produtos com estoque mas <span className="font-bold">zero vendas</span> no período:</p>
                         {insights.promotionSuggestions?.length > 0 ? insights.promotionSuggestions.map(p => (
-                            <p key={p.id} className="font-bold text-[#f2bd46]-300 bg-gray-700 p-2 rounded-md">- {p.name} ({p.current_stock} un.)</p>
+                            <p key={p.id} className="font-bold text-[#f2bd46]-300 bg-[#1a1a1a] p-2 rounded-md">- {p.name} ({p.current_stock} un.)</p>
                         )) : <p className="text-sm text-gray-500">Nenhum produto encalhado!</p>}
                     </div>
                 </div>
@@ -5744,15 +5744,15 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
             <h2 className="text-3xl font-bold mb-6">Análise de Inventário</h2>
             
             {/* --- FILTROS ADICIONADOS --- */}
-            <div className="bg-gray-800 p-4 rounded-lg mb-6 flex flex-wrap items-end gap-4">
+            <div className="bg-[#1a1a1a] p-4 rounded-lg mb-6 flex flex-wrap items-end gap-4">
                 <div>
                     <label className="text-sm text-gray-400 mb-1 block">Filtrar por Condomínio</label>
-                    <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3">
+                    <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 px-3">
                         {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                 </div>
-                <div><label className="text-sm text-gray-400 mb-1 block">De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
-                <div><label className="text-sm text-gray-400 mb-1 block">Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
+                <div><label className="text-sm text-gray-400 mb-1 block">De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 px-3" /></div>
+                <div><label className="text-sm text-gray-400 mb-1 block">Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 px-3" /></div>
                 <button onClick={handleFilterToday} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Hoje</button>
                 <button onClick={handleApplyFilters} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><Filter size={16} /> Aplicar</button>
             </div>
@@ -5788,7 +5788,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                     <h3 className="text-2xl font-bold mb-4 mt-8">Relatório Detalhado de Produtos</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {analysisData.analysis?.map(product => (
-                            <div key={product.id} className="bg-gray-800 rounded-lg p-4 flex flex-col gap-4">
+                            <div key={product.id} className="bg-[#1a1a1a] rounded-lg p-4 flex flex-col gap-4">
                                 <div className="flex items-center gap-4">
                                     <img src={product.image_url || 'https://placehold.co/100x100/374151/ffffff?text=Sem+Foto'} alt={product.name} className="w-16 h-16 rounded-md object-cover"/>
                                     <div>
@@ -5806,20 +5806,20 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 text-center">
-                                    <div className="bg-gray-700 p-2 rounded-md">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-md">
                                         <p className="text-xs text-gray-400">Custo Total em Stock</p>
                                         <p className="font-bold text-yellow-400">R$ {parseFloat(product.total_cost_in_stock).toFixed(2)}</p>
                                     </div>
-                                    <div className="bg-gray-700 p-2 rounded-md">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-md">
                                         <p className="text-xs text-gray-400">Lucro Potencial</p>
                                         <p className="font-bold text-green-400">R$ {parseFloat(product.potential_net_profit).toFixed(2)}</p>
                                     </div>
                                     {/* --- DADOS ATUALIZADOS (Período) --- */}
-                                    <div className="bg-gray-700 p-2 rounded-md">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-md">
                                         <p className="text-xs text-gray-400">Vendas (Período)</p>
                                         <p className="font-bold">{product.units_sold_in_period} un.</p>
                                     </div>
-                                    <div className="bg-gray-700 p-2 rounded-md">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-md">
                                         <p className="text-xs text-gray-400">Lucro (Período)</p>
                                         <p className="font-bold text-teal-400">R$ {parseFloat(product.net_profit_in_period).toFixed(2)}</p>
                                     </div>
@@ -5869,7 +5869,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
     }, [token, selectedCondoId]); // Recarrega quando o filtro mudar
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl h-full flex flex-col">
+        <div className="bg-[#1a1a1a] p-6 rounded-lg shadow-xl h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-[#f2bd46] flex items-center gap-2">
                     {/* Ícone e Título Atualizados */}
@@ -5879,7 +5879,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
                 <select 
                     value={selectedCondoId} 
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
-                    className="bg-gray-700 border border-gray-600 rounded-lg py-1 px-2 text-xs"
+                    className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
                     <option value="all">Todos os Condomínios</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -5892,7 +5892,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
                 products.length > 0 ? (
                     <ul className="space-y-3 flex-grow overflow-auto scrollbar-hide">
                         {products.map(p => (
-                            <li key={p.id} className="flex items-center gap-3 bg-gray-700 p-3 rounded-md">
+                            <li key={p.id} className="flex items-center gap-3 bg-[#1a1a1a] p-3 rounded-md">
                                 <img 
                                     src={p.image_url || `https://placehold.co/40x40/374151/ffffff?text=${p.name.replace(' ', '+').substring(0,2)}`} 
                                     alt={p.name} 
@@ -5956,7 +5956,7 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
     };
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl h-full flex flex-col">
+        <div className="bg-[#1a1a1a] p-6 rounded-lg shadow-xl h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-blue-400 flex items-center gap-2">
                     <History size={24} /> Últimos Pedidos
@@ -5965,7 +5965,7 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
                 <select 
                     value={selectedCondoId} 
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
-                    className="bg-gray-700 border border-gray-600 rounded-lg py-1 px-2 text-xs"
+                    className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
                     <option value="all">Todos os Condomínios</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -5978,7 +5978,7 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
                 orders.length > 0 ? (
                     <ul className="space-y-3 flex-grow overflow-auto scrollbar-hide">
                         {orders.map(order => (
-                            <li key={order.id} className="flex items-center gap-3 bg-gray-700 p-3 rounded-md">
+                            <li key={order.id} className="flex items-center gap-3 bg-[#1a1a1a] p-3 rounded-md">
                                 <div className="flex-grow min-w-0">
                                     {/* UI Atualizada para mostrar nomes dos produtos */}
                                     <p className="font-semibold text-gray-100 truncate" title={order.product_names}>
@@ -6010,7 +6010,7 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
 const SalesPerformanceWidget = ({ title, data, type }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="bg-gray-800 p-6 rounded-xl shadow-xl h-full flex flex-col justify-center">
+            <div className="bg-[#1a1a1a] p-6 rounded-xl shadow-xl h-full flex flex-col justify-center">
                 <h3 className="text-xl font-bold text-[#f2bd46] mb-4">{title}</h3>
                 <p className="text-sm text-center text-gray-500">Nenhum dado de vendas no período.</p>
             </div>
@@ -6018,13 +6018,13 @@ const SalesPerformanceWidget = ({ title, data, type }) => {
     }
 
     return (
-        <div className="bg-gray-800 p-6 rounded-xl shadow-xl h-full flex flex-col">
+        <div className="bg-[#1a1a1a] p-6 rounded-xl shadow-xl h-full flex flex-col">
             <h3 className="text-xl font-bold text-[#f2bd46] mb-4 flex items-center gap-2">
                 {type === 'top' ? <Trophy size={20} /> : <ThumbsDown size={20} />} {title}
             </h3>
             <ul className="space-y-3 flex-grow overflow-auto scrollbar-hide">
                 {data.map((p, index) => (
-                    <li key={p.id} className="flex items-center gap-3 bg-gray-700 p-3 rounded-xl transition-shadow hover:shadow-lg">
+                    <li key={p.id} className="flex items-center gap-3 bg-[#1a1a1a] p-3 rounded-xl transition-shadow hover:shadow-lg">
                         <span className={`text-lg font-extrabold ${type === 'top' ? 'text-green-400' : 'text-red-400'} w-6 flex-shrink-0`}>
                             {index + 1}.
                         </span>
@@ -6045,16 +6045,16 @@ const SalesPerformanceWidget = ({ title, data, type }) => {
 };
 
 const InventoryValueWidget = ({ data }) => (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-xl h-full flex flex-col justify-between">
+    <div className="bg-[#1a1a1a] p-6 rounded-xl shadow-xl h-full flex flex-col justify-between">
         <h3 className="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
             <Package size={24} /> Valor Global do Inventário
         </h3>
         <div className="space-y-3">
-            <div className="bg-gray-700 p-4 rounded-xl">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl">
                 <p className="text-sm text-gray-400">Custo Total de estoque</p>
                 <p className="text-2xl font-bold text-yellow-400">R$ {parseFloat(data.total_inventory_cost || 0).toFixed(2).replace('.', ',')}</p>
             </div>
-            <div className="bg-gray-700 p-4 rounded-xl">
+            <div className="bg-[#1a1a1a] p-4 rounded-xl">
                 <p className="text-sm text-gray-400">Lucro Potencial Bruto</p>
                 <p className="text-2xl font-bold text-green-400">R$ {parseFloat(data.total_potential_profit_value || 0).toFixed(2).replace('.', ',')}</p>
             </div>
@@ -6159,24 +6159,24 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Valor de Inventário */}
-                    <div className="bg-gray-800 rounded-xl p-4 shadow-md">
+                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md">
                         <InventoryValueWidget data={stats?.inventory_value || {}} />
                     </div>
                     
                     {/* Promoção do Dia */}
-                    <div className="bg-gray-800 rounded-xl p-4 shadow-md"> 
+                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md"> 
                         <DailyPromotionsWidget token={token} />
                     </div>
 
                     {/* Próximo da Validade */}
-                    <div className="bg-gray-800 rounded-xl p-4 shadow-md overflow-x-auto">
+                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
                         <ExpiringSoonWidget token={token} condominiums={condominiums} />
                     </div>
                 </div>
             </div>
             
             {/* --- WIDGET ÚLTIMOS PEDIDOS --- */}
-            <div className="mt-4 bg-gray-800 rounded-xl p-4 shadow-md overflow-hidden">
+            <div className="mt-4 bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-hidden">
                 <LatestOrdersWidget token={token} condominiums={condominiums} />
             </div>
             
@@ -6185,7 +6185,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                 <h3 className="text-xl md:text-2xl font-bold border-b-2 border-[#f2bd46] pb-2 mb-4">Performance de Vendas</h3>
 
                 {/* --- FILTROS RESPONSIVOS --- */}
-                <div className="bg-gray-800 p-4 rounded-xl mb-6 shadow-md border border-gray-700">
+                <div className="bg-[#1a1a1a] p-4 rounded-xl mb-6 shadow-md border border-gray-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                         <div className="w-full">
                             <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
@@ -6209,7 +6209,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                             Hoje
                         </button>
 
-                        <button onClick={handleClearFilters} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition border border-gray-600">
+                        <button onClick={handleClearFilters} className="w-full bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-2 px-4 rounded-lg transition border border-gray-600">
                             Limpar
                         </button>
                     </div>
@@ -6217,10 +6217,10 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                 
                 {/* --- LISTAS TOP/LEAST --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                     <div className="bg-gray-800 rounded-xl p-4 shadow-md overflow-x-auto">
+                     <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
                         <SalesPerformanceWidget title="🏆 Mais Vendidos" data={stats?.top_sellers || []} type="top" />
                      </div>
-                     <div className="bg-gray-800 rounded-xl p-4 shadow-md overflow-x-auto">
+                     <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
                         <SalesPerformanceWidget title="📉 Menos Vendidos" data={stats?.least_sellers || []} type="least" />
                      </div>
                 </div>
@@ -6361,7 +6361,7 @@ const AdminDashboard = ({ onLogout }) => {
                 </div>
                 
                 {/* --- FILTROS RESPONSIVOS --- */}
-                <div className="bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700">
+                <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700">
                     <div className="flex flex-col md:flex-row gap-4 items-end">
                         <div className="w-full md:flex-grow">
                             <label className="text-sm text-gray-400 mb-1 block">Pesquisar Produto</label>
@@ -6386,9 +6386,9 @@ const AdminDashboard = ({ onLogout }) => {
                 {isLoading && activeTab === 'products' ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : (
                     <>
                         {/* --- VISÃO PC (Tabela) --- */}
-                        <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
+                        <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
                             <table className="w-full text-left whitespace-nowrap">
-                                <thead className="bg-gray-700 text-gray-300">
+                                <thead className="bg-[#1a1a1a] text-gray-300">
                                     <tr>
                                         <th className="p-4">Produto</th>
                                         <th className="p-4">Categoria</th>
@@ -6400,7 +6400,7 @@ const AdminDashboard = ({ onLogout }) => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-700">
                                     {currentItems.map(product => (
-                                        <tr key={product.id} className="hover:bg-gray-700/50 transition">
+                                        <tr key={product.id} className="hover:bg-[#1a1a1a]/50 transition">
                                             <td className="p-4 flex items-center gap-3">
                                                 <img src={product.image_url || 'https://placehold.co/40x40'} className="h-10 w-10 rounded object-cover bg-black" alt=""/>
                                                 <span className="font-medium text-white">{product.name}</span>
@@ -6435,7 +6435,7 @@ const AdminDashboard = ({ onLogout }) => {
                         {/* --- VISÃO MOBILE (Cards Estilo iFood) --- */}
                         <div className="md:hidden flex flex-col gap-4">
                             {currentItems.map(product => (
-                                <div key={product.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden">
+                                <div key={product.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden">
                                     {/* Etiqueta de Promoção */}
                                     {product.promotional_price && (
                                         <div className="absolute top-0 right-0 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
@@ -6468,7 +6468,7 @@ const AdminDashboard = ({ onLogout }) => {
                                                 </div>
                                                 
                                                 {/* Indicador de Estoque Mobile */}
-                                                <div className={`px-2 py-1 rounded text-xs font-bold ${product.global_stock <= 5 ? 'bg-red-500/20 text-red-400' : 'bg-gray-700 text-gray-300'}`}>
+                                                <div className={`px-2 py-1 rounded text-xs font-bold ${product.global_stock <= 5 ? 'bg-red-500/20 text-red-400' : 'bg-[#1a1a1a] text-gray-300'}`}>
                                                     Est: {product.global_stock}
                                                 </div>
                                             </div>
@@ -6495,7 +6495,7 @@ const AdminDashboard = ({ onLogout }) => {
 
                         {/* --- PAGINAÇÃO (Visível em Mobile e Desktop) --- */}
                         {filteredProducts.length > itemsPerPage && (
-                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center shadow-md">
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 flex justify-between items-center shadow-md">
                                 <span className="text-sm text-gray-400">
                                     Página <span className="text-white font-bold">{currentPage}</span> de {totalPages}
                                 </span>
@@ -6503,14 +6503,14 @@ const AdminDashboard = ({ onLogout }) => {
                                     <button 
                                         onClick={prevPage} 
                                         disabled={currentPage === 1}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === 1 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600 hover:shadow'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === 1 ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#1a1a1a] text-white hover:bg-[#1a1a1a] hover:shadow'}`}
                                     >
                                         Anterior
                                     </button>
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46] hover:shadow'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46] hover:shadow'}`}
                                     >
                                         Próxima
                                     </button>
@@ -6552,9 +6552,9 @@ const AdminDashboard = ({ onLogout }) => {
                     </button>
                 </div>
                 {isLoading && activeTab === 'condominiums' ? <Loader2 className="animate-spin" /> : (
-                    <div className="bg-gray-800 rounded-lg overflow-x-auto">
+                    <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-700">
+                            <thead className="bg-[#1a1a1a]">
                                 <tr>
                                     <th className="p-4">Nome</th>
                                     <th className="p-4">ID da Geladeira</th>
@@ -6623,7 +6623,7 @@ const AdminDashboard = ({ onLogout }) => {
             <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
             
             {/* --- HEADER MOBILE (Novo) --- */}
-            <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
+            <div className="md:hidden bg-[#1a1a1a] p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
                 <div className="flex items-center gap-2">
                     <span className="text-xl font-bold text-[#f2bd46]">DM</span>
                     <span className="text-xl font-light">Admin</span>
@@ -6640,7 +6640,7 @@ const AdminDashboard = ({ onLogout }) => {
             
             {/* --- SIDEBAR RESPONSIVA --- */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-4 flex flex-col shrink-0 border-r border-gray-700
+                fixed inset-y-0 left-0 z-40 w-64 bg-[#1a1a1a] p-4 flex flex-col shrink-0 border-r border-gray-700
                 transform transition-transform duration-300 ease-in-out
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0 md:static md:block
@@ -6688,7 +6688,7 @@ const NavButton = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick} 
         className={`flex items-center gap-3 p-3 rounded-md transition text-sm font-medium
-        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/20' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/20' : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'}`}
     >
         {icon} {label}
     </button>
@@ -6795,7 +6795,7 @@ const MyTicketsPage = ({ setPage }) => {
                                         <div className="flex-shrink-0 self-center">
                                             <button 
                                                 onClick={() => handleMarkAsRead(ticket.id)} 
-                                                className="bg-gray-700 hover:bg-gray-600 text-white text-xs font-semibold py-2 px-3 rounded-md transition"
+                                                className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white text-xs font-semibold py-2 px-3 rounded-md transition"
                                             >
                                                 Marcar como lida
                                             </button>
@@ -6963,7 +6963,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
             {/* --- LAYOUT ATUALIZADO: max-w-2xl (coluna única) --- */}
-            <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <div className="bg-[#1a1a1a] p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h2 className="text-xl font-bold">Editar Utilizador: <span className="text-[#f2bd46]">{user.name}</span></h2>
@@ -6984,11 +6984,11 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm text-gray-400">Nome</label>
-                                <input value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                             <div>
                                 <label className="text-sm text-gray-400">E-mail</label>
-                                <input type="email" value={formData.email || ''} onChange={(e) => setFormData(p => ({...p, email: e.target.value}))} className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input type="email" value={formData.email || ''} onChange={(e) => setFormData(p => ({...p, email: e.target.value}))} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                             <div>
                                 <label className="text-sm text-gray-400">CPF</label>
@@ -6996,17 +6996,17 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                             </div>
                             <div>
                                 <label className="text-sm text-gray-400">Telefone</label>
-                                <input value={formData.phone_number || ''} onChange={(e) => setFormData(p => ({...p, phone_number: e.target.value}))} className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input value={formData.phone_number || ''} onChange={(e) => setFormData(p => ({...p, phone_number: e.target.value}))} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="text-sm text-gray-400">Apartamento</label>
-                                <input value={formData.apartment || ''} onChange={(e) => setFormData(p => ({...p, apartment: e.target.value}))} className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input value={formData.apartment || ''} onChange={(e) => setFormData(p => ({...p, apartment: e.target.value}))} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                             
                             {/* --- CAMPO ADICIONADO: Data de Nascimento --- */}
                             <div>
                                 <label className="text-sm text-gray-400">Data de Nascimento</label>
-                                <input type="date" value={formData.birth_date || ''} onChange={(e) => setFormData(p => ({...p, birth_date: e.target.value}))} className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input type="date" value={formData.birth_date || ''} onChange={(e) => setFormData(p => ({...p, birth_date: e.target.value}))} className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
 
                             {/* --- CAMPO ADICIONADO: Saldo em Carteira --- */}
@@ -7028,11 +7028,11 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm text-gray-400">Nova Senha</label>
-                                <input type="password" value={formData.newPassword || ''} onChange={(e) => setFormData(p => ({...p, newPassword: e.target.value}))} placeholder="Mínimo 6 caracteres" className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input type="password" value={formData.newPassword || ''} onChange={(e) => setFormData(p => ({...p, newPassword: e.target.value}))} placeholder="Mínimo 6 caracteres" className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                             <div>
                                 <label className="text-sm text-gray-400">Confirmar Nova Senha</label>
-                                <input type="password" value={formData.confirmPassword || ''} onChange={(e) => setFormData(p => ({...p, confirmPassword: e.target.value}))} placeholder="Repita a nova senha" className="w-full bg-gray-700 p-2 rounded-md mt-1" />
+                                <input type="password" value={formData.confirmPassword || ''} onChange={(e) => setFormData(p => ({...p, confirmPassword: e.target.value}))} placeholder="Repita a nova senha" className="w-full bg-[#1a1a1a] p-2 rounded-md mt-1" />
                             </div>
                         </div>
                     </div>
@@ -7041,8 +7041,8 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     
                     {/* Botões de Ação (Salvar / Bloquear) */}
                     <div className="flex flex-wrap gap-4 items-center mb-6 pb-6 border-b border-gray-700">
-                         <button onClick={handleSaveInfo} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-gray-500"> <Save size={18} /> Salvar Informações </button>
-                         <button onClick={handleToggleUserStatus} disabled={isSaving} className={`font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-gray-500 ${user.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}>
+                         <button onClick={handleSaveInfo} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-[#1a1a1a]"> <Save size={18} /> Salvar Informações </button>
+                         <button onClick={handleToggleUserStatus} disabled={isSaving} className={`font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition disabled:bg-[#1a1a1a] ${user.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}>
                              {user.is_active ? <><Ban size={18} /> Bloquear Conta</> : <><CheckCircle2 size={18} /> Desbloquear Conta</>}
                          </button>
                     </div>
@@ -7059,19 +7059,19 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                                  value={balanceToAdd} 
                                  onChange={e => setBalanceToAdd(e.target.value)} 
                                  placeholder="Valor (R$) (ex: -50.00)" 
-                                 className="w-1/2 bg-gray-700 p-2 rounded-md" 
+                                 className="w-1/2 bg-[#1a1a1a] p-2 rounded-md" 
                              />
                              <input 
                                  value={balanceReason} 
                                  onChange={e => setBalanceReason(e.target.value)} 
                                  placeholder="Motivo (Ex: Estorno manual)" 
-                                 className="w-1/2 bg-gray-700 p-2 rounded-md" 
+                                 className="w-1/2 bg-[#1a1a1a] p-2 rounded-md" 
                              />
                          </div>
                          <button 
                              onClick={handleAdjustBalance} 
                              disabled={isSaving || !balanceToAdd} 
-                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"
+                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a]"
                          >
                              <PlusCircle size={18} /> Ajustar Saldo
                          </button>
@@ -7080,8 +7080,8 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     {/* Seção Enviar Tíquete (sem alteração) */}
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Enviar Tíquete / Notificação</h3>
-                        <textarea value={ticketMessage} onChange={e => setTicketMessage(e.target.value)} placeholder="Digite sua mensagem para o usuário aqui..." className="w-full bg-gray-700 p-2 rounded-md mb-2" rows="3"></textarea>
-                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46]-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"><Ticket size={18} /> Enviar Tíquete</button>
+                        <textarea value={ticketMessage} onChange={e => setTicketMessage(e.target.value)} placeholder="Digite sua mensagem para o usuário aqui..." className="w-full bg-[#1a1a1a] p-2 rounded-md mb-2" rows="3"></textarea>
+                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46]-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a]"><Ticket size={18} /> Enviar Tíquete</button>
                     </div>
                 </div>
                 
@@ -7163,7 +7163,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
     if (error || !summary) {
         return (
              <div className="min-h-screen bg-black text-white">
-                <header className="bg-gray-800 shadow-md">
+                <header className="bg-[#1a1a1a] shadow-md">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                         <button onClick={() => setPage('home')} className="text-[#f2bd46] hover-text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
@@ -7181,14 +7181,14 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-gray-800 shadow-md">
+            <header className="bg-[#1a1a1a] shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8 max-w-2xl">
-                <div className="bg-gray-800 p-6 rounded-lg">
+                <div className="bg-[#1a1a1a] p-6 rounded-lg">
                      <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-6 rounded-xl shadow-lg text-white">
                          <div className="flex justify-between items-start">
                              <div>
@@ -7210,7 +7210,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
                          </div>
                      </div>
                      <div className="mt-4">
-                         <div className="w-full bg-gray-700 rounded-full h-2.5">
+                         <div className="w-full bg-[#1a1a1a] rounded-full h-2.5">
                              <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: `${usagePercentage}%` }}></div>
                          </div>
                          <div className="flex justify-between text-xs mt-1 text-gray-400">
@@ -7220,7 +7220,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
                      </div>
                 </div>
 
-                <div className="bg-gray-800 p-6 rounded-lg mt-8">
+                <div className="bg-[#1a1a1a] p-6 rounded-lg mt-8">
                     <h3 className="text-xl font-bold mb-4">Pagar Fatura</h3>
                     {summary.totalToPay > 0 ? (
                         <>
@@ -7475,13 +7475,13 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                         <div className="grid grid-cols-2 gap-2 p-1 bg-black/50 rounded-lg">
                             <button 
                                 onClick={() => setActiveTab('compras')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'compras' ? 'bg-gray-700/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-gray-700/40'}`}
+                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'compras' ? 'bg-[#1a1a1a]/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-[#1a1a1a]/40'}`}
                             >
                                 Minhas Compras
                             </button>
                             <button 
                                 onClick={() => setActiveTab('carteira')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'carteira' ? 'bg-gray-700/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-gray-700/40'}`}
+                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'carteira' ? 'bg-[#1a1a1a]/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-[#1a1a1a]/40'}`}
                             >
                                 Atividade da Carteira
                             </button>
@@ -7533,9 +7533,9 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                                     {/* Paginação (Estilizada) */}
                                     {historyData.transactions?.length > 0 && (
                                         <div className="flex justify-center items-center gap-2 mt-6">
-                                            <button onClick={() => fetchHistoryData(historyData.pagination.page - 1)} disabled={historyData.pagination.page === 1} className="p-2 bg-gray-700/50 rounded-md disabled:opacity-50 hover:bg-gray-700 transition"><ArrowLeft size={16} /></button>
+                                            <button onClick={() => fetchHistoryData(historyData.pagination.page - 1)} disabled={historyData.pagination.page === 1} className="p-2 bg-[#1a1a1a]/50 rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowLeft size={16} /></button>
                                             <span className="text-gray-400">Página {historyData.pagination.page} de {Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))}</span>
-                                            <button onClick={() => fetchHistoryData(historyData.pagination.page + 1)} disabled={historyData.pagination.page === Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))} className="p-2 bg-gray-700/50 rounded-md disabled:opacity-50 hover:bg-gray-700 transition"><ArrowRight size={16} /></button>
+                                            <button onClick={() => fetchHistoryData(historyData.pagination.page + 1)} disabled={historyData.pagination.page === Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))} className="p-2 bg-[#1a1a1a]/50 rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowRight size={16} /></button>
                                         </div>
                                     )}
                                 </>
