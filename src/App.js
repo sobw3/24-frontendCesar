@@ -6625,7 +6625,7 @@ const AdminDashboard = ({ onLogout }) => {
             {/* --- HEADER MOBILE (Novo) --- */}
             <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
                 <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-[#f2bd46]">Pronto</span>
+                    <span className="text-xl font-bold text-[#f2bd46]">DM</span>
                     <span className="text-xl font-light">Admin</span>
                 </div>
                 <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">
@@ -6646,7 +6646,7 @@ const AdminDashboard = ({ onLogout }) => {
                 md:translate-x-0 md:static md:block
             `}>
                 <div className="text-center mb-8 hidden md:block">
-                    <span className="text-2xl font-bold text-[#f2bd46]">Pronto</span><span className="text-2xl font-light text-white">24h</span>
+                    <span className="text-2xl font-bold text-[#f2bd46]">DM</span><span className="text-2xl font-light text-white">24h</span>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Painel Admin</p>
                 </div>
                 
