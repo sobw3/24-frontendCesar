@@ -100,16 +100,16 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
             50% { box-shadow: 0 0 12px rgba(249, 115, 22, 0.8), 0 0 20px rgba(249, 115, 22, 0.8); }
         }
         .animate-surgir { animation: surgir 0.3s ease-out forwards; }
-        .neon-button-orange { animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .neon-button-[#f2bd46] { animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     `;
     
     // --- Classe do Botão Neon (Confirmar) ---
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
-        neon-button-orange
+        neon-button-[#f2bd46]
     `;
 
     if (!isOpen) return null;
@@ -262,7 +262,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
                         <div className="text-center bg-black rounded-lg p-4">
                             <p className="text-lg text-gray-300">Valor Total</p>
                             <p 
-                                className="flex justify-center text-4xl mt-1 font-bold text-[#f2bd46] print:text-orange-500"
+                                className="flex justify-center text-4xl mt-1 font-bold text-[#f2bd46] print:text-[#f2bd46]"
                                 // --- NEON ESTÁTICO (Sem pulso) ---
                                 style={{ textShadow: '0 0 8px rgba(249, 115, 22, 0.7)' }}
                             >
@@ -413,7 +413,7 @@ const AdminLoginModal = ({ show, onClose, onAdminLogin }) => {
             {/* Card Branco */}
             <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-gray-900">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-orange-600">Acesso Restrito</h2>
+                    <h2 className="text-xl font-bold text-[#f2bd46]-600">Acesso Restrito</h2>
                     <button onClick={onClose}><X className="text-gray-400 hover:text-gray-800" /></button>
                 </div>
                 
@@ -426,7 +426,7 @@ const AdminLoginModal = ({ show, onClose, onAdminLogin }) => {
                             placeholder="Utilizador" 
                             value={username} 
                             onChange={(e) => setUsername(e.target.value)} 
-                            className="w-full bg-white border border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                            className="w-full bg-white border border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                             required 
                         />
                     </div>
@@ -437,7 +437,7 @@ const AdminLoginModal = ({ show, onClose, onAdminLogin }) => {
                             placeholder="Senha" 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
-                            className="w-full bg-white border border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                            className="w-full bg-white border border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                             required 
                         />
                     </div>
@@ -447,7 +447,7 @@ const AdminLoginModal = ({ show, onClose, onAdminLogin }) => {
                     {/* Botão Laranja Sólido */}
                     <button 
                         type="submit" 
-                        className="w-full bg-[#f2bd46] hover:bg-orange-700 text-white font-bold py-3 rounded-lg transform hover:scale-105 flex justify-center items-center transition" 
+                        className="w-full bg-[#f2bd46] hover:bg-[#f2bd46]-700 text-white font-bold py-3 rounded-lg transform hover:scale-105 flex justify-center items-center transition" 
                         disabled={isLoading}
                     >
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Entrar no Painel'}
@@ -495,10 +495,10 @@ const ForgotPasswordPage = ({ setPage }) => {
     `;
     
     // --- Classe do Botão Neon (Laranja) ---
-    const neonButtonClassOrange = `
+    const neonButtonClass[#f2bd46] = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60
+        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105
     `;
@@ -601,7 +601,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Seu CPF" 
                                 value={cpf} 
                                 onChange={(e) => setCpf(formatCPF(e.target.value))} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -613,7 +613,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Data de Nascimento (DD/MM/AAAA)"
                                 value={birthDate} 
                                 onChange={handleDateChange} // Usa a máscara
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -623,7 +623,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                         {/* Botão Laranja (Neon) */}
                         <button 
                             type="submit" 
-                            className={`w-full ${neonButtonClassOrange}`} 
+                            className={`w-full ${neonButtonClass[#f2bd46]}`} 
                             disabled={isLoading}
                         >
                             {isLoading ? <Loader2 className="animate-spin" /> : 'Verificar'}
@@ -643,7 +643,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Nova senha (mín. 6 caracteres)" 
                                 value={newPassword} 
                                 onChange={(e) => setNewPassword(e.target.value)} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -654,7 +654,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 placeholder="Confirme a nova senha" 
                                 value={confirmPassword} 
                                 onChange={(e) => setConfirmPassword(e.target.value)} 
-                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                 required 
                             />
                         </div>
@@ -709,7 +709,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60 /* Sombra neon estática */
+        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60 /* Sombra neon estática */
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105 /* Animação de hover */
     `;
@@ -764,7 +764,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                                     placeholder="Seu CPF" 
                                     value={cpf} 
                                     onChange={handleCpfChange} 
-                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                     required 
                                 />
                             </div>
@@ -775,7 +775,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                                     placeholder="Senha" 
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
-                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                                     required 
                                 />
                             </div>
@@ -845,10 +845,10 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     `;
     
     // --- Classe do Botão Neon (Laranja) ---
-    const neonButtonClassOrange = `
+    const neonButtonClass[#f2bd46] = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60
+        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105
     `;
@@ -956,15 +956,15 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         <div className="w-full flex-shrink-0 px-1">
                             <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">1. Informações Pessoais</h3>
                             <div className="flex flex-col gap-4">
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
-                                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
-                                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
+                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
                                 <div>
                                     <label className="text-sm text-gray-400 mb-2 block">Data de Nascimento</label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input type="text" name="birthDate" placeholder="DD/MM/AAAA" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                                        <input type="text" name="birthDate" placeholder="DD/MM/AAAA" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                 </div>
                             </div>
@@ -974,7 +974,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={() => setStep(step + 1)} 
                                     disabled={!validateStep1()} 
-                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
+                                    className={`flex items-center gap-2 ${neonButtonClass[#f2bd46]}`}
                                 >
                                     Avançar <ArrowRight size={16} />
                                 </button>
@@ -993,12 +993,12 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                     <div className="relative">
                                         <label className="text-sm text-gray-400 mb-2 block">Bloco / Torre</label>
                                         <Building2 className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                                        <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                     <div className="relative">
                                         <label className="text-sm text-gray-400 mb-2 block">Nº do Apartamento</label>
                                         <Home className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                                        <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
                                     </div>
                                 </div>
                                 {/* --- FIM DA ALTERAÇÃO --- */}
@@ -1015,7 +1015,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={() => setStep(step + 1)} 
                                     disabled={!validateStep2()} 
-                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
+                                    className={`flex items-center gap-2 ${neonButtonClass[#f2bd46]}`}
                                 >
                                     Avançar <ArrowRight size={16} />
                                 </button>
@@ -1026,9 +1026,9 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         <div className="w-full flex-shrink-0 px-1">
                             <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">3. Segurança</h3>
                             <div className="flex flex-col gap-4">
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
-                                <div className="flex items-center"><input id="terms" name="terms" type="checkbox" checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="h-4 w-4 text-orange-600 bg-gray-700 border-gray-600 rounded focus:ring-orange-500" /><label htmlFor="terms" className="ml-2 text-sm text-gray-300">Eu declaro que as informações são verdadeiras.</label></div>
+                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
+                                <div className="flex items-center"><input id="terms" name="terms" type="checkbox" checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="h-4 w-4 text-[#f2bd46]-600 bg-gray-700 border-gray-600 rounded focus:ring-[#f2bd46]" /><label htmlFor="terms" className="ml-2 text-sm text-gray-300">Eu declaro que as informações são verdadeiras.</label></div>
                             </div>
                             
                             {/* --- BOTÕES MOVIDOS PARA DENTRO DA ETAPA --- */}
@@ -1042,7 +1042,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <button 
                                     onClick={handleRegisterSubmit} 
                                     disabled={!validateStep3() || isLoading} 
-                                    className={`flex items-center justify-center gap-2 px-6 ${neonButtonClassOrange}`}
+                                    className={`flex items-center justify-center gap-2 px-6 ${neonButtonClass[#f2bd46]}`}
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" /> : <>Finalizar <Check size={16} /></>}
                                 </button>
@@ -1210,7 +1210,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
     const SideMenu = () => (
         <div className={`fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-xl z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
             <div className="p-4">
-                <div className="flex justify-between items-center mb-8"><span className="text-lg font-bold text-orange-500">Menu</span><button onClick={() => setShowMenu(false)}><X className="text-white" /></button></div>
+                <div className="flex justify-between items-center mb-8"><span className="text-lg font-bold text-[#f2bd46]">Menu</span><button onClick={() => setShowMenu(false)}><X className="text-white" /></button></div>
                 <nav className="flex flex-col gap-4">
                     <button onClick={() => setPage('wallet')} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-700 transition"><Wallet size={20} /> Minha Carteira</button>
                     <button onClick={() => setPage('history')} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-700 transition"><History size={20} /> Meu Histórico</button>
@@ -1240,16 +1240,16 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         const isOnSale = product.is_on_sale;
         const keyframes = `
             @keyframes surgir { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes neon-pulse-text-orange { 0%, 100% { text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7); } 50% { text-shadow: 0 0 10px rgba(249, 115, 22, 1), 0 0 20px rgba(249, 115, 22, 1); } }
+            @keyframes neon-pulse-text-[#f2bd46] { 0%, 100% { text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7); } 50% { text-shadow: 0 0 10px rgba(249, 115, 22, 1), 0 0 20px rgba(249, 115, 22, 1); } }
             @keyframes neon-pulse-text-red { 0%, 100% { text-shadow: 0 0 5px rgba(239, 68, 68, 0.7), 0 0 10px rgba(239, 68, 68, 0.7); } 50% { text-shadow: 0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 1); } }
             .animate-surgir { animation: surgir 0.5s ease-out forwards; }
-            .neon-text-orange { animation: neon-pulse-text-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            .neon-text-[#f2bd46] { animation: neon-pulse-text-[#f2bd46] 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
             .neon-text-red { animation: neon-pulse-text-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         `;
         let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 border-gray-700 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
-        if (isOnSale) { cardClasses += ` border-orange-500/50`; } else { cardClasses += ` border-gray-700/50`; }
+        if (isOnSale) { cardClasses += ` border-[#f2bd46]/50`; } else { cardClasses += ` border-gray-700/50`; }
         if (!isOutOfStock) { cardClasses += ` hover:shadow-xl hover:border-gray-600`; }
-        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50 transition-all `;
+        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50 transition-all `;
         const StockIndicator = () => {
             if (isOutOfStock) return null;
             if (product.stock <= product.critical_stock_level) {
@@ -1274,7 +1274,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     <h3 className="font-bold text-white text-2xl truncate">{product.name}</h3>
                     {isOnSale ? (
                         <div className="flex items-baseline gap-2 mt-1">
-                            <p className="text-3xl font-bold text-[#f2bd46] neon-text-orange">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
+                            <p className="text-3xl font-bold text-[#f2bd46] neon-text-[#f2bd46]">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
                             <p className="text-xl text-gray-400 line-through">R$ {parseFloat(product.original_price).toFixed(2).replace('.', ',')}</p>
                         </div>
                     ) : ( <p className="text-3xl font-bold text-white mt-1">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p> )}
@@ -1358,7 +1358,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     {/* BARRA DE PESQUISA (DESKTOP) - ATUALIZADA */}
                     <div className="flex-1 mx-4 max-w-lg relative hidden md:block">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
                         {isSearchFocused && searchQuery && (
                             <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-2xl z-40 max-h-80 overflow-y-auto">
                                 {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
@@ -1387,7 +1387,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 <div className="container mx-auto px-4 pb-3 md:hidden">
                     <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
                         {isSearchFocused && searchQuery && (
                             <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-2xl z-40 max-h-60 overflow-y-auto">
                                 {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
@@ -1409,7 +1409,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 
                 <MachineSwitcher condos={condos} userCondoId={user?.condoId} onCondoSelected={onCondoSelected} />
                 
-                {isLoading && (<div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-orange-500 animate-spin" /></div>)}
+                {isLoading && (<div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin" /></div>)}
                 {error && (<div className="text-center p-8 bg-red-900/20 text-red-400 rounded-lg"><p>Oops! Algo deu errado.</p><p className="text-sm">{error}</p></div>)}
                 
                 {!isLoading && !error && (
@@ -1430,7 +1430,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                         )}
                         {currentCondo && Object.keys(categories).length > 0 && Object.keys(categories).map((category, catIndex) => (
                             <div key={category} className="animate-surgir" style={{ animationDelay: `${200 + catIndex * 100}ms` }}>
-                                <h2 className="text-3xl font-bold text-gray-200 border-l-4 border-orange-500 pl-4 mb-6">{category}</h2>
+                                <h2 className="text-3xl font-bold text-gray-200 border-l-4 border-[#f2bd46] pl-4 mb-6">{category}</h2>
                                 <div className="flex flex-col gap-6">
                                     {categories[category].map(product => (
                                         <ProductListCard key={product.id} product={product} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
@@ -1504,7 +1504,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
         .animate-surgir {
             animation: surgir 0.3s ease-out forwards;
         }
-        .neon-button-orange {
+        .neon-button-[#f2bd46] {
             animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     `;
@@ -1516,7 +1516,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
         bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         transition-all disabled:bg-gray-500 disabled:shadow-none
-        neon-button-orange 
+        neon-button-[#f2bd46] 
     `;
 
     return (
@@ -1526,7 +1526,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
             <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
-                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-[#f2bd46] rounded-full flex items-center justify-center mx-auto mb-6">
                     <Wallet size={32} className="text-[#f2bd46]" />
                 </div>
                 
@@ -1594,7 +1594,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
         .animate-surgir {
             animation: surgir 0.5s ease-out forwards;
         }
-        .neon-text-orange {
+        .neon-text-[#f2bd46] {
             /* Neon estático, sem pulso */
             text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
         }
@@ -1604,7 +1604,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105
     `;
@@ -1683,7 +1683,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
 
             <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Carrinho</h1>
                 </div>
             </header>
@@ -2000,7 +2000,7 @@ const CardPaymentPage = ({ user, cart, setPage, onPaymentSuccess, setPaymentData
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Pagamento com Cartão</h1>
                 </div>
             </header>
@@ -2213,7 +2213,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700/50 shadow-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('wallet')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('wallet')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Depositar com Cartão</h1>
                 </div>
             </header>
@@ -2327,7 +2327,7 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
         }
 
         /* --- ANIMAÇÕES DE PULSO (SÓ TEXTO) --- */
-        @keyframes neon-pulse-text-orange {
+        @keyframes neon-pulse-text-[#f2bd46] {
             0%, 100% {
                 text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
             }
@@ -2350,8 +2350,8 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
         .animate-surgir {
             animation: surgir 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
         }
-        .animate-neon-text-orange {
-            animation: neon-pulse-text-orange 1.5s ease-in-out infinite;
+        .animate-neon-text-[#f2bd46] {
+            animation: neon-pulse-text-[#f2bd46] 1.5s ease-in-out infinite;
         }
         .animate-neon-text-green {
             animation: neon-pulse-text-green 1.5s ease-in-out infinite;
@@ -2443,8 +2443,8 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
                             duration={UNLOCK_TIME} 
                             remaining={countdown} 
                             colorClass="text-[#f2bd46]"
-                            textAnimationClass="animate-neon-text-orange" // <-- SÓ O NÚMERO PULSA
-                            filterId="glow-orange-filter"
+                            textAnimationClass="animate-neon-text-[#f2bd46]" // <-- SÓ O NÚMERO PULSA
+                            filterId="glow-[#f2bd46]-filter"
                         />
                         <h1 className="text-3xl font-bold">Pagamento Aprovado!</h1>
                         <p className="text-gray-400 mt-3 text-base">Sua porta será destravada em <span className="font-bold text-white">{countdown}</span>s...</p>
@@ -2668,11 +2668,11 @@ const EditProfileModal = ({ user, isOpen, onClose, onSave, token }) => {
                 
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Nome Completo</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-gray-300 mb-1">E-mail</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 
                 {error && <p className="text-red-400 text-center mb-4">{error}</p>}
@@ -2790,15 +2790,15 @@ const ChangePasswordModal = ({ isOpen, onClose, onSave, token, user }) => {
                 
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Senha Atual</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-4">
                     <label className="block text-gray-300 mb-1">Nova Senha</label>
-                    <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Mínimo 6 caracteres" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                    <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Mínimo 6 caracteres" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-gray-300 mb-1">Confirmar Nova Senha</label>
-                    <input type="password" name="confirmNewPassword" value={formData.confirmNewPassword} onChange={handleChange} placeholder="Repita a nova senha" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+                    <input type="password" name="confirmNewPassword" value={formData.confirmNewPassword} onChange={handleChange} placeholder="Repita a nova senha" className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" required />
                 </div>
                 
                 {error && <p className="text-red-400 text-center mb-4">{error}</p>}
@@ -2878,7 +2878,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Conta</h1>
                     </div>
                 </header>
@@ -3054,7 +3054,7 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Mudar de Condomínio</h1>
                 </div>
             </header>
@@ -3165,7 +3165,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
                         placeholder="0,00" 
                         value={depositAmount} 
                         onChange={(e) => setDepositAmount(e.target.value)} 
-                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                     />
                 </div>
                 {formError && <p className="text-red-400 text-sm text-center mb-4">{formError}</p>}
@@ -3211,16 +3211,16 @@ const TransferModal = ({
             50% { box-shadow: 0 0 12px rgba(249, 115, 22, 0.8), 0 0 20px rgba(249, 115, 22, 0.8); }
         }
         .animate-surgir { animation: surgir 0.3s ease-out forwards; }
-        .neon-button-orange { animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .neon-button-[#f2bd46] { animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     `;
     
     // --- Classe do Botão Neon (Verificar) ---
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/30 hover:shadow-orange-400/50
+        shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
-        neon-button-orange
+        neon-button-[#f2bd46]
     `;
 
     if (!isOpen) return null;
@@ -3232,7 +3232,7 @@ const TransferModal = ({
             <form onSubmit={onSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
-                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-[#f2bd46] rounded-full flex items-center justify-center mx-auto mb-6">
                     <ArrowRightLeft size={32} className="text-[#f2bd46]" />
                 </div>
 
@@ -3246,7 +3246,7 @@ const TransferModal = ({
                         placeholder="email@exemplo.com" 
                         value={recipientEmail} 
                         onChange={(e) => setRecipientEmail(e.target.value)} 
-                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                         required 
                     />
                 </div>
@@ -3258,7 +3258,7 @@ const TransferModal = ({
                         placeholder="0,00" 
                         value={transferAmount} 
                         onChange={(e) => setTransferAmount(e.target.value)} 
-                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                        className="w-full bg-gray-700/80 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
                         required 
                     />
                 </div>
@@ -3308,7 +3308,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 transform: translateY(0);
             }
         }
-        @keyframes neon-pulse-orange-text {
+        @keyframes neon-pulse-[#f2bd46]-text {
             0%, 100% {
                 text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
             }
@@ -3328,8 +3328,8 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
             animation: surgir 0.5s ease-out forwards;
             opacity: 0;
         }
-        .neon-text-orange {
-            animation: neon-pulse-orange-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .neon-text-[#f2bd46] {
+            animation: neon-pulse-[#f2bd46]-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         .neon-icon-green {
             animation: neon-pulse-green-icon 2s ease-in-out infinite;
@@ -3533,7 +3533,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Carteira</h1>
                     </div>
                 </header>
@@ -3553,7 +3553,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                         
                         {showBalance ? (
                             // --- EFEITO NEON NO SALDO ---
-                            <p className="text-5xl font-bold text-[#f2bd46] neon-text-orange mt-2">R$ {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}</p>
+                            <p className="text-5xl font-bold text-[#f2bd46] neon-text-[#f2bd46] mt-2">R$ {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}</p>
                         ) : (
                             <p className="text-5xl font-bold text-white mt-2">R$ ●●●●,●●</p>
                         )}
@@ -3725,21 +3725,21 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none">
+                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
                             {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">De</label>
-                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                     </div>
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                     </div>
                     
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -3755,10 +3755,10 @@ const EntradasVendasPage = ({ condominiums, token }) => {
             </div>
 
             <h3 className="text-xl font-bold mt-4 flex items-center gap-2">
-                <History className="text-orange-500" /> Histórico de Transações
+                <History className="text-[#f2bd46]" /> Histórico de Transações
             </h3>
 
-            {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-orange-500" size={40} /></div> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
+            {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={40} /></div> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
                 <>
                     {/* --- VERSÃO DESKTOP (Tabela Completa) --- */}
                     <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
@@ -3979,10 +3979,10 @@ const CentralCashierPage = ({ token }) => {
                     {/* --- HEADER DA SEÇÃO --- */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <h3 className="text-xl font-bold flex items-center gap-2">
-                            <History size={24} className="text-orange-500"/>
+                            <History size={24} className="text-[#f2bd46]"/>
                             Histórico de Movimentações
                         </h3>
-                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
                             <PlusCircle size={20} /> Nova Retirada
                         </button>
                     </div>
@@ -4075,18 +4075,18 @@ const CentralCashierPage = ({ token }) => {
                         <form onSubmit={handleWithdrawalSubmit}>
                             <div className="mb-4">
                                 <label className="block text-sm text-gray-400 mb-1">Valor (R$)</label>
-                                <input type="number" step="0.01" name="amount" value={withdrawalData.amount} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-orange-500 p-3 rounded-lg text-white outline-none" placeholder="0.00" required />
+                                <input type="number" step="0.01" name="amount" value={withdrawalData.amount} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none" placeholder="0.00" required />
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm text-gray-400 mb-1">Origem</label>
-                                <select name="type" value={withdrawalData.type} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-orange-500 p-3 rounded-lg text-white outline-none">
+                                <select name="type" value={withdrawalData.type} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none">
                                     <option value="net_profit">Lucro Líquido</option>
                                     <option value="cost_of_goods">Custo de Mercadoria</option>
                                 </select>
                             </div>
                             <div className="mb-6">
                                 <label className="block text-sm text-gray-400 mb-1">Motivo</label>
-                                <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-orange-500 p-3 rounded-lg text-white outline-none" placeholder="Ex: Retirada de sócios" required />
+                                <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none" placeholder="Ex: Retirada de sócios" required />
                             </div>
                             <div className="flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
@@ -4165,12 +4165,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
             {/* --- SELETOR DE CONDOMÍNIO --- */}
             <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
                 <label className="text-sm text-gray-400 mb-1 block">Analisar Condomínio:</label>
-                <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-orange-500 outline-none transition">
+                <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-[#f2bd46] outline-none transition">
                     {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
 
-            {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : (
+            {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : (
                 <>
                     {/* ======================================================= */}
                     {/* --- SEÇÃO 1: VENCIMENTO (EXPIRATION) --- */}
@@ -4275,7 +4275,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                                     <td className="p-4 text-center font-bold text-blue-400">+{item.suggested_reorder_quantity}</td>
                                                     <td className="p-4 text-center text-yellow-400">R$ {parseFloat(item.reorder_cost).toFixed(2)}</td>
                                                     <td className="p-4">
-                                                        <input type="number" value={inventoryQuantities[item.product_id] || 0} onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} className="w-full bg-black p-2 rounded border border-gray-600 focus:border-orange-500 text-center text-white" />
+                                                        <input type="number" value={inventoryQuantities[item.product_id] || 0} onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} className="w-full bg-black p-2 rounded border border-gray-600 focus:border-[#f2bd46] text-center text-white" />
                                                     </td>
                                                     <td className="p-4 text-center">
                                                         <button onClick={() => handleSaveInventory(item.product_id)} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition"><Save size={18} /></button>
@@ -4312,7 +4312,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                                         type="number" 
                                                         value={inventoryQuantities[item.product_id] || 0} 
                                                         onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} 
-                                                        className="w-full bg-black p-3 rounded-lg border border-gray-600 focus:border-orange-500 text-white font-bold text-lg" 
+                                                        className="w-full bg-black p-3 rounded-lg border border-gray-600 focus:border-[#f2bd46] text-white font-bold text-lg" 
                                                     />
                                                 </div>
                                                 <button 
@@ -4396,12 +4396,12 @@ const UserManagementPage = ({ condominiums, token }) => {
                         placeholder="Nome ou CPF..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:border-orange-500 outline-none transition"
+                        className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:border-[#f2bd46] outline-none transition"
                     />
                 </div>
             </div>
             
-            {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : error ? <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p> : (
+            {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : error ? <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p> : (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
                     <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
@@ -4824,7 +4824,7 @@ const StockManagement = ({ condominiums, token }) => {
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full md:w-1/3">
                         <label className="text-sm text-gray-400 mb-1 block">Selecionar Condomínio</label>
-                        <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full bg-black border border-gray-600 rounded-lg py-3 px-4 focus:border-orange-500 outline-none transition text-white">
+                        <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full bg-black border border-gray-600 rounded-lg py-3 px-4 focus:border-[#f2bd46] outline-none transition text-white">
                             <option value="">-- Selecione --</option>
                             {condominiums.map(condo => <option key={condo.id} value={condo.id}>{condo.name}</option>)}
                         </select>
@@ -4840,14 +4840,14 @@ const StockManagement = ({ condominiums, token }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 disabled={!selectedCondoId}
-                                className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:border-orange-500 outline-none transition text-white disabled:opacity-50"
+                                className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:border-[#f2bd46] outline-none transition text-white disabled:opacity-50"
                             />
                         </div>
                     </div>
                 </div>
             </div>
             
-            {isStockLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : selectedCondoId && (
+            {isStockLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : selectedCondoId && (
                 <>
                     {/* --- VISÃO PC (Tabela Detalhada) --- */}
                     <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden shadow-md border border-gray-700">
@@ -4869,11 +4869,11 @@ const StockManagement = ({ condominiums, token }) => {
                                         </td>
                                         <td className="p-4">
                                             <input type="number" value={inventoryQuantities[product.id] || 0} onChange={(e) => handleInventoryChange(product.id, e.target.value)} 
-                                                className={`w-24 bg-black p-2 rounded-md text-center border focus:border-orange-500 outline-none ${inventoryQuantities[product.id] <= 5 ? 'border-red-500/50 text-red-400' : 'border-gray-600 text-white'}`} 
+                                                className={`w-24 bg-black p-2 rounded-md text-center border focus:border-[#f2bd46] outline-none ${inventoryQuantities[product.id] <= 5 ? 'border-red-500/50 text-red-400' : 'border-gray-600 text-white'}`} 
                                             />
                                         </td>
                                         <td className="p-4">
-                                            <input type="date" value={inventoryDates[product.id] || ''} onChange={(e) => handleDateChange(product.id, e.target.value)} className="bg-black p-2 rounded-md border border-gray-600 focus:border-orange-500 outline-none text-gray-300" />
+                                            <input type="date" value={inventoryDates[product.id] || ''} onChange={(e) => handleDateChange(product.id, e.target.value)} className="bg-black p-2 rounded-md border border-gray-600 focus:border-[#f2bd46] outline-none text-gray-300" />
                                         </td>
                                         <td className="p-4 text-center">
                                             <button onClick={() => handleRemoveProduct(product.id, product.name)} className="text-red-400 hover:bg-red-400/10 p-2 rounded transition"><Trash2 size={18} /></button>
@@ -4909,7 +4909,7 @@ const StockManagement = ({ condominiums, token }) => {
                                                 type="number" 
                                                 value={inventoryQuantities[product.id] || 0} 
                                                 onChange={(e) => handleInventoryChange(product.id, e.target.value)} 
-                                                className={`w-full bg-black py-3 pl-10 pr-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg 
+                                                className={`w-full bg-black py-3 pl-10 pr-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#f2bd46] font-bold text-lg 
                                                 ${inventoryQuantities[product.id] <= 5 ? 'border-red-500 text-red-400' : 'border-gray-600 text-white'}`} 
                                             />
                                         </div>
@@ -4922,7 +4922,7 @@ const StockManagement = ({ condominiums, token }) => {
                                                 type="date" 
                                                 value={inventoryDates[product.id] || ''} 
                                                 onChange={(e) => handleDateChange(product.id, e.target.value)} 
-                                                className="w-full bg-black py-3 pl-10 pr-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm text-gray-300" 
+                                                className="w-full bg-black py-3 pl-10 pr-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] text-sm text-gray-300" 
                                             />
                                         </div>
                                     </div>
@@ -5070,21 +5070,21 @@ const FinanceReport = ({ condominiums, token }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none">
+                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
                             <option value="all">Todos</option>
                             {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">De</label>
-                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                     </div>
                     <div className="w-full">
                         <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                     </div>
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -5093,7 +5093,7 @@ const FinanceReport = ({ condominiums, token }) => {
             {/* --- RELATÓRIO DRE (CARDS) --- */}
             <div>
                 <h3 className="text-xl font-bold mb-4 text-[#f2bd46] border-b border-gray-700 pb-2">Demonstrativo (DRE)</h3>
-                {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : error ? <p className="text-red-400">{error}</p> : (
+                {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : error ? <p className="text-red-400">{error}</p> : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard label="Faturamento Bruto" value={`R$ ${summaryCards.gross_revenue.toFixed(2)}`} colorClass="text-green-400" icon={DollarSign} />
                         <StatCard label="Custo Produtos (CMV)" value={`- R$ ${summaryCards.cost_of_goods_sold.toFixed(2)}`} colorClass="text-red-400" icon={ShoppingCart} />
@@ -5116,11 +5116,11 @@ const FinanceReport = ({ condominiums, token }) => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-700 pb-4">
                     <div>
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <FileText className="text-orange-500" /> Contas a Pagar
+                            <FileText className="text-[#f2bd46]" /> Contas a Pagar
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">Total Pendente: <span className="text-yellow-400 font-bold">R$ {totalPendingExpenses.toFixed(2)}</span></p>
                     </div>
-                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition hover:scale-105">
+                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-[#f2bd46]/20 transition hover:scale-105">
                         <PlusCircle size={20} /> Nova Despesa
                     </button>
                 </div>
@@ -5211,9 +5211,9 @@ const FinanceReport = ({ condominiums, token }) => {
                         <h2 className="text-xl font-bold mb-6 text-white">Nova Despesa</h2>
                         <form onSubmit={handleCreateExpense}>
                             <div className="space-y-4">
-                                <div><label className="text-sm text-gray-400 block mb-1">Descrição</label><input type="text" name="description" value={newExpense.description} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-orange-500 outline-none" required /></div>
-                                <div><label className="text-sm text-gray-400 block mb-1">Valor (R$)</label><input type="number" step="0.01" name="amount" value={newExpense.amount} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-orange-500 outline-none" required /></div>
-                                <div><label className="text-sm text-gray-400 block mb-1">Vencimento</label><input type="date" name="due_date" value={newExpense.due_date} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-orange-500 outline-none" required /></div>
+                                <div><label className="text-sm text-gray-400 block mb-1">Descrição</label><input type="text" name="description" value={newExpense.description} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
+                                <div><label className="text-sm text-gray-400 block mb-1">Valor (R$)</label><input type="number" step="0.01" name="amount" value={newExpense.amount} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
+                                <div><label className="text-sm text-gray-400 block mb-1">Vencimento</label><input type="date" name="due_date" value={newExpense.due_date} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
                                 <div>
                                     <label className="text-sm text-gray-400 block mb-1">Recorrência</label>
                                     <select name="recurrence_type" value={newExpense.recurrence_type} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white outline-none">
@@ -5441,7 +5441,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
     const neonButtonClass = `
         bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60 /* Sombra neon estática */
+        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60 /* Sombra neon estática */
         transition-all disabled:bg-gray-500 disabled:shadow-none
         transform hover:scale-105 /* Animação de hover */
     `;
@@ -5555,7 +5555,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                                 // --- CORREÇÃO DO FUNDO ---
                                 className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-4 pl-12 pr-4 
                                            text-white text-base
-                                           focus:outline-none focus:ring-2 focus:ring-orange-500
+                                           focus:outline-none focus:ring-2 focus:ring-[#f2bd46]
                                            appearance-none"
                                 required
                                 disabled={isLoading || condos.length === 0}
@@ -5574,7 +5574,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
                                 type="checkbox"
                                 checked={rememberSelection}
                                 onChange={(e) => setRememberSelection(e.target.checked)}
-                                className="h-4 w-4 text-orange-600 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-gray-900"
+                                className="h-4 w-4 text-[#f2bd46]-600 bg-gray-700 border-gray-600 rounded focus:ring-[#f2bd46] focus:ring-offset-gray-900"
                             />
                             <label htmlFor="remember" className="ml-2 text-sm text-gray-300">Lembrar minha seleção</label>
                         </div>
@@ -5727,7 +5727,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                     <div className="flex flex-col gap-2 text-sm text-gray-300">
                         <p>Produtos com estoque mas <span className="font-bold">zero vendas</span> no período:</p>
                         {insights.promotionSuggestions?.length > 0 ? insights.promotionSuggestions.map(p => (
-                            <p key={p.id} className="font-bold text-orange-300 bg-gray-700 p-2 rounded-md">- {p.name} ({p.current_stock} un.)</p>
+                            <p key={p.id} className="font-bold text-[#f2bd46]-300 bg-gray-700 p-2 rounded-md">- {p.name} ({p.current_stock} un.)</p>
                         )) : <p className="text-sm text-gray-500">Nenhum produto encalhado!</p>}
                     </div>
                 </div>
@@ -5886,7 +5886,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
                 </select>
             </div>
             
-            {isLoading && <div className="flex-grow flex justify-center items-center"><Loader2 className="animate-spin text-orange-500" size={32}/></div>}
+            {isLoading && <div className="flex-grow flex justify-center items-center"><Loader2 className="animate-spin text-[#f2bd46]" size={32}/></div>}
             {error && <p className="text-red-400 text-center">{error}</p>}
             {!isLoading && !error && (
                 products.length > 0 ? (
@@ -6155,7 +6155,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
 
             {/* --- SEÇÃO OPERACIONAL --- */}
             <div className="mt-4">
-                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-orange-500 pb-2 mb-4">Operacional e Inventário</h3>
+                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-[#f2bd46] pb-2 mb-4">Operacional e Inventário</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Valor de Inventário */}
@@ -6182,14 +6182,14 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
             
             {/* --- SEÇÃO DE VENDAS (PERFORMANCE) --- */}
             <div className="mt-8">
-                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-orange-500 pb-2 mb-4">Performance de Vendas</h3>
+                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-[#f2bd46] pb-2 mb-4">Performance de Vendas</h3>
 
                 {/* --- FILTROS RESPONSIVOS --- */}
                 <div className="bg-gray-800 p-4 rounded-xl mb-6 shadow-md border border-gray-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                         <div className="w-full">
                             <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                            <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none">
+                            <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
                                 <option value="all">Geral (Todos)</option>
                                 {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
@@ -6197,12 +6197,12 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
 
                         <div className="w-full">
                             <label className="text-sm text-gray-400 mb-1 block">De</label>
-                            <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                            <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                         </div>
 
                         <div className="w-full">
                             <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                            <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
+                            <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
                         </div>
 
                         <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">
@@ -6355,7 +6355,7 @@ const AdminDashboard = ({ onLogout }) => {
                 {/* --- HEADER --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 className="text-2xl md:text-3xl font-bold">Catálogo de Produtos</h2>
-                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:scale-105">
+                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-[#f2bd46]/20 transition transform hover:scale-105">
                         <PlusCircle size={20} /> Novo Produto
                     </button>
                 </div>
@@ -6369,13 +6369,13 @@ const AdminDashboard = ({ onLogout }) => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input 
                                     type="text" placeholder="Nome, marca..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:border-orange-500 outline-none transition"
+                                    className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:border-[#f2bd46] outline-none transition"
                                 />
                             </div>
                         </div>
                         <div className="w-full md:w-auto md:min-w-[250px]">
                             <label className="text-sm text-gray-400 mb-1 block">Filtrar por Categoria</label>
-                            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="w-full bg-black border border-gray-600 rounded-lg py-3 px-3 text-white focus:border-orange-500 outline-none transition">
+                            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="w-full bg-black border border-gray-600 rounded-lg py-3 px-3 text-white focus:border-[#f2bd46] outline-none transition">
                                 <option value="all">Todas as Categorias</option>
                                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
@@ -6383,7 +6383,7 @@ const AdminDashboard = ({ onLogout }) => {
                     </div>
                 </div>
 
-                {isLoading && activeTab === 'products' ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : (
+                {isLoading && activeTab === 'products' ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : (
                     <>
                         {/* --- VISÃO PC (Tabela) --- */}
                         <div className="hidden md:block bg-gray-800 rounded-lg overflow-x-auto shadow-md border border-gray-700">
@@ -6594,7 +6594,7 @@ const AdminDashboard = ({ onLogout }) => {
     // --- FUNÇÃO RENDERCONTENT ---
     const renderContent = () => {
         const isMainLoading = (isLoading && (products.length === 0 || condominiums.length === 0));
-        if (isMainLoading) return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 text-orange-500 animate-spin" /></div>;
+        if (isMainLoading) return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin" /></div>;
         if (error) return <div className="text-red-400 bg-red-900/20 p-4 rounded-lg">Erro: {error}</div>;
         
         switch (activeTab) {
@@ -6625,7 +6625,7 @@ const AdminDashboard = ({ onLogout }) => {
             {/* --- HEADER MOBILE (Novo) --- */}
             <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
                 <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-orange-500">Pronto</span>
+                    <span className="text-xl font-bold text-[#f2bd46]">Pronto</span>
                     <span className="text-xl font-light">Admin</span>
                 </div>
                 <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">
@@ -6646,7 +6646,7 @@ const AdminDashboard = ({ onLogout }) => {
                 md:translate-x-0 md:static md:block
             `}>
                 <div className="text-center mb-8 hidden md:block">
-                    <span className="text-2xl font-bold text-orange-500">Pronto</span><span className="text-2xl font-light text-white">24h</span>
+                    <span className="text-2xl font-bold text-[#f2bd46]">Pronto</span><span className="text-2xl font-light text-white">24h</span>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Painel Admin</p>
                 </div>
                 
@@ -6688,7 +6688,7 @@ const NavButton = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick} 
         className={`flex items-center gap-3 p-3 rounded-md transition text-sm font-medium
-        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-orange-500/20' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/20' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
     >
         {icon} {label}
     </button>
@@ -6755,7 +6755,7 @@ const MyTicketsPage = ({ setPage }) => {
             {/* --- HEADER (Glassmorphism) --- */}
             <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meus Tiquetes</h1>
                 </div>
             </header>
@@ -6772,7 +6772,7 @@ const MyTicketsPage = ({ setPage }) => {
                                     className={`animate-surgir border-gray-700 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
                                                 ${ticket.is_read 
                                                     ? 'border-gray-700/50' // LIDO
-                                                    : 'border-orange-500/50 shadow-lg shadow-orange-500/10' // NÃO LIDO
+                                                    : 'border-[#f2bd46]/50 shadow-lg shadow-[#f2bd46]/10' // NÃO LIDO
                                                 }`}
                                 >
                                     {/* Ícone de Status (Novo) */}
@@ -7081,7 +7081,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Enviar Tíquete / Notificação</h3>
                         <textarea value={ticketMessage} onChange={e => setTicketMessage(e.target.value)} placeholder="Digite sua mensagem para o usuário aqui..." className="w-full bg-gray-700 p-2 rounded-md mb-2" rows="3"></textarea>
-                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-[#f2bd46] hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"><Ticket size={18} /> Enviar Tíquete</button>
+                        <button onClick={handleSendTicket} disabled={isSaving || !ticketMessage} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46]-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-gray-500"><Ticket size={18} /> Enviar Tíquete</button>
                     </div>
                 </div>
                 
@@ -7165,7 +7165,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
              <div className="min-h-screen bg-black text-white">
                 <header className="bg-gray-800 shadow-md">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover-text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover-text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
                     </div>
                 </header>
@@ -7183,7 +7183,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
                 </div>
             </header>
@@ -7466,7 +7466,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Histórico</h1>
                     </div>
                     
@@ -7707,7 +7707,7 @@ export default function App() {
     };
 
     if (isInitializing) {
-        return <div className="min-h-screen bg-black flex justify-center items-center"><Loader2 className="w-16 h-16 text-orange-500 animate-spin" /></div>;
+        return <div className="min-h-screen bg-black flex justify-center items-center"><Loader2 className="w-16 h-16 text-[#f2bd46] animate-spin" /></div>;
     }
 
     const pagesWithoutFooter = [
