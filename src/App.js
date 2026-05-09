@@ -105,7 +105,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
     
     // --- Classe do Botão Neon (Confirmar) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-6 
+        bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -371,7 +371,7 @@ const ProgressBar = ({ currentStep, totalSteps }) => {
     const progress = (currentStep / totalSteps) * 100;
     return (
         <div className="w-full bg-gray-700 rounded-full h-2.5 mb-8">
-            <div className="bg-orange-500 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+            <div className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
         </div>
     );
 };
@@ -496,7 +496,7 @@ const ForgotPasswordPage = ({ setPage }) => {
     
     // --- Classe do Botão Neon (Laranja) ---
     const neonButtonClassOrange = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -567,7 +567,7 @@ const ForgotPasswordPage = ({ setPage }) => {
             
             {/* Card de Vidro (Glassmorphism) */}
             <div className="w-full max-w-md 
-                            bg-gray-800/50 backdrop-blur-sm 
+                            bg-[#1a1a1a]/80 backdrop-blur-sm 
                             border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             animate-surgir relative"
@@ -707,7 +707,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
     
     // --- Classe do Botão Neon (ESTÁTICO, sem pulso) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60 /* Sombra neon estática */
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -740,7 +740,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                 <div className="w-full max-w-md">
                     
                     {/* Card de Vidro (Glassmorphism) */}
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-8 rounded-2xl shadow-2xl animate-surgir">
+                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-2xl shadow-2xl animate-surgir">
                         
                         {/* ============================================== */}
                         {/* --- ALTERAÇÃO AQUI (Logo de Imagem) --- */}
@@ -846,7 +846,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     
     // --- Classe do Botão Neon (Laranja) ---
     const neonButtonClassOrange = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -926,7 +926,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
             
             {/* Card de Vidro (Glassmorphism) */}
             <div className="w-full max-w-xl 
-                            bg-gray-800/50 backdrop-blur-sm 
+                            bg-[#1a1a1a]/80 backdrop-blur-sm 
                             border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             animate-surgir"
@@ -937,7 +937,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                 {/* Barra de Progresso Estilizada */}
                 <div className="w-full bg-gray-700/50 rounded-full h-2.5 mb-8">
                     <div 
-                        className="bg-orange-500 h-2.5 rounded-full transition-all duration-500 ease-out 
+                        className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out 
                                    shadow-lg shadow-orange-500/30" 
                         style={{ width: `${(step / 3) * 100}%` }}
                     ></div>
@@ -1246,10 +1246,10 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             .neon-text-orange { animation: neon-pulse-text-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
             .neon-text-red { animation: neon-pulse-text-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         `;
-        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 bg-gray-800/50 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
+        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 bg-[#1a1a1a]/80 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
         if (isOnSale) { cardClasses += ` border-orange-500/50`; } else { cardClasses += ` border-gray-700/50`; }
         if (!isOutOfStock) { cardClasses += ` hover:shadow-xl hover:border-gray-600`; }
-        const neonButtonClass = ` bg-orange-500 text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50 transition-all `;
+        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50 transition-all `;
         const StockIndicator = () => {
             if (isOutOfStock) return null;
             if (product.stock <= product.critical_stock_level) {
@@ -1297,7 +1297,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         const otherMachines = condos.filter(c => c.id !== userCondoId);
         if (otherMachines.length === 0) return null;
         return (
-            <div className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg mb-8" style={{ animationDelay: '100ms' }}>
+            <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg mb-8" style={{ animationDelay: '100ms' }}>
                 <h3 className="text-lg font-semibold text-gray-300 mb-3">Ver produtos em:</h3>
                 <div className="flex flex-wrap gap-2">
                     {otherMachines.map(machine => (
@@ -1332,7 +1332,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     </div>
                 </div>
             </div>
-            <button className="bg-orange-500 p-2 rounded-full text-white shadow-lg hover:bg-orange-600 transition transform group-hover:scale-110 flex-shrink-0">
+            <button className="bg-[#f2bd46] p-2 rounded-full text-white shadow-lg hover:bg-orange-600 transition transform group-hover:scale-110 flex-shrink-0">
                 <Plus size={16} />
             </button>
         </div>
@@ -1378,7 +1378,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                         <div className="h-6 w-px bg-gray-600 hidden md:block"></div>
                         <button className="relative" onClick={() => setPage('cart')}>
                             <ShoppingCart />
-                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-orange-500 text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{totalItemsInCart}</span>}
+                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-[#f2bd46] text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{totalItemsInCart}</span>}
                         </button>
                     </div>
                 </div>
@@ -1400,7 +1400,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             </header>
             
             <main className="container mx-auto p-4 md:p-8">
-                <div className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
+                <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
                     <div>
                         <h1 className="text-xl md:text-2xl">Olá, <span className="font-bold text-orange-400">{user?.name}</span>!</h1>
                         <p className="text-gray-300">Confira os produtos disponíveis em <span className="font-semibold">{currentCondo?.name || '...'}</span>.</p>
@@ -1415,14 +1415,14 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 {!isLoading && !error && (
                     <div className="flex flex-col gap-10 pb-24">
                         {!currentCondo && (
-                            <div className="animate-surgir text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
+                            <div className="animate-surgir text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                 <Refrigerator size={48} className="mx-auto mb-4" />
                                 <p className="text-xl font-semibold">Nenhuma máquina selecionada</p>
                                 <p>Por favor, selecione uma máquina na seção "Ver produtos em:" acima para começar a comprar.</p>
                             </div>
                         )}
                         {currentCondo && Object.keys(categories).length === 0 && (
-                            <div className="animate-surgir text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
+                            <div className="animate-surgir text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                 <Refrigerator size={48} className="mx-auto mb-4" />
                                 <p className="text-xl font-semibold">Máquina Vazia!</p>
                                 <p>Parece que não há produtos disponíveis nesta máquina no momento.</p>
@@ -1513,7 +1513,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
     
     // --- Classe do Botão Neon (Confirmar) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-6 
+        bg-[#f2bd46] text-white font-bold py-3 px-6 
         flex items-center justify-center gap-2 rounded-lg 
         transition-all disabled:bg-gray-500 disabled:shadow-none
         neon-button-orange 
@@ -1526,7 +1526,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
             <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
-                <div className="w-16 h-16 bg-orange-500/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Wallet size={32} className="text-orange-400" />
                 </div>
                 
@@ -1602,7 +1602,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     
     // --- Classe do Botão Neon (Comprar) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -1690,11 +1690,11 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
             <main className="container mx-auto p-4 md:p-8">
                 {cart.length === 0 ? (
                     // --- CARD VAZIO (Estilo de Vidro) ---
-                    <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
+                    <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
                         <ShoppingCart size={48} className="mx-auto mb-4" />
                         <h2 className="text-2xl font-semibold mb-2">Seu carrinho está vazio</h2>
                         <p>Adicione produtos da loja para começar a comprar.</p>
-                        <button onClick={() => setPage('home')} className="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition">Voltar para a Loja</button>
+                        <button onClick={() => setPage('home')} className="mt-6 bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition">Voltar para a Loja</button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1702,7 +1702,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                         <div className="lg:col-span-2 flex flex-col gap-4">
                             {cart.map(item => (
                                 // --- CARD DO ITEM (Estilo de Vidro) ---
-                                <div key={item.id} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 flex items-center gap-4 animate-surgir">
+                                <div key={item.id} className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 flex items-center gap-4 animate-surgir">
                                     {/* Imagem (Maior e Quadrada) */}
                                     <img 
                                         src={item.image_url || `https://placehold.co/100x100/374151/ffffff?text=${item.name.replace(' ', '+')}`} 
@@ -1725,7 +1725,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                         </div>
                         
                         {/* --- RESUMO DE PAGAMENTO (Estilo de Vidro e Neon) --- */}
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 h-fit sticky top-24 animate-surgir">
+                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 h-fit sticky top-24 animate-surgir">
                             <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-4">Resumo do Pedido</h2>
                             <div className="flex justify-between mb-2 text-gray-300"><span>Subtotal</span><span>R$ {cartTotal.toFixed(2).replace('.', ',')}</span></div>
                             <div className="flex justify-between mb-4 text-gray-300"><span>Taxas</span><span>R$ 0,00</span></div>
@@ -1755,7 +1755,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                                         <span>Saldo insuficiente!</span>
                                     </div>
                                     <p className="text-sm mt-2">Faltam R$ {difference.toFixed(2).replace('.', ',')} para completar a compra.</p>
-                                    <button onClick={() => setPage('wallet')} className="font-bold bg-orange-500 text-white rounded-md py-2 px-4 text-sm mt-3 hover:bg-orange-600">
+                                    <button onClick={() => setPage('wallet')} className="font-bold bg-[#f2bd46] text-white rounded-md py-2 px-4 text-sm mt-3 hover:bg-orange-600">
                                         Adicionar Saldo
                                     </button>
                                 </div>
@@ -1896,7 +1896,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                             className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all duration-300 ease-in-out 
                                         ${copySuccess 
                                             ? 'bg-green-600 text-white shadow-lg shadow-green-500/30' 
-                                            : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30 transform hover:scale-105'
+                                            : 'bg-[#f2bd46] hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30 transform hover:scale-105'
                                         }`}
                         >
                             {copySuccess ? (
@@ -2222,7 +2222,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
                     <p className="text-center text-lg text-gray-300 mb-6">Valor do depósito: <span className="font-bold text-orange-400">R$ {depositAmount.toFixed(2).replace('.', ',')}</span></p>
                     
                     {/* Container do Brick (Glassmorphism) */}
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg">
+                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg">
                         
                         {/* 1. O Brick será renderizado aqui */}
                         <div id="cardPaymentBrick_container"></div>
@@ -2427,7 +2427,7 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
             
             {/* --- CARD PRINCIPAL (Glassmorphism) --- */}
             <div className="w-full max-w-md 
-                            bg-gray-800/50 backdrop-blur-sm 
+                            bg-[#1a1a1a]/80 backdrop-blur-sm 
                             border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             flex flex-col items-center justify-center 
@@ -2551,7 +2551,7 @@ const DepositSuccessPage = ({ setPage }) => {
             
             {/* --- CARD REDESENHADO (Glassmorphism) --- */}
             <div className="w-full max-w-md 
-                            bg-gray-800/50 backdrop-blur-sm 
+                            bg-[#1a1a1a]/80 backdrop-blur-sm 
                             border border-gray-700/50 
                             p-8 rounded-2xl shadow-2xl 
                             flex flex-col items-center justify-center 
@@ -2887,7 +2887,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                     <div className="max-w-2xl mx-auto flex flex-col gap-8">
                     
                         {/* --- Seção 1: Meus Dados (Glassmorphism + Animação) --- */}
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
+                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold text-orange-400">Meus Dados</h3>
                                 {/* Botão Editar (Neon Azul) */}
@@ -2918,7 +2918,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                         </div>
                         
                         {/* --- Seção 2: Segurança (Glassmorphism + Animação) --- */}
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
+                        <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
                             <h3 className="text-xl font-bold text-orange-400 mb-4">Segurança</h3>
                             {/* Botão Alterar Senha (Redesenhado) */}
                             <button 
@@ -2969,7 +2969,7 @@ const Footer = () => {
     
     return (
         // --- RODAPÉ REDESENHADO (Glassmorphism) ---
-        <footer className="bg-gray-800/50 backdrop-blur-sm border-t border-gray-700/50 mt-12">
+        <footer className="bg-[#1a1a1a]/80 backdrop-blur-sm border-t border-gray-700/50 mt-12">
             <style>{keyframes}</style>
             
             <div className="container mx-auto px-4 md:px-8 py-8 text-center animate-surgir">
@@ -3063,7 +3063,7 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
                     <h2 className="text-xl font-semibold mb-4">Selecione o seu novo condomínio</h2>
                     <div className="flex flex-col gap-3">
                         {condos.map(condo => (
-                            <button key={condo.id} onClick={() => setSelectedCondoId(condo.id)} className={`w-full text-left p-4 rounded-lg transition ${selectedCondoId === condo.id ? 'bg-orange-500 font-bold' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                            <button key={condo.id} onClick={() => setSelectedCondoId(condo.id)} className={`w-full text-left p-4 rounded-lg transition ${selectedCondoId === condo.id ? 'bg-[#f2bd46] font-bold' : 'bg-gray-700 hover:bg-gray-600'}`}>
                                 {condo.name}
                             </button>
                         ))}
@@ -3147,7 +3147,7 @@ const DepositModal = ({ isOpen, onClose, onPix, onCard, depositAmount, setDeposi
                             onClick={() => setDepositAmount(value.toString())}
                             className={`py-3 px-2 font-bold rounded-lg transition
                                         ${parseFloat(depositAmount) === value 
-                                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' 
+                                            ? 'bg-[#f2bd46] text-white shadow-lg shadow-orange-500/30' 
                                             : 'bg-gray-700/50 border border-gray-600/50 hover:bg-gray-700'
                                         }`}
                         >
@@ -3216,7 +3216,7 @@ const TransferModal = ({
     
     // --- Classe do Botão Neon (Verificar) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/30 hover:shadow-orange-400/50
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -3232,7 +3232,7 @@ const TransferModal = ({
             <form onSubmit={onSubmit} className="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
                 
                 {/* Ícone de Destaque */}
-                <div className="w-16 h-16 bg-orange-500/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
                     <ArrowRightLeft size={32} className="text-orange-400" />
                 </div>
 
@@ -3450,7 +3450,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
         return (
             // O card agora usa 'flex' para alinhar o ícone e o conteúdo
             <div 
-                className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4"
+                className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4"
                 // Não há necessidade de 'onClick' aqui, pois é apenas um resumo
             >
                 {/* Ícone (Neon e Colorido) */}
@@ -3483,7 +3483,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
     const WalletActionCard = ({ icon, label, onClick }) => (
         <div 
             onClick={onClick} 
-            className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-xl 
+            className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-xl 
                        flex flex-col items-center justify-center gap-2 
                        hover:bg-gray-700/60 hover:border-gray-600 cursor-pointer transition"
         >
@@ -3541,7 +3541,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 <main className="container mx-auto p-4 md:p-8 flex flex-col gap-8 max-w-2xl">
                     
                     {/* --- CARD DE SALDO (Glassmorphism + Neon) --- */}
-                    <div className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
+                    <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
                         <div className="flex justify-between items-start mb-10">
                             <div>
                                 <p className="text-sm text-gray-300">Saldo Disponível</p>
@@ -3739,7 +3739,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                     </div>
                     
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -3982,7 +3982,7 @@ const CentralCashierPage = ({ token }) => {
                             <History size={24} className="text-orange-500"/>
                             Histórico de Movimentações
                         </h3>
-                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                             <PlusCircle size={20} /> Nova Retirada
                         </button>
                     </div>
@@ -4056,7 +4056,7 @@ const CentralCashierPage = ({ token }) => {
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-orange-600'}`}
                                     >
                                         Próxima
                                     </button>
@@ -4090,7 +4090,7 @@ const CentralCashierPage = ({ token }) => {
                             </div>
                             <div className="flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
-                                <button type="submit" className="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
+                                <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
                             </div>
                         </form>
                     </div>
@@ -4225,7 +4225,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 </div>
                             </>
                         ) : (
-                            <div className="bg-gray-800/50 p-6 rounded-lg text-center border border-dashed border-gray-600">
+                            <div className="bg-[#1a1a1a]/80 p-6 rounded-lg text-center border border-dashed border-gray-600">
                                 <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
                                 <p className="text-gray-400">Tudo certo! Nenhum produto vencendo nos próximos 30 dias.</p>
                             </div>
@@ -4327,7 +4327,7 @@ const CriticalStockPage = ({ condominiums, token }) => {
                                 </div>
                             </>
                         ) : (
-                            <div className="bg-gray-800/50 p-6 rounded-lg text-center border border-dashed border-gray-600">
+                            <div className="bg-[#1a1a1a]/80 p-6 rounded-lg text-center border border-dashed border-gray-600">
                                 <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
                                 <p className="text-gray-400">Estoque saudável! Nenhum produto abaixo do nível crítico.</p>
                             </div>
@@ -4528,7 +4528,7 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
             {/* --- BOTÃO "NOVO CONDOMÍNIO" RESTAURADO --- */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
-                <button onClick={() => onAddNew()} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                     <PlusCircle size={20} /> Novo Condomínio
                 </button>
             </div>
@@ -5084,7 +5084,7 @@ const FinanceReport = ({ condominiums, token }) => {
                         <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-orange-500 outline-none" />
                     </div>
                     <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-orange-500/20">
                         <Filter size={16} /> Aplicar
                     </button>
                 </div>
@@ -5120,7 +5120,7 @@ const FinanceReport = ({ condominiums, token }) => {
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">Total Pendente: <span className="text-yellow-400 font-bold">R$ {totalPendingExpenses.toFixed(2)}</span></p>
                     </div>
-                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition hover:scale-105">
+                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition hover:scale-105">
                         <PlusCircle size={20} /> Nova Despesa
                     </button>
                 </div>
@@ -5233,7 +5233,7 @@ const FinanceReport = ({ condominiums, token }) => {
                             {modalError && <p className="text-red-400 text-sm mt-4 text-center">{modalError}</p>}
                             <div className="flex justify-end gap-3 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700">Cancelar</button>
-                                <button type="submit" className="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
+                                <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
                             </div>
                         </form>
                     </div>
@@ -5286,7 +5286,7 @@ const CondoModal = ({ isOpen, onClose, onSave, condo }) => {
                     <input name="monthly_fixed_cost" type="number" step="0.01" value={formData.monthly_fixed_cost || ''} onChange={handleChange} placeholder="Custo Fixo Mensal" className="bg-gray-700 p-2 rounded-md md:col-span-2" />
                     <div className="md:col-span-2 flex justify-end gap-4 mt-4">
                         <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Cancelar</button>
-                        <button type="submit" className="bg-orange-500 hover:bg-orange-600 py-2 px-4 rounded-md">Salvar</button>
+                        <button type="submit" className="bg-[#f2bd46] hover:bg-orange-600 py-2 px-4 rounded-md">Salvar</button>
                     </div>
                 </form>
             </div>
@@ -5439,7 +5439,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
     
     // --- Classe do Botão Neon (ESTÁTICO, sem pulso) ---
     const neonButtonClass = `
-        bg-orange-500 text-white font-bold py-3 px-4 
+        bg-[#f2bd46] text-white font-bold py-3 px-4 
         flex items-center justify-center gap-2 rounded-lg 
         shadow-lg shadow-orange-500/40 hover:shadow-orange-400/60 /* Sombra neon estática */
         transition-all disabled:bg-gray-500 disabled:shadow-none
@@ -5521,7 +5521,7 @@ const FridgeSelectionPage = ({ setFridgeId, setPage, user, onLogout, onCondoSele
             <div className="w-full max-w-md">
 
                 {/* --- CARD DE VIDRO (Layout do Login) --- */}
-                <div className="bg-gray-800/50 backdrop-blur-sm 
+                <div className="bg-[#1a1a1a]/80 backdrop-blur-sm 
                                 border border-gray-700/50 
                                 p-8 rounded-2xl shadow-2xl 
                                 animate-surgir"
@@ -5754,7 +5754,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
                 <div><label className="text-sm text-gray-400 mb-1 block">De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
                 <div><label className="text-sm text-gray-400 mb-1 block">Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-3" /></div>
                 <button onClick={handleFilterToday} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Hoje</button>
-                <button onClick={handleApplyFilters} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><Filter size={16} /> Aplicar</button>
+                <button onClick={handleApplyFilters} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><Filter size={16} /> Aplicar</button>
             </div>
             {/* --- FIM DOS FILTROS --- */}
 
@@ -6355,7 +6355,7 @@ const AdminDashboard = ({ onLogout }) => {
                 {/* --- HEADER --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 className="text-2xl md:text-3xl font-bold">Catálogo de Produtos</h2>
-                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:scale-105">
+                    <button onClick={() => handleOpenProductModal()} className="w-full md:w-auto bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:scale-105">
                         <PlusCircle size={20} /> Novo Produto
                     </button>
                 </div>
@@ -6510,7 +6510,7 @@ const AdminDashboard = ({ onLogout }) => {
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow'}`}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${currentPage === totalPages ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-orange-600 hover:shadow'}`}
                                     >
                                         Próxima
                                     </button>
@@ -6547,7 +6547,7 @@ const AdminDashboard = ({ onLogout }) => {
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
-                    <button onClick={() => onAddNew()} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                    <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                         <PlusCircle size={20} /> Novo Condomínio
                     </button>
                 </div>
@@ -6688,7 +6688,7 @@ const NavButton = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick} 
         className={`flex items-center gap-3 p-3 rounded-md transition text-sm font-medium
-        ${active ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-orange-500/20' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
     >
         {icon} {label}
     </button>
@@ -6769,7 +6769,7 @@ const MyTicketsPage = ({ setPage }) => {
                                 // --- CARD DE TICKET (Redesenhado) ---
                                 <div 
                                     key={ticket.id} 
-                                    className={`animate-surgir bg-gray-800/50 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
+                                    className={`animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
                                                 ${ticket.is_read 
                                                     ? 'border-gray-700/50' // LIDO
                                                     : 'border-orange-500/50 shadow-lg shadow-orange-500/10' // NÃO LIDO
@@ -6805,7 +6805,7 @@ const MyTicketsPage = ({ setPage }) => {
                             
                             )) : (
                                 // --- "Empty State" (Redesenhado) ---
-                                <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
+                                <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
                                     <Ticket size={48} className="mx-auto mb-4" />
                                     <h2 className="text-2xl font-semibold mb-2">Nenhum tiquete por aqui</h2>
                                     <p>Você não recebeu nenhuma mensagem ou notificação do administrador.</p>
@@ -7358,7 +7358,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
     const PurchaseItem = ({ tx }) => (
         <div 
             onClick={() => openReceiptModal(tx.id)} 
-            className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+            className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
         >
             {/* Imagem */}
             <div className="flex-shrink-0 w-16 h-16 relative">
@@ -7368,7 +7368,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                     className="w-16 h-16 rounded-md object-cover"
                 />
                 {tx.items.length > 1 && (
-                    <span className="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-gray-800">
+                    <span className="absolute -bottom-2 -right-2 bg-[#f2bd46] text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-gray-800">
                         +{tx.items.length - 1}
                     </span>
                 )}
@@ -7400,7 +7400,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         return (
             <div 
                 onClick={() => openReceiptModal(tx.id)} 
-                className="animate-surgir bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+                className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
             >
                 {/* Ícone (Neon e Colorido) */}
                 <div className={`flex-shrink-0 ${iconClass}`}>
@@ -7431,7 +7431,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         if (activeTab === 'compras') {
             return (
                 <div className="animate-surgir mb-8">
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
+                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Total em Compras (pág.)</p>
                         <p className="text-2xl font-bold text-orange-400">R$ {summary.totalPurchases.toFixed(2).replace('.', ',')}</p>
                     </div>
@@ -7443,11 +7443,11 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         if (activeTab === 'carteira') {
             return (
                 <div className="animate-surgir grid grid-cols-2 gap-4 mb-8">
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
+                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Entradas (pág.)</p>
                         <p className="text-2xl font-bold text-green-400">R$ {summary.totalWalletIn.toFixed(2).replace('.', ',')}</p>
                     </div>
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
+                    <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Saídas (pág.)</p>
                         <p className="text-2xl font-bold text-red-400">R$ {summary.totalWalletOut.toFixed(2).replace('.', ',')}</p>
                     </div>
@@ -7507,7 +7507,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                                                 {purchases.map(tx => <PurchaseItem key={tx.id} tx={tx} />)}
                                             </div>
                                         ) : (
-                                            <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
+                                            <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                                 <ShoppingCart size={48} className="mx-auto mb-4" />
                                                 <h2 className="text-2xl font-semibold mb-2">Sem compras por aqui</h2>
                                                 <p>Seu histórico de pedidos aparecerá aqui.</p>
@@ -7522,7 +7522,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                                                 {walletActivity.map(tx => <WalletActivityItem key={tx.id} tx={tx} />)}
                                             </div>
                                         ) : (
-                                            <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
+                                            <div className="text-center p-8 bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
                                                 <Wallet size={48} className="mx-auto mb-4" />
                                                 <h2 className="text-2xl font-semibold mb-2">Sem atividade na carteira</h2>
                                                 <p>Seu extrato de depósitos e transferências aparecerá aqui.</p>
