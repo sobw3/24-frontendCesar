@@ -126,7 +126,7 @@ const TransferConfirmationModal = ({ isOpen, onClose, onConfirm, recipient, amou
                 </div>
 
                 <h2 className="text-2xl font-bold text-white text-center mb-4">Confirmar Transferência</h2>
-                <p className="text-gray-300 text-center mb-6">Você está prestes a transferir <span className="font-bold text-orange-400">R$ {parseFloat(amount || 0).toFixed(2).replace('.', ',')}</span> para:</p>
+                <p className="text-gray-300 text-center mb-6">Você está prestes a transferir <span className="font-bold text-[#f2bd46]">R$ {parseFloat(amount || 0).toFixed(2).replace('.', ',')}</span> para:</p>
                 
                 {/* Card de Destinatário */}
                 <div className="bg-gray-700/80 p-4 rounded-lg text-left space-y-2 border border-gray-600/50">
@@ -153,7 +153,7 @@ const TransferLoadingModal = ({ isOpen }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/70 flex flex-col justify-center items-center z-[999] animate-fade-in-fast">
-            <Loader2 size={64} className="text-orange-400 animate-spin" />
+            <Loader2 size={64} className="text-[#f2bd46] animate-spin" />
             <p className="text-white text-xl mt-6 font-semibold">Processando transferência...</p>
             <p className="text-gray-400 mt-2">Aguarde, estamos concluindo a transação com segurança.</p>
         </div>
@@ -262,7 +262,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
                         <div className="text-center bg-black rounded-lg p-4">
                             <p className="text-lg text-gray-300">Valor Total</p>
                             <p 
-                                className="flex justify-center text-4xl mt-1 font-bold text-orange-400 print:text-orange-500"
+                                className="flex justify-center text-4xl mt-1 font-bold text-[#f2bd46] print:text-orange-500"
                                 // --- NEON ESTÁTICO (Sem pulso) ---
                                 style={{ textShadow: '0 0 8px rgba(249, 115, 22, 0.7)' }}
                             >
@@ -576,7 +576,7 @@ const ForgotPasswordPage = ({ setPage }) => {
                 {/* Botão Voltar (Estilizado) */}
                 <button 
                     onClick={() => setPage('login')} 
-                    className="absolute top-4 left-4 text-gray-400 hover:text-orange-400 
+                    className="absolute top-4 left-4 text-gray-400 hover:text-[#f2bd46] 
                                flex items-center gap-2 font-medium transition
                                bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-lg"
                     style={{ animationDelay: '100ms' }}
@@ -794,8 +794,8 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                         
                         {/* 5. Links (Centralizados e Empilhados) */}
                         <div className="flex flex-col items-center gap-2 mt-6 animate-surgir" style={{ animationDelay: '300ms' }}>
-                            <button onClick={() => setPage('forgot-password')} className="text-sm text-gray-400 hover:text-orange-400 transition font-medium">Esqueci minha senha</button>
-                            <button onClick={onSwitchToRegister} className="text-sm text-gray-400 hover:text-orange-400 transition font-medium">Não tem uma conta? Cadastre-se</button>
+                            <button onClick={() => setPage('forgot-password')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition font-medium">Esqueci minha senha</button>
+                            <button onClick={onSwitchToRegister} className="text-sm text-gray-400 hover:text-[#f2bd46] transition font-medium">Não tem uma conta? Cadastre-se</button>
                         </div>
                         
                         {/* 6. Admin (Ícone Sutil) */}
@@ -954,7 +954,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         
                         {/* --- ETAPA 1: DADOS PESSOAIS --- */}
                         <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-orange-400">1. Informações Pessoais</h3>
+                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">1. Informações Pessoais</h3>
                             <div className="flex flex-col gap-4">
                                 <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
                                 <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
@@ -983,7 +983,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         
                         {/* --- ETAPA 2: ENDEREÇO (COM CAMPOS DE TEXTO) --- */}
                         <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-orange-400">2. Endereço</h3>
+                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">2. Endereço</h3>
                             <div className="flex flex-col gap-4">
                                 
                                 {/* --- SELECT DE CONDOMÍNIO REMOVIDO --- */}
@@ -1024,7 +1024,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         
                         {/* --- ETAPA 3: SEGURANÇA --- */}
                         <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-orange-400">3. Segurança</h3>
+                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">3. Segurança</h3>
                             <div className="flex flex-col gap-4">
                                 <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
                                 <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500" /></div>
@@ -1058,7 +1058,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                 <div className="text-center mt-6 pt-6 border-t border-gray-700/50">
                     <button 
                         onClick={onSwitchToLogin} 
-                        className="text-gray-400 hover:text-orange-400 transition font-medium"
+                        className="text-gray-400 hover:text-[#f2bd46] transition font-medium"
                     >
                         Já tenho conta
                     </button>
@@ -1270,11 +1270,11 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 <style>{keyframes}</style>
                 <img src={product.image_url || `https://placehold.co/200x200/374151/ffffff?text=Sem+Foto`} alt={product.name} className={`w-full aspect-square md:w-32 md:h-32 rounded-md object-cover flex-shrink-0 ${isOutOfStock ? 'opacity-40' : ''}`} />
                 <div className="flex-grow min-w-0 w-full">
-                    {isOnSale && ( <div className="flex items-center gap-1.5 text-orange-400 mb-1"> <Flame size={16} /> <span className="font-bold text-sm">PROMOÇÃO IMPERDÍVEL</span> </div> )}
+                    {isOnSale && ( <div className="flex items-center gap-1.5 text-[#f2bd46] mb-1"> <Flame size={16} /> <span className="font-bold text-sm">PROMOÇÃO IMPERDÍVEL</span> </div> )}
                     <h3 className="font-bold text-white text-2xl truncate">{product.name}</h3>
                     {isOnSale ? (
                         <div className="flex items-baseline gap-2 mt-1">
-                            <p className="text-3xl font-bold text-orange-400 neon-text-orange">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
+                            <p className="text-3xl font-bold text-[#f2bd46] neon-text-orange">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
                             <p className="text-xl text-gray-400 line-through">R$ {parseFloat(product.original_price).toFixed(2).replace('.', ',')}</p>
                         </div>
                     ) : ( <p className="text-3xl font-bold text-white mt-1">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p> )}
@@ -1302,7 +1302,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                 <div className="flex flex-wrap gap-2">
                     {otherMachines.map(machine => (
                         <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 px-4 flex items-center gap-2 hover:bg-gray-700 hover:border-gray-600 transition-all text-white">
-                            <Refrigerator size={18} className="text-orange-400" /> <span>{machine.name}</span>
+                            <Refrigerator size={18} className="text-[#f2bd46]" /> <span>{machine.name}</span>
                         </button>
                     ))}
                 </div>
@@ -1370,10 +1370,10 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     
                     <div className="flex items-center gap-4">
                         <nav className="hidden md:flex items-center gap-5 text-sm font-semibold">
-                            <button onClick={() => setPage('wallet')} className="text-gray-300 hover:text-orange-400 transition">Carteira</button>
-                            <button onClick={() => setPage('history')} className="text-gray-300 hover:text-orange-400 transition">Meu Histórico</button>
-                            <button onClick={() => setPage('my-tickets')} className="text-gray-300 hover:text-orange-400 transition relative"> Tiquetes {unreadTickets > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">{unreadTickets}</span>} </button>
-                            <button onClick={() => setPage('my-account')} className="text-gray-300 hover:text-orange-400 transition">Minha Conta</button>
+                            <button onClick={() => setPage('wallet')} className="text-gray-300 hover:text-[#f2bd46] transition">Carteira</button>
+                            <button onClick={() => setPage('history')} className="text-gray-300 hover:text-[#f2bd46] transition">Meu Histórico</button>
+                            <button onClick={() => setPage('my-tickets')} className="text-gray-300 hover:text-[#f2bd46] transition relative"> Tiquetes {unreadTickets > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">{unreadTickets}</span>} </button>
+                            <button onClick={() => setPage('my-account')} className="text-gray-300 hover:text-[#f2bd46] transition">Minha Conta</button>
                         </nav>
                         <div className="h-6 w-px bg-gray-600 hidden md:block"></div>
                         <button className="relative" onClick={() => setPage('cart')}>
@@ -1402,7 +1402,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             <main className="container mx-auto p-4 md:p-8">
                 <div className="animate-surgir bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
                     <div>
-                        <h1 className="text-xl md:text-2xl">Olá, <span className="font-bold text-orange-400">{user?.name}</span>!</h1>
+                        <h1 className="text-xl md:text-2xl">Olá, <span className="font-bold text-[#f2bd46]">{user?.name}</span>!</h1>
                         <p className="text-gray-300">Confira os produtos disponíveis em <span className="font-semibold">{currentCondo?.name || '...'}</span>.</p>
                     </div>
                 </div>
@@ -1527,7 +1527,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Wallet size={32} className="text-orange-400" />
+                    <Wallet size={32} className="text-[#f2bd46]" />
                 </div>
                 
                 <h2 className="text-2xl font-bold text-white text-center mb-4">Confirmar Pagamento</h2>
@@ -1537,7 +1537,7 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
                 <div className="bg-gray-700/80 p-4 rounded-lg space-y-3 border border-gray-600/50">
                     <p className="flex justify-between text-lg">
                         <span className="text-gray-300">Valor Total da Compra:</span> 
-                        <span className="font-bold text-orange-400">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                        <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                     </p>
                     <p className="flex justify-between">
                         <span className="text-gray-300">Seu Saldo Atual:</span> 
@@ -1683,7 +1683,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
 
             <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Carrinho</h1>
                 </div>
             </header>
@@ -1711,7 +1711,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                                     />
                                     <div className="flex-grow">
                                         <h3 className="font-semibold text-lg">{item.name}</h3>
-                                        <p className="text-orange-400 font-bold text-xl">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
+                                        <p className="text-[#f2bd46] font-bold text-xl">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
                                     </div>
                                     {/* Botões de Quantidade (Estilo Moderno) */}
                                     <div className="flex items-center gap-3 bg-gray-700/80 rounded-lg p-1">
@@ -1733,7 +1733,7 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                             {/* --- TOTAL (Sem Neon) --- */}
                             <div className="flex justify-between text-white items-center font-bold text-3xl mb-4 border-t border-gray-700 pt-4">
                                 <span>Total</span>
-                                <span className="text-orange-400">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                                <span className="text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                             </div>
                             
                             {/* --- SALDO (Design "Mais Bonito") --- */}
@@ -1862,7 +1862,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                 {isDeposit &&
                     <div className="bg-black p-4 rounded-xl text-center mb-6">
                         <p className="text-gray-400">Valor do depósito:</p>
-                        <p className="text-3xl font-bold text-orange-400">R$ {parseFloat(paymentData.amount || 0).toFixed(2).replace('.', ',')}</p>
+                        <p className="text-3xl font-bold text-[#f2bd46]">R$ {parseFloat(paymentData.amount || 0).toFixed(2).replace('.', ',')}</p>
                     </div>
                 }
                 
@@ -1909,7 +1909,7 @@ const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
                 </div>
 
                 <div className="mt-8 border-t border-gray-700 pt-6">
-                    <div className="flex justify-center items-center gap-3 text-orange-400">
+                    <div className="flex justify-center items-center gap-3 text-[#f2bd46]">
                         <Loader2 className="animate-spin" />
                         <span>A aguardar confirmação do pagamento...</span>
                     </div>
@@ -2000,13 +2000,13 @@ const CardPaymentPage = ({ user, cart, setPage, onPaymentSuccess, setPaymentData
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('cart')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Pagamento com Cartão</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
                 <div className="max-w-md mx-auto bg-gray-800 p-8 rounded-lg">
-                    <p className="text-center text-lg text-gray-300 mb-4">Valor da compra: <span className="font-bold text-orange-400">R$ {cartTotal.toFixed(2).replace('.', ',')}</span></p>
+                    <p className="text-center text-lg text-gray-300 mb-4">Valor da compra: <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span></p>
                     {!isMpReady && !error && <div className="flex justify-center items-center flex-col gap-4"><Loader2 className="animate-spin" /><span>A carregar formulário...</span></div>}
                     {error && <p className="text-red-400 text-center mt-4">{error}</p>}
                     <div id="cardPaymentBrick_container"></div>
@@ -2213,13 +2213,13 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700/50 shadow-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('wallet')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('wallet')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Depositar com Cartão</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
                 <div className="max-w-md mx-auto">
-                    <p className="text-center text-lg text-gray-300 mb-6">Valor do depósito: <span className="font-bold text-orange-400">R$ {depositAmount.toFixed(2).replace('.', ',')}</span></p>
+                    <p className="text-center text-lg text-gray-300 mb-6">Valor do depósito: <span className="font-bold text-[#f2bd46]">R$ {depositAmount.toFixed(2).replace('.', ',')}</span></p>
                     
                     {/* Container do Brick (Glassmorphism) */}
                     <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg">
@@ -2230,7 +2230,7 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
                         {/* 2. Loader (controlado por DOIS estados) */}
                         {(isBrickLoading || isLoading) && (
                             <div className="flex flex-col justify-center items-center h-48 gap-4">
-                                <Loader2 className="animate-spin text-orange-400" size={32} />
+                                <Loader2 className="animate-spin text-[#f2bd46]" size={32} />
                                 <span className="text-gray-400">
                                     {isLoading ? 'A processar pagamento...' : 'A carregar formulário seguro...'}
                                 </span>
@@ -2442,7 +2442,7 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
                         <TimerCircle 
                             duration={UNLOCK_TIME} 
                             remaining={countdown} 
-                            colorClass="text-orange-400"
+                            colorClass="text-[#f2bd46]"
                             textAnimationClass="animate-neon-text-orange" // <-- SÓ O NÚMERO PULSA
                             filterId="glow-orange-filter"
                         />
@@ -2845,7 +2845,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
     // Componente de item de perfil (REDESENHADO)
     const ProfileItem = ({ label, value, icon }) => (
         <div className="flex items-start gap-4">
-            <div className="text-orange-400 mt-1">{icon}</div>
+            <div className="text-[#f2bd46] mt-1">{icon}</div>
             <div>
                 <label className="block text-gray-400 text-sm">{label}</label>
                 {/* Agora que o backend envia, o 'N/A' só aparecerá se for realmente nulo */}
@@ -2878,7 +2878,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Conta</h1>
                     </div>
                 </header>
@@ -2889,7 +2889,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                         {/* --- Seção 1: Meus Dados (Glassmorphism + Animação) --- */}
                         <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-orange-400">Meus Dados</h3>
+                                <h3 className="text-xl font-bold text-[#f2bd46]">Meus Dados</h3>
                                 {/* Botão Editar (Neon Azul) */}
                                 <button 
                                     onClick={() => setShowEditModal(true)} 
@@ -2919,7 +2919,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                         
                         {/* --- Seção 2: Segurança (Glassmorphism + Animação) --- */}
                         <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
-                            <h3 className="text-xl font-bold text-orange-400 mb-4">Segurança</h3>
+                            <h3 className="text-xl font-bold text-[#f2bd46] mb-4">Segurança</h3>
                             {/* Botão Alterar Senha (Redesenhado) */}
                             <button 
                                 onClick={() => setShowPasswordModal(true)} 
@@ -2996,7 +2996,7 @@ const Footer = () => {
                                        py-2 px-4 flex items-center gap-2
                                        hover:bg-gray-700 hover:border-gray-600 transition-all"
                         >
-                            <Instagram size={20} className="text-orange-400" />
+                            <Instagram size={20} className="text-[#f2bd46]" />
                             <span>Instagram</span>
                         </a>
                         {/* O botão "Suporte via WhatsApp" foi removido. */}
@@ -3054,7 +3054,7 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Mudar de Condomínio</h1>
                 </div>
             </header>
@@ -3233,7 +3233,7 @@ const TransferModal = ({
                 
                 {/* Ícone de Destaque */}
                 <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <ArrowRightLeft size={32} className="text-orange-400" />
+                    <ArrowRightLeft size={32} className="text-[#f2bd46]" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-white text-center mb-6">Transferir Saldo</h2>
@@ -3488,7 +3488,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                        hover:bg-gray-700/60 hover:border-gray-600 cursor-pointer transition"
         >
             {/* Ícone Neon */}
-            <div className="text-orange-400" style={{ filter: 'drop-shadow(0 0 5px rgba(249, 115, 22, 0.7))' }}>
+            <div className="text-[#f2bd46]" style={{ filter: 'drop-shadow(0 0 5px rgba(249, 115, 22, 0.7))' }}>
                 {icon}
             </div>
             <span className="font-semibold text-white">{label}</span>
@@ -3533,7 +3533,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Minha Carteira</h1>
                     </div>
                 </header>
@@ -3553,7 +3553,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                         
                         {showBalance ? (
                             // --- EFEITO NEON NO SALDO ---
-                            <p className="text-5xl font-bold text-orange-400 neon-text-orange mt-2">R$ {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}</p>
+                            <p className="text-5xl font-bold text-[#f2bd46] neon-text-orange mt-2">R$ {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}</p>
                         ) : (
                             <p className="text-5xl font-bold text-white mt-2">R$ ●●●●,●●</p>
                         )}
@@ -3591,7 +3591,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
         </>
     );
 };
-const AdminStatCard = ({ icon, label, value, colorClass = 'text-orange-400' }) => (
+const AdminStatCard = ({ icon, label, value, colorClass = 'text-[#f2bd46]' }) => (
     <div className="bg-gray-800 p-6 rounded-lg flex items-center gap-4">
         <div className={`p-3 rounded-lg bg-gray-700 ${colorClass}`}>{icon}</div>
         <div><p className="text-gray-400 text-sm">{label}</p><p className="text-2xl font-bold">{value}</p></div>
@@ -3623,7 +3623,7 @@ const DailyPromotionsWidget = ({ token }) => {
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Flame className="text-orange-400" /> Promoções do Dia</h3>
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Flame className="text-[#f2bd46]" /> Promoções do Dia</h3>
             {isLoading ? <Loader2 className="animate-spin" /> : promotions.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {promotions.map(p => (
@@ -3631,7 +3631,7 @@ const DailyPromotionsWidget = ({ token }) => {
                             <img src={p.image_url || 'https://placehold.co/100x100/374151/ffffff?text=Sem+Foto'} alt={p.name} className="w-full h-20 object-cover rounded-md mb-2" />
                             <p className="text-sm font-semibold truncate">{p.name}</p>
                             <p className="text-xs text-gray-400 line-through">R$ {parseFloat(p.sale_price).toFixed(2)}</p>
-                            <p className="font-bold text-orange-400">R$ {parseFloat(p.promotional_price).toFixed(2)}</p>
+                            <p className="font-bold text-[#f2bd46]">R$ {parseFloat(p.promotional_price).toFixed(2)}</p>
                         </div>
                     ))}
                 </div>
@@ -3798,7 +3798,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                             <tr className="bg-black/50">
                                                 <td colSpan="7" className="p-4 pl-12">
                                                     <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                                                        <h4 className="font-bold text-orange-400 text-sm mb-2">Detalhes do Pedido #{item.id}</h4>
+                                                        <h4 className="font-bold text-[#f2bd46] text-sm mb-2">Detalhes do Pedido #{item.id}</h4>
                                                         <ul className="space-y-1 text-sm text-gray-300">
                                                             {item.items.map((prod, idx) => (
                                                                 <li key={idx} className="flex justify-between border-b border-gray-700 pb-1 last:border-0">
@@ -3845,7 +3845,7 @@ const EntradasVendasPage = ({ condominiums, token }) => {
                                 {/* Área Expansível Mobile */}
                                 {expandedRow === item.id && (
                                     <div className="mb-4 bg-black/30 p-3 rounded border border-gray-700/50 animate-surgir">
-                                        <p className="text-xs font-bold text-orange-400 mb-2 border-b border-gray-700 pb-1">Itens Comprados:</p>
+                                        <p className="text-xs font-bold text-[#f2bd46] mb-2 border-b border-gray-700 pb-1">Itens Comprados:</p>
                                         <ul className="space-y-2">
                                             {item.items.map((prod, idx) => (
                                                 <li key={idx} className="flex justify-between text-xs text-gray-300">
@@ -5092,7 +5092,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
             {/* --- RELATÓRIO DRE (CARDS) --- */}
             <div>
-                <h3 className="text-xl font-bold mb-4 text-orange-400 border-b border-gray-700 pb-2">Demonstrativo (DRE)</h3>
+                <h3 className="text-xl font-bold mb-4 text-[#f2bd46] border-b border-gray-700 pb-2">Demonstrativo (DRE)</h3>
                 {isLoading ? <Loader2 className="animate-spin mx-auto text-orange-500" size={40} /> : error ? <p className="text-red-400">{error}</p> : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard label="Faturamento Bruto" value={`R$ ${summaryCards.gross_revenue.toFixed(2)}`} colorClass="text-green-400" icon={DollarSign} />
@@ -5353,12 +5353,12 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                         <div className="md:col-span-2"><label className="text-sm text-gray-400">Descrição</label><textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" rows="3"></textarea></div>
                         <div className="md:col-span-2"><label className="text-sm text-gray-400">URL da Imagem</label><input name="image_url" value={formData.image_url || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
                         
-                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-orange-400">Precificação</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Precificação</div>
                         
                         <div><label className="text-sm text-gray-400">Preço de Compra (Custo)</label><input name="purchase_price" type="number" step="0.01" value={formData.purchase_price || ''} onChange={handleChange} placeholder="Ex: 5.50" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                         <div><label className="text-sm text-gray-400">Preço de Venda Padrão</label><input name="sale_price" type="number" step="0.01" value={formData.sale_price || ''} onChange={handleChange} placeholder="Ex: 9.99" className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                         
-                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-orange-400">Promoção (Opcional)</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Promoção (Opcional)</div>
 
                         {/* --- CAMPO DE PREÇO PROMOCIONAL ATUALIZADO (MANUAL) --- */}
                         <div>
@@ -5397,7 +5397,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product }) => {
                         <div><label className="text-sm text-gray-400">Início da Promoção</label><input name="promotion_start_date" type="date" value={formData.promotion_start_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
                         <div><label className="text-sm text-gray-400">Fim da Promoção</label><input name="promotion_end_date" type="date" value={formData.promotion_end_date || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" /></div>
 
-                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-orange-400">Estoque</div>
+                        <div className="md:col-span-2 border-t border-gray-700 mt-4 pt-4 font-bold text-[#f2bd46]">Estoque</div>
                         <div><label className="text-sm text-gray-400">Nível Crítico de Estoque</label><input name="critical_stock_level" type="number" value={formData.critical_stock_level || ''} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md mt-1" required /></div>
                     </div>
                     <div className="flex justify-end gap-4 mt-6">
@@ -5691,7 +5691,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
     // --- COMPONENTE DE INSIGHTS ATUALIZADO ---
     const AIInsights = ({ insights }) => (
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
-            <h3 className="text-2xl font-bold mb-4 text-orange-400">Insights do Assistente (Período)</h3>
+            <h3 className="text-2xl font-bold mb-4 text-[#f2bd46]">Insights do Assistente (Período)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* Insight 1: Mais Vendidos (Unidades) */}
@@ -5759,12 +5759,12 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
             {/* --- FIM DOS FILTROS --- */}
 
             
-            {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-orange-400" size={48}/></div> : 
+            {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={48}/></div> : 
              error ? <p className="text-red-400 text-center">{error}</p> :
              (
                 <>
                     {/* --- NOVOS CARDS DE RESUMO --- */}
-                    <h3 className="text-2xl font-bold mb-4 text-orange-400">Resumo do Estoque (Total)</h3>
+                    <h3 className="text-2xl font-bold mb-4 text-[#f2bd46]">Resumo do Estoque (Total)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <AdminStatCard 
                             icon={<DollarSign size={32} />} 
@@ -5871,7 +5871,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-xl h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-orange-400 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-[#f2bd46] flex items-center gap-2">
                     {/* Ícone e Título Atualizados */}
                     <Calendar size={24} /> Próximo da Validade
                 </h3>
@@ -6011,7 +6011,7 @@ const SalesPerformanceWidget = ({ title, data, type }) => {
     if (!data || data.length === 0) {
         return (
             <div className="bg-gray-800 p-6 rounded-xl shadow-xl h-full flex flex-col justify-center">
-                <h3 className="text-xl font-bold text-orange-400 mb-4">{title}</h3>
+                <h3 className="text-xl font-bold text-[#f2bd46] mb-4">{title}</h3>
                 <p className="text-sm text-center text-gray-500">Nenhum dado de vendas no período.</p>
             </div>
         );
@@ -6019,7 +6019,7 @@ const SalesPerformanceWidget = ({ title, data, type }) => {
 
     return (
         <div className="bg-gray-800 p-6 rounded-xl shadow-xl h-full flex flex-col">
-            <h3 className="text-xl font-bold text-orange-400 mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-[#f2bd46] mb-4 flex items-center gap-2">
                 {type === 'top' ? <Trophy size={20} /> : <ThumbsDown size={20} />} {title}
             </h3>
             <ul className="space-y-3 flex-grow overflow-auto scrollbar-hide">
@@ -6118,7 +6118,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
         setFilterInputs({ startDate: '', endDate: '', condoId: 'all' });
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-orange-400" size={48}/></div>;
+    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={48}/></div>;
     if (error) return <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p>;
 
     return (
@@ -6755,7 +6755,7 @@ const MyTicketsPage = ({ setPage }) => {
             {/* --- HEADER (Glassmorphism) --- */}
             <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meus Tiquetes</h1>
                 </div>
             </header>
@@ -6780,7 +6780,7 @@ const MyTicketsPage = ({ setPage }) => {
                                         {ticket.is_read ? (
                                             <CheckCircle2 size={20} className="text-gray-500" />
                                         ) : (
-                                            <Bell size={20} className="text-orange-400" />
+                                            <Bell size={20} className="text-[#f2bd46]" />
                                         )}
                                     </div>
                                     
@@ -6966,13 +6966,13 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
             <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h2 className="text-xl font-bold">Editar Utilizador: <span className="text-orange-400">{user.name}</span></h2>
+                        <h2 className="text-xl font-bold">Editar Utilizador: <span className="text-[#f2bd46]">{user.name}</span></h2>
                         {!user.is_active && <p className="text-red-500 font-bold text-sm flex items-center gap-2"><Ban size={16}/> CONTA BLOQUEADA</p>}
                     </div>
                     <button onClick={onClose}><X className="text-gray-400 hover:text-white" /></button>
                 </div>
 
-                {isSaving && <div className="absolute top-4 right-8"><Loader2 className="animate-spin text-orange-400" /></div>}
+                {isSaving && <div className="absolute top-4 right-8"><Loader2 className="animate-spin text-[#f2bd46]" /></div>}
                 {modalSuccess && <p className="text-green-400 text-center mb-4">{modalSuccess}</p>}
                 {modalError && <p className="text-red-400 text-center mb-4">{modalError}</p>}
                 
@@ -7024,7 +7024,7 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
                     
                     {/* --- SEÇÃO DE SENHA ADICIONADA --- */}
                     <div className="mb-6 pb-6 border-b border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-orange-400">Alterar Senha (Opcional)</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-[#f2bd46]">Alterar Senha (Opcional)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm text-gray-400">Nova Senha</label>
@@ -7154,7 +7154,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-black flex justify-center items-center">
-                <Loader2 className="animate-spin text-orange-400" size={48} />
+                <Loader2 className="animate-spin text-[#f2bd46]" size={48} />
             </div>
         );
     }
@@ -7165,7 +7165,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
              <div className="min-h-screen bg-black text-white">
                 <header className="bg-gray-800 shadow-md">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-orange-400 hover-text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover-text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
                     </div>
                 </header>
@@ -7183,7 +7183,7 @@ const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
         <div className="min-h-screen bg-black text-white">
             <header className="bg-gray-800 shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
                 </div>
             </header>
@@ -7433,7 +7433,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                 <div className="animate-surgir mb-8">
                     <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
                         <p className="text-sm text-gray-400 mb-1">Total em Compras (pág.)</p>
-                        <p className="text-2xl font-bold text-orange-400">R$ {summary.totalPurchases.toFixed(2).replace('.', ',')}</p>
+                        <p className="text-2xl font-bold text-[#f2bd46]">R$ {summary.totalPurchases.toFixed(2).replace('.', ',')}</p>
                     </div>
                 </div>
             );
@@ -7466,7 +7466,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                 {/* --- HEADER (Glassmorphism) --- */}
                 <header className="bg-gray-800/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
                     <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-orange-400 hover:text-orange-300"><ArrowLeft size={24} /></button>
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-orange-300"><ArrowLeft size={24} /></button>
                         <h1 className="text-2xl font-bold">Meu Histórico</h1>
                     </div>
                     
@@ -7475,13 +7475,13 @@ const HistoryPage = ({ setPage, token, showToast }) => {
                         <div className="grid grid-cols-2 gap-2 p-1 bg-black/50 rounded-lg">
                             <button 
                                 onClick={() => setActiveTab('compras')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'compras' ? 'bg-gray-700/80 text-orange-400' : 'text-gray-400 hover:bg-gray-700/40'}`}
+                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'compras' ? 'bg-gray-700/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-gray-700/40'}`}
                             >
                                 Minhas Compras
                             </button>
                             <button 
                                 onClick={() => setActiveTab('carteira')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'carteira' ? 'bg-gray-700/80 text-orange-400' : 'text-gray-400 hover:bg-gray-700/40'}`}
+                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'carteira' ? 'bg-gray-700/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-gray-700/40'}`}
                             >
                                 Atividade da Carteira
                             </button>
