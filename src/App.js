@@ -1272,7 +1272,7 @@ const BannerCarousel = () => {
 // App.js -> SUBSTITUA o seu componente HomePage por este
 
 const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId, onCondoSelected }) => {
-    // --- (Estados do HomePage) ---
+    // --- (Estados do HomePage MANTIDOS) ---
     const [showMenu, setShowMenu] = React.useState(false);
     const [products, setProducts] = React.useState({});
     const [isLoading, setIsLoading] = React.useState(true);
@@ -1284,7 +1284,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
     const [isSearchFocused, setIsSearchFocused] = React.useState(false);
     const [unreadTickets, setUnreadTickets] = React.useState(0);
 
-    // --- (useEffect de busca de Condos/Máquinas) ---
+    // --- (useEffect de busca de Condos/Máquinas MANTIDO) ---
     React.useEffect(() => {
         const fetchCondos = async () => {
             try {
@@ -1298,9 +1298,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
 
     const currentCondo = condos.find(c => c.id === user?.condoId);
 
-    // ==========================================================
-    // --- CORREÇÃO DO BUG "CARREGANDO INFINITAMENTE" ---
-    // ==========================================================
+    // --- (useEffect de Produtos MANTIDO) ---
     React.useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true); 
@@ -1326,7 +1324,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         fetchProducts();
     }, [user?.condoId]); 
 
-    // --- (useEffect de Pesquisa) ---
+    // --- (useEffect de Pesquisa MANTIDO) ---
     React.useEffect(() => {
         if (searchQuery.trim() === '') {
             setSearchResults([]);
@@ -1350,7 +1348,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery, user?.condoId]);
 
-    // --- Tickets ---
+    // --- (Tickets MANTIDO) ---
     React.useEffect(() => {
         const fetchUnreadTickets = async () => {
             const token = localStorage.getItem('token');
@@ -1369,26 +1367,45 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
     const handleBuyNow = (e, product) => { e.stopPropagation(); addToCart(product); setPage('cart'); };
     const handleAddToCart = (e, product) => { e.stopPropagation(); addToCart(product); };
 
-    // --- SideMenu ---
+    // --- SideMenu (VISUAL ATUALIZADO COM GLASSMORPHISM) ---
     const SideMenu = () => (
-        <div className={`fixed top-0 left-0 h-full w-64 bg-[#1a1a1a] shadow-xl z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
-            <div className="p-4">
-                <div className="flex justify-between items-center mb-8"><span className="text-lg font-bold text-[#f2bd46]">Menu</span><button onClick={() => setShowMenu(false)}><X className="text-white" /></button></div>
-                <nav className="flex flex-col gap-4">
-                    <button onClick={() => setPage('wallet')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><Wallet size={20} /> Minha Carteira</button>
-                    <button onClick={() => setPage('history')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><History size={20} /> Meu Histórico</button>
-                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition">
-                        <div className="flex items-center gap-3"><Ticket size={20} /> Meus Tiquetes</div>
-                        {unreadTickets > 0 && <span className="bg-red-500 text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{unreadTickets}</span>}
+        <div className={`fixed top-0 left-0 h-full w-72 bg-black/90 backdrop-blur-2xl border-r border-gray-800 shadow-[20px_0_50px_rgba(0,0,0,0.7)] z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-500 ease-in-out`}>
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-10">
+                    <span className="text-xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-[#f2bd46]">MENU</span>
+                    <button onClick={() => setShowMenu(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                        <X className="text-white" />
                     </button>
-                    <button onClick={() => setPage('my-account')} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1a1a1a] transition"><User size={20} /> Minha Conta</button>
+                </div>
+                <nav className="flex flex-col gap-3">
+                    <button onClick={() => setPage('wallet')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Wallet size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Carteira</span>
+                    </button>
+                    <button onClick={() => setPage('history')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><History size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meu Histórico</span>
+                    </button>
+                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Ticket size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                            <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meus Tiquetes</span>
+                        </div>
+                        {unreadTickets > 0 && <span className="bg-red-500 text-xs font-bold text-white rounded-full h-6 w-6 flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.5)]">{unreadTickets}</span>}
+                    </button>
+                    <button onClick={() => setPage('my-account')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><User size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Conta</span>
+                    </button>
                 </nav>
             </div>
-            <button onClick={onLogout} className="absolute bottom-0 left-0 w-full flex items-center gap-3 p-4 bg-black text-red-400 hover:bg-red-500/20 transition"><LogOut size={20} /> Sair</button>
+            <button onClick={onLogout} className="absolute bottom-6 left-6 right-6 flex items-center justify-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hover:bg-red-500/20 hover:border-red-500/40 transition-all">
+                <LogOut size={20} /> Sair do Aplicativo
+            </button>
         </div>
     );
     
-    // --- Lógica de Categorias ---
+    // --- Lógica de Categorias MANTIDA ---
     const categories = React.useMemo(() => {
         return Object.keys(products).reduce((acc, category) => {
             const items = products[category];
@@ -1397,57 +1414,71 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         }, {});
     }, [products]);
     
-    // --- Card de Produto da Lista Principal ---
+    // --- Card de Produto da Lista Principal (VISUAL ATUALIZADO) ---
     const ProductListCard = ({ product, onAddToCart, onBuyNow }) => {
         const isOutOfStock = product.stock === 0;
         const isOnSale = product.is_on_sale;
         const keyframes = `
             @keyframes surgir { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes neon-pulse-text-[#f2bd46] { 0%, 100% { text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7); } 50% { text-shadow: 0 0 10px rgba(249, 115, 22, 1), 0 0 20px rgba(249, 115, 22, 1); } }
-            @keyframes neon-pulse-text-red { 0%, 100% { text-shadow: 0 0 5px rgba(239, 68, 68, 0.7), 0 0 10px rgba(239, 68, 68, 0.7); } 50% { text-shadow: 0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 1); } }
+            @keyframes neon-pulse-text-[#f2bd46] { 0%, 100% { text-shadow: 0 0 5px rgba(242, 189, 70, 0.5), 0 0 10px rgba(242, 189, 70, 0.5); } 50% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.8), 0 0 20px rgba(242, 189, 70, 0.8); } }
+            @keyframes neon-pulse-text-red { 0%, 100% { text-shadow: 0 0 5px rgba(239, 68, 68, 0.5), 0 0 10px rgba(239, 68, 68, 0.5); } 50% { text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.8); } }
             .animate-surgir { animation: surgir 0.5s ease-out forwards; }
             .neon-text-[#f2bd46] { animation: neon-pulse-text-[#f2bd46] 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
             .neon-text-red { animation: neon-pulse-text-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         `;
-        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-4 border-gray-700 backdrop-blur-sm border rounded-lg overflow-hidden transition-all duration-300 p-4 `;
-        if (isOnSale) { cardClasses += ` border-[#f2bd46]/50`; } else { cardClasses += ` border-gray-700/50`; }
-        if (!isOutOfStock) { cardClasses += ` hover:shadow-xl hover:border-gray-600`; }
-        const neonButtonClass = ` bg-[#f2bd46] text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50 transition-all `;
+        
+        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-5 bg-black/40 backdrop-blur-xl border rounded-2xl overflow-hidden transition-all duration-300 p-5 relative `;
+        if (isOnSale) { cardClasses += ` border-[#f2bd46]/40`; } else { cardClasses += ` border-gray-700/50`; }
+        if (!isOutOfStock) { cardClasses += ` hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-gray-500/80 group`; }
+        
+        // Estilos de botões idênticos à tela de Auth
+        const btnBuyClass = `bg-[#f2bd46] text-black font-bold py-3 px-5 text-sm flex items-center justify-center gap-2 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 w-full md:w-auto`;
+        const btnAddClass = `bg-black/50 hover:bg-black/80 border border-gray-700/80 text-white font-semibold py-3 px-5 text-sm flex items-center justify-center gap-2 rounded-xl transition-all duration-300 hover:border-[#f2bd46]/50 hover:text-[#f2bd46] w-full md:w-auto`;
+
         const StockIndicator = () => {
             if (isOutOfStock) return null;
             if (product.stock <= product.critical_stock_level) {
                 return (
-                    <div className="mt-2 inline-block bg-red-900/50 border border-red-500/30 rounded-full px-3 py-1">
-                        <p className="text-sm font-bold text-red-400 neon-text-red"> Restam apenas {product.stock}! </p>
+                    <div className="mt-3 inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-1.5">
+                        <AlertTriangle size={14} className="text-red-400" />
+                        <p className="text-xs font-bold text-red-400 neon-text-red uppercase tracking-wider"> Restam apenas {product.stock}! </p>
                     </div>
                 );
             }
             return (
-                <div className="mt-2 inline-block bg-green-500/10 border border-green-500/30 rounded-full px-3 py-1">
-                    <p className="text-sm font-medium text-green-400"> {product.stock} unidades disponíveis </p>
+                <div className="mt-3 inline-flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-1.5">
+                    <Package size={14} className="text-green-400" />
+                    <p className="text-xs font-medium text-green-400"> {product.stock} disponíveis </p>
                 </div>
             );
         };
+
         return (
             <div className={cardClasses}>
                 <style>{keyframes}</style>
-                <img src={product.image_url || `https://placehold.co/200x200/374151/ffffff?text=Sem+Foto`} alt={product.name} className={`w-full aspect-square md:w-32 md:h-32 rounded-md object-cover flex-shrink-0 ${isOutOfStock ? 'opacity-40' : ''}`} />
-                <div className="flex-grow min-w-0 w-full">
-                    {isOnSale && ( <div className="flex items-center gap-1.5 text-[#f2bd46] mb-1"> <Flame size={16} /> <span className="font-bold text-sm">PROMOÇÃO IMPERDÍVEL</span> </div> )}
-                    <h3 className="font-bold text-white text-2xl truncate">{product.name}</h3>
+                {/* Glow de fundo no card para itens em promoção */}
+                {isOnSale && <div className="absolute inset-0 bg-gradient-to-r from-[#f2bd46]/5 to-transparent pointer-events-none rounded-2xl"></div>}
+                
+                <img src={product.image_url || `https://placehold.co/200x200/1a1a1a/4B5563?text=Sem+Foto`} alt={product.name} className={`w-full aspect-square md:w-36 md:h-36 rounded-xl object-cover flex-shrink-0 shadow-lg ${isOutOfStock ? 'opacity-40 grayscale' : 'group-hover:scale-[1.02] transition-transform duration-500'}`} />
+                
+                <div className="flex-grow min-w-0 w-full z-10">
+                    {isOnSale && ( <div className="flex items-center gap-1.5 text-[#f2bd46] mb-2 bg-[#f2bd46]/10 inline-block px-2 py-0.5 rounded uppercase tracking-wider"> <Flame size={14} className="inline pb-0.5"/> <span className="font-bold text-[11px]">PROMOÇÃO IMPERDÍVEL</span> </div> )}
+                    <h3 className="font-extrabold text-white text-xl md:text-2xl truncate mb-1">{product.name}</h3>
+                    
                     {isOnSale ? (
-                        <div className="flex items-baseline gap-2 mt-1">
-                            <p className="text-3xl font-bold text-[#f2bd46] neon-text-[#f2bd46]">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
-                            <p className="text-xl text-gray-400 line-through">R$ {parseFloat(product.original_price).toFixed(2).replace('.', ',')}</p>
+                        <div className="flex items-baseline gap-3 mt-1">
+                            <p className="text-3xl font-black text-[#f2bd46] neon-text-[#f2bd46] tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
+                            <p className="text-lg text-gray-500 line-through font-medium">R$ {parseFloat(product.original_price).toFixed(2).replace('.', ',')}</p>
                         </div>
-                    ) : ( <p className="text-3xl font-bold text-white mt-1">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p> )}
+                    ) : ( <p className="text-3xl font-black text-white mt-1 tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p> )}
                     <StockIndicator />
                 </div>
-                <div className="flex-shrink-0 w-full md:w-auto">
-                    {isOutOfStock ? ( <span className="w-full block text-sm bg-[#1a1a1a] text-gray-400 font-semibold p-3 text-center rounded-md">ESGOTADO</span> ) : (
-                        <div className="flex flex-col md:flex-row items-center gap-3">
-                            <button onClick={(e) => onAddToCart(e, product)} className="w-full md:w-auto bg-[#1a1a1a] text-white font-bold p-3 text-sm flex items-center justify-center gap-2 hover:bg-[#1a1a1a] transition rounded-lg"> <Plus size={16} /> Adicionar ao Carrinho </button>
-                            <button onClick={(e) => onBuyNow(e, product)} className={`${neonButtonClass} w-full md:w-auto transform hover:scale-105`}> <ShoppingCart size={16} /> Comprar </button>
+                
+                <div className="flex-shrink-0 w-full md:w-auto z-10 mt-2 md:mt-0">
+                    {isOutOfStock ? ( <span className="w-full flex items-center justify-center gap-2 text-sm bg-black/60 border border-gray-800 text-gray-500 font-bold p-3.5 text-center rounded-xl uppercase tracking-widest"><Ban size={18}/> ESGOTADO</span> ) : (
+                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-3 w-full">
+                            <button onClick={(e) => onAddToCart(e, product)} className={btnAddClass}> <Plus size={18} /> Carrinho </button>
+                            <button onClick={(e) => onBuyNow(e, product)} className={btnBuyClass}> <ShoppingCart size={18} /> Comprar </button>
                         </div>
                     )}
                 </div>
@@ -1455,17 +1486,18 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         );
     };
 
-    // --- Switcher de Máquina ---
+    // --- Switcher de Máquina (VISUAL ATUALIZADO) ---
     const MachineSwitcher = ({ condos, userCondoId, onCondoSelected }) => {
         const otherMachines = condos.filter(c => c.id !== userCondoId);
         if (otherMachines.length === 0) return null;
         return (
-            <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg mb-8" style={{ animationDelay: '100ms' }}>
-                <h3 className="text-lg font-semibold text-gray-300 mb-3">Ver produtos em:</h3>
-                <div className="flex flex-wrap gap-2">
+            <div className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-5 rounded-2xl mb-8 shadow-lg" style={{ animationDelay: '100ms' }}>
+                <h3 className="text-sm uppercase tracking-wider font-bold text-gray-400 mb-4 flex items-center gap-2"><MapPin size={16}/> Explorar outras máquinas</h3>
+                <div className="flex flex-wrap gap-3">
                     {otherMachines.map(machine => (
-                        <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-2 px-4 flex items-center gap-2 hover:bg-[#1a1a1a] hover:border-gray-600 transition-all text-white">
-                            <Refrigerator size={18} className="text-[#f2bd46]" /> <span>{machine.name}</span>
+                        <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-black/60 border border-gray-700/80 rounded-xl py-2.5 px-5 flex items-center gap-2.5 hover:bg-[#f2bd46]/10 hover:border-[#f2bd46]/50 transition-all duration-300 text-gray-300 hover:text-white group">
+                            <Refrigerator size={18} className="text-gray-500 group-hover:text-[#f2bd46] transition-colors" /> 
+                            <span className="font-medium">{machine.name}</span>
                         </button>
                     ))}
                 </div>
@@ -1473,128 +1505,165 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         );
     };
 
-    // --- NOVO: Componente para Renderizar Resultados da Pesquisa ---
+    // --- Componente para Resultados da Pesquisa (VISUAL ATUALIZADO) ---
     const SearchResultItem = ({ product }) => (
         <div 
-            className="p-3 flex items-center justify-between gap-3 hover:bg-[#1a1a1a]/50 transition border-b border-gray-600/30 last:border-0 cursor-pointer group" 
+            className="p-3 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors border-b border-gray-700/50 last:border-0 cursor-pointer group" 
             onClick={() => { addToCart(product); setSearchQuery(''); }}
         >
-            <div className="flex items-center gap-3 overflow-hidden">
-                <img src={product.image_url || `https://placehold.co/100x100/374151/ffffff?text=Sem+Foto`} alt={product.name} className="w-12 h-12 rounded-md object-cover bg-[#1a1a1a] flex-shrink-0" />
+            <div className="flex items-center gap-4 overflow-hidden">
+                <img src={product.image_url || `https://placehold.co/100x100/1a1a1a/4B5563?text=Foto`} alt={product.name} className="w-14 h-14 rounded-lg object-cover bg-black flex-shrink-0 border border-gray-700/50 group-hover:border-[#f2bd46]/30 transition-colors" />
                 <div className="flex flex-col min-w-0">
-                    <span className="font-semibold text-white truncate text-sm">{product.name}</span>
-                    <div className="flex items-center gap-2 text-xs">
+                    <span className="font-bold text-gray-200 group-hover:text-white truncate text-sm">{product.name}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
                         {product.promotional_price ? (
                             <>
-                                <span className="text-green-400 font-bold">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
-                                <span className="text-gray-500 line-through">R$ {parseFloat(product.original_price).toFixed(2).replace('.',',')}</span>
+                                <span className="text-[#f2bd46] font-black tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
+                                <span className="text-gray-500 line-through text-xs font-medium">R$ {parseFloat(product.original_price).toFixed(2).replace('.',',')}</span>
                             </>
                         ) : (
-                            <span className="text-gray-300">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
+                            <span className="text-gray-300 font-bold tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
                         )}
                     </div>
                 </div>
             </div>
-            <button className="bg-[#f2bd46] p-2 rounded-full text-white shadow-lg hover:bg-[#f2bd46] transition transform group-hover:scale-110 flex-shrink-0">
-                <Plus size={16} />
+            <button className="bg-black/50 border border-gray-600 p-2.5 rounded-lg text-gray-400 group-hover:bg-[#f2bd46] group-hover:border-[#f2bd46] group-hover:text-black transition-all duration-300 flex-shrink-0 shadow-md">
+                <Plus size={18} />
             </button>
         </div>
     );
 
+    const authInputClass = "w-full bg-black/60 border border-gray-700/80 rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300";
+
     return (
-        <div className="min-h-screen bg-black text-white">
-            <SideMenu />
-            {showMenu && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowMenu(false)}></div>}
+        <div className="min-h-screen bg-black text-white relative overflow-hidden">
+            {/* Ambient Glows Universais de Fundo */}
+            <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/5 rounded-full blur-[150px] pointer-events-none z-0"></div>
             
-            <header className="sticky top-0 bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md z-30">
-                <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setShowMenu(true)} className="md:hidden relative">
-                            <Menu />
-                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-2 w-2 rounded-full"></span>}
+            <SideMenu />
+            {showMenu && <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowMenu(false)}></div>}
+            
+            <header className="sticky top-0 bg-black/70 backdrop-blur-xl border-b border-gray-800/60 shadow-lg z-30">
+                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-5">
+                        <button onClick={() => setShowMenu(true)} className="md:hidden relative p-2 bg-black/40 border border-gray-700/50 rounded-xl hover:bg-white/10 transition-colors">
+                            <Menu size={22} />
+                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-3 w-3 rounded-full border-2 border-black"></span>}
                         </button>
-                        <div className="cursor-pointer" onClick={() => setPage('home')}>
-                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-20 w-auto" />
+                        <div className="cursor-pointer transition-transform hover:scale-105" onClick={() => setPage('home')}>
+                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-16 w-auto drop-shadow-[0_0_10px_rgba(242,189,70,0.2)]" />
                         </div>
                     </div>
                     
-                    {/* BARRA DE PESQUISA (DESKTOP) - ATUALIZADA */}
-                    <div className="flex-1 mx-4 max-w-lg relative hidden md:block">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                    {/* BARRA DE PESQUISA (DESKTOP) */}
+                    <div className="flex-1 mx-8 max-w-lg relative hidden md:block group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar um produto..." 
+                            className={authInputClass} 
+                            value={searchQuery} 
+                            onChange={(e) => setSearchQuery(e.target.value)} 
+                            onFocus={() => setIsSearchFocused(true)} 
+                            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} 
+                        />
                         {isSearchFocused && searchQuery && (
-                            <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-gray-600 rounded-lg shadow-2xl z-40 max-h-80 overflow-y-auto">
-                                {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
-                                    searchResults.map(product => <SearchResultItem key={product.id} product={product} />)
-                                ) : ( <div className="p-4 text-center text-gray-400">Nenhum resultado encontrado.</div> )}
+                            <div className="absolute top-full mt-3 w-full bg-black/90 backdrop-blur-2xl border border-gray-700/50 rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.8)] z-40 max-h-80 overflow-y-auto overflow-hidden">
+                                {isSearchLoading ? <div className="p-6 text-center text-gray-400 flex flex-col items-center justify-center gap-3"><Loader2 className="animate-spin text-[#f2bd46]" size={24}/> <span className="text-sm font-medium">Buscando produtos...</span></div> : searchResults.length > 0 ? (
+                                    <div className="py-2">{searchResults.map(product => <SearchResultItem key={product.id} product={product} />)}</div>
+                                ) : ( <div className="p-6 text-center text-gray-400 flex flex-col items-center gap-2"><Search size={24} className="opacity-50"/> <span className="text-sm">Nenhum resultado encontrado.</span></div> )}
                             </div>
                         )}
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold">
-                            <button onClick={() => setPage('wallet')} className="text-gray-300 hover:text-[#f2bd46] transition">Carteira</button>
-                            <button onClick={() => setPage('history')} className="text-gray-300 hover:text-[#f2bd46] transition">Meu Histórico</button>
-                            <button onClick={() => setPage('my-tickets')} className="text-gray-300 hover:text-[#f2bd46] transition relative"> Tiquetes {unreadTickets > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">{unreadTickets}</span>} </button>
-                            <button onClick={() => setPage('my-account')} className="text-gray-300 hover:text-[#f2bd46] transition">Minha Conta</button>
+                    <div className="flex items-center gap-6">
+                        <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
+                            <button onClick={() => setPage('wallet')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2"><Wallet size={16}/> Carteira</button>
+                            <button onClick={() => setPage('history')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2"><History size={16}/> Histórico</button>
+                            <button onClick={() => setPage('my-tickets')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2 relative"> 
+                                <Ticket size={16}/> Tiquetes 
+                                {unreadTickets > 0 && <span className="absolute -top-2 -right-3 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-black shadow-[0_0_8px_rgba(239,68,68,0.6)]">{unreadTickets}</span>} 
+                            </button>
+                            <button onClick={() => setPage('my-account')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2"><User size={16}/> Conta</button>
                         </nav>
-                        <div className="h-6 w-px bg-[#1a1a1a] hidden md:block"></div>
-                        <button className="relative" onClick={() => setPage('cart')}>
-                            <ShoppingCart />
-                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-[#f2bd46] text-xs text-white rounded-full h-5 w-5 flex items-center justify-center">{totalItemsInCart}</span>}
+                        <div className="h-8 w-px bg-gray-800 hidden md:block"></div>
+                        <button className="relative p-2.5 bg-[#f2bd46]/10 border border-[#f2bd46]/30 text-[#f2bd46] hover:bg-[#f2bd46] hover:text-black transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.15)] group" onClick={() => setPage('cart')}>
+                            <ShoppingCart size={22} className="group-hover:scale-110 transition-transform"/>
+                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center text-xs shadow-[0_0_10px_rgba(239,68,68,0.8)] border-2 border-black">{totalItemsInCart}</span>}
                         </button>
                     </div>
                 </div>
                 
-                {/* BARRA DE PESQUISA (MOBILE) - ATUALIZADA */}
-                <div className="container mx-auto px-4 pb-3 md:hidden">
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input type="text" placeholder="Buscar um produto..." className="w-full bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} />
+                {/* BARRA DE PESQUISA (MOBILE) */}
+                <div className="container mx-auto px-4 pb-4 md:hidden">
+                    <div className="relative w-full group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar um produto..." 
+                            className={authInputClass} 
+                            value={searchQuery} 
+                            onChange={(e) => setSearchQuery(e.target.value)} 
+                            onFocus={() => setIsSearchFocused(true)} 
+                            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} 
+                        />
                         {isSearchFocused && searchQuery && (
-                            <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-gray-600 rounded-lg shadow-2xl z-40 max-h-60 overflow-y-auto">
-                                {isSearchLoading ? <div className="p-4 text-center text-gray-400 flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={16}/> Procurando...</div> : searchResults.length > 0 ? (
-                                    searchResults.map(product => <SearchResultItem key={product.id} product={product} />)
-                                ) : ( <div className="p-4 text-center text-gray-400">Nenhum resultado encontrado.</div> )}
+                            <div className="absolute top-full mt-2 w-full bg-black/95 backdrop-blur-3xl border border-gray-700/80 rounded-xl shadow-2xl z-40 max-h-60 overflow-y-auto">
+                                {isSearchLoading ? <div className="p-6 text-center text-gray-400 flex flex-col items-center justify-center gap-2"><Loader2 className="animate-spin text-[#f2bd46]" size={20}/> <span className="text-sm">Procurando...</span></div> : searchResults.length > 0 ? (
+                                    <div className="py-1">{searchResults.map(product => <SearchResultItem key={product.id} product={product} />)}</div>
+                                ) : ( <div className="p-6 text-center text-gray-400 text-sm">Nenhum resultado encontrado.</div> )}
                             </div>
                         )}
                     </div>
                 </div>
             </header>
             
-            <main className="container mx-auto p-4 md:p-8">
-                <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700 p-4 rounded-lg mb-8 flex justify-between items-center flex-wrap gap-4">
-                    <div>
-                        <h1 className="text-xl md:text-2xl">Olá, <span className="font-bold text-[#f2bd46]">{user?.name}</span>!</h1>
-                        <p className="text-gray-300">Confira os produtos disponíveis em <span className="font-semibold">{currentCondo?.name || '...'}</span>.</p>
+            <main className="container mx-auto p-4 md:p-8 z-10 relative">
+                {/* Banner de Boas Vindas Glassmorphism */}
+                <div className="animate-surgir bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-xl border border-gray-700/50 p-6 md:p-8 rounded-3xl mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl overflow-hidden relative">
+                    <div className="absolute right-0 top-0 w-64 h-64 bg-[#f2bd46]/5 blur-[60px] pointer-events-none rounded-full"></div>
+                    <div className="z-10">
+                        <h1 className="text-2xl md:text-3xl font-light mb-1">Bem-vindo de volta, <span className="font-extrabold text-[#f2bd46] tracking-tight">{user?.name}</span>!</h1>
+                        <p className="text-gray-400 text-sm md:text-base flex items-center gap-2">
+                            <MapPin size={16} className="text-[#f2bd46]"/> Comprando agora na máquina: <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded-md ml-1">{currentCondo?.name || '...'}</span>
+                        </p>
                     </div>
                 </div>
                 
                 <MachineSwitcher condos={condos} userCondoId={user?.condoId} onCondoSelected={onCondoSelected} />
                 
-                {isLoading && (<div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin" /></div>)}
-                {error && (<div className="text-center p-8 bg-red-900/20 text-red-400 rounded-lg"><p>Oops! Algo deu errado.</p><p className="text-sm">{error}</p></div>)}
+                {isLoading && (<div className="flex flex-col justify-center items-center h-64 gap-4"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" /><span className="text-gray-400 font-medium tracking-widest animate-pulse">CARREGANDO PRODUTOS...</span></div>)}
+                {error && (<div className="text-center p-8 bg-red-900/10 border border-red-500/20 text-red-400 rounded-2xl backdrop-blur-md shadow-lg flex flex-col items-center gap-3"><AlertTriangle size={32}/><p className="font-bold text-lg">Oops! Algo deu errado.</p><p className="text-sm opacity-80">{error}</p></div>)}
                 
                 {!isLoading && !error && (
-                    <div className="flex flex-col gap-10 pb-24">
+                    <div className="flex flex-col gap-12 pb-24">
                         {!currentCondo && (
-                            <div className="animate-surgir text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
-                                <Refrigerator size={48} className="mx-auto mb-4" />
-                                <p className="text-xl font-semibold">Nenhuma máquina selecionada</p>
-                                <p>Por favor, selecione uma máquina na seção "Ver produtos em:" acima para começar a comprar.</p>
+                            <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                                    <Refrigerator size={56} className="text-gray-500" />
+                                </div>
+                                <p className="text-2xl font-bold text-white mb-2 tracking-tight">Nenhuma máquina selecionada</p>
+                                <p className="max-w-md mx-auto text-sm">Por favor, selecione uma máquina na seção "Explorar outras máquinas" acima para começar a encher o seu carrinho.</p>
                             </div>
                         )}
                         {currentCondo && Object.keys(categories).length === 0 && (
-                            <div className="animate-surgir text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
-                                <Refrigerator size={48} className="mx-auto mb-4" />
-                                <p className="text-xl font-semibold">Máquina Vazia!</p>
-                                <p>Parece que não há produtos disponíveis nesta máquina no momento.</p>
+                            <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                <div className="bg-[#f2bd46]/10 p-6 rounded-full mb-6 border border-[#f2bd46]/20">
+                                    <Package size={56} className="text-[#f2bd46]" />
+                                </div>
+                                <p className="text-2xl font-bold text-white mb-2 tracking-tight">Máquina Vazia!</p>
+                                <p className="max-w-md mx-auto text-sm">Parece que não há produtos disponíveis nesta máquina no momento. Que tal verificar outra geladeira próxima?</p>
                             </div>
                         )}
                         {currentCondo && Object.keys(categories).length > 0 && Object.keys(categories).map((category, catIndex) => (
                             <div key={category} className="animate-surgir" style={{ animationDelay: `${200 + catIndex * 100}ms` }}>
-                                <h2 className="text-3xl font-bold text-gray-200 border-l-4 border-[#f2bd46] pl-4 mb-6">{category}</h2>
-                                <div className="flex flex-col gap-6">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="h-8 w-1.5 bg-[#f2bd46] rounded-full shadow-[0_0_10px_rgba(242,189,70,0.8)]"></div>
+                                    <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight uppercase">{category}</h2>
+                                    <div className="h-px bg-gradient-to-r from-gray-700 to-transparent flex-grow ml-4"></div>
+                                </div>
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                     {categories[category].map(product => (
                                         <ProductListCard key={product.id} product={product} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
                                     ))}
