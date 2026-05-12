@@ -3184,14 +3184,8 @@ const Footer = () => {
     // --- ANIMAÇÃO "SURGIR" REFINADA ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animate-surgir {
             animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -3200,50 +3194,117 @@ const Footer = () => {
     `;
     
     return (
-        // --- RODAPÉ REDESENHADO (Premium Glassmorphism) ---
-        <footer className="relative mt-20 border-t border-gray-800/80 bg-black/60 backdrop-blur-2xl z-20 overflow-hidden">
+        // --- RODAPÉ REDESENHADO DO ZERO (Premium Corporate Glassmorphism) ---
+        <footer className="relative mt-24 bg-black/90 backdrop-blur-3xl z-20 overflow-hidden">
             <style>{keyframes}</style>
             
-            {/* Ambient Glow no fundo do Footer */}
-            <div className="absolute bottom-[-50%] left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-[#f2bd46]/5 rounded-[100%] blur-[80px] pointer-events-none z-0"></div>
+            {/* Linha Dourada de Separação com Glow Brilhante */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#f2bd46] to-transparent shadow-[0_0_20px_rgba(242,189,70,0.8)]"></div>
             
-            <div className="container mx-auto px-4 md:px-8 py-12 relative z-10 animate-surgir">
-                
-                {/* PARTE DE CIMA: Logo e Links */}
-                <div className="flex flex-col items-center gap-8 mb-8">
-                    
-                    {/* Logo (Imagem com Efeito Hover) */}
-                    <img 
-                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
-                        alt="SmartFridge Logo" 
-                        className="h-14 w-auto mx-auto drop-shadow-[0_0_15px_rgba(242,189,70,0.15)] hover:scale-105 transition-transform duration-500" 
-                    />
+            {/* Glow Ambiente de Fundo */}
+            <div className="absolute bottom-[-20%] left-[-10%] w-96 h-96 bg-[#f2bd46]/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-                    {/* Botão do Instagram Refinado */}
-                    <div className="flex justify-center items-center">
-                        <a 
-                            href="https://instagram.com/pronto24h.oficial" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="group flex items-center gap-4 bg-black/50 border border-gray-700/80 hover:border-[#f2bd46]/50 rounded-2xl py-3 px-6 transition-all duration-300 hover:shadow-[0_0_20px_rgba(242,189,70,0.15)] hover:-translate-y-1"
-                        >
-                            <div className="bg-[#1a1a1a] p-2.5 rounded-xl group-hover:bg-[#f2bd46]/20 transition-colors duration-300">
-                                <Instagram size={22} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors duration-300" />
-                            </div>
-                            <span className="font-bold text-gray-300 group-hover:text-white transition-colors tracking-wide">
-                                Siga nosso Instagram
-                            </span>
-                        </a>
+            <div className="container mx-auto px-6 md:px-12 py-16 relative z-10 animate-surgir">
+                
+                {/* GRID DE ORGANIZAÇÃO: 1 Coluna (Mobile), 2 (Tablet), 4 (Desktop) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                    
+                    {/* COLUNA 1: MARCA E SOBRE */}
+                    <div className="flex flex-col gap-6 items-start">
+                        <img 
+                            src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
+                            alt="Daniel Marques Market Logo" 
+                            className="h-16 w-auto object-contain drop-shadow-[0_0_15px_rgba(242,189,70,0.15)]" 
+                        />
+                        <p className="text-gray-400 text-sm leading-relaxed pr-4">
+                            O <span className="text-[#f2bd46] font-bold">Daniel Marques Market</span> revoluciona a forma como você faz compras. Mercados autônomos de alta tecnologia, abertos 24h por dia, levando máxima conveniência para perto de você.
+                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                            <a href="https://instagram.com/pronto24h.oficial" target="_blank" rel="noopener noreferrer" className="bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 hover:border-[#f2bd46]/50 hover:bg-[#f2bd46]/10 group transition-all duration-300">
+                                <Instagram size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" />
+                            </a>
+                        </div>
                     </div>
+
+                    {/* COLUNA 2: NAVEGAÇÃO E LINKS ÚTEIS */}
+                    <div className="flex flex-col gap-6">
+                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">
+                            Institucional
+                        </h3>
+                        <ul className="flex flex-col gap-4">
+                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Como comprar</a></li>
+                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Dúvidas Frequentes (FAQ)</a></li>
+                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Termos de Uso</a></li>
+                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Política de Privacidade</a></li>
+                        </ul>
+                    </div>
+
+                    {/* COLUNA 3: ATENDIMENTO E ENDEREÇO */}
+                    <div className="flex flex-col gap-6">
+                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">
+                            Atendimento
+                        </h3>
+                        <ul className="flex flex-col gap-5">
+                            <li>
+                                <a href="#" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
+                                        <Phone size={16} className="text-[#f2bd46]" />
+                                    </div>
+                                    <span className="text-sm font-medium">(11) 99999-9999</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
+                                        <Mail size={16} className="text-[#f2bd46]" />
+                                    </div>
+                                    <span className="text-sm font-medium">suporte@danielmarques.com</span>
+                                </a>
+                            </li>
+                            <li className="mt-2">
+                                <div className="flex items-start gap-3 text-gray-400">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 mt-1">
+                                        <Building2 size={16} className="text-gray-500" />
+                                    </div>
+                                    <span className="text-sm leading-relaxed">
+                                        Edifício Corporate Business<br/>
+                                        Av. Paulista, 1000 - Bela Vista<br/>
+                                        São Paulo - SP, 01310-100
+                                    </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* COLUNA 4: SEJA FRANQUEADO (DESTAQUE) */}
+                    <div className="flex flex-col gap-6">
+                        <h3 className="text-lg font-bold text-[#f2bd46] uppercase tracking-widest border-b border-[#f2bd46]/30 pb-3 flex items-center gap-2">
+                            <Building size={20} /> Expansão
+                        </h3>
+                        
+                        <div className="bg-gradient-to-br from-[#f2bd46]/10 to-transparent border border-[#f2bd46]/30 p-6 rounded-2xl relative overflow-hidden group hover:border-[#f2bd46]/60 transition-colors duration-300">
+                            {/* Brilho interno animado no hover */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#f2bd46]/10 blur-[30px] rounded-full group-hover:bg-[#f2bd46]/20 transition-all duration-500"></div>
+                            
+                            <h4 className="text-white text-lg font-extrabold mb-2 relative z-10">Seja dono da sua franquia</h4>
+                            <p className="text-xs text-gray-300 mb-5 leading-relaxed relative z-10">
+                                Leve o Daniel Marques Market para o seu condomínio ou empresa e invista no modelo de negócio que mais cresce no Brasil.
+                            </p>
+                            <button className="w-full bg-[#f2bd46] text-black font-extrabold py-3 px-4 rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-[#e0af40] shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-1 relative z-10">
+                                <MessageSquare size={18} /> Quero ser Franqueado
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
 
-                {/* PARTE DE BAIXO: Direitos Autorais (Separado por uma linha com gradiente) */}
-                <div className="border-t border-gray-800/80 pt-8 mt-4 flex flex-col md:flex-row items-center justify-center relative">
-                    {/* Detalhe visual na linha */}
-                    <div className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
-                    
-                    <p className="text-sm text-gray-500 font-medium tracking-wide">
-                        &copy; {new Date().getFullYear()} <span className="text-gray-300 font-bold">SmartFridge</span>. Todos os direitos reservados.
+                {/* PARTE DE BAIXO: DIREITOS AUTORAIS */}
+                <div className="border-t border-gray-800/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-gray-500 font-medium text-center md:text-left">
+                        &copy; {new Date().getFullYear()} <span className="text-gray-300 font-bold tracking-wide">Daniel Marques Market</span>. Todos os direitos reservados.
+                    </p>
+                    <p className="text-xs text-gray-600 font-medium text-center md:text-right">
+                        Feito com tecnologia de ponta para sua comodidade.
                     </p>
                 </div>
 
