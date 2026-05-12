@@ -3181,7 +3181,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
 
 const Footer = () => {
     
-    // --- ANIMAÇÃO "SURGIR" ---
+    // --- ANIMAÇÃO "SURGIR" REFINADA ---
     const keyframes = `
         @keyframes surgir {
             from {
@@ -3194,50 +3194,57 @@ const Footer = () => {
             }
         }
         .animate-surgir {
-            animation: surgir 0.6s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
     `;
     
     return (
-        // --- RODAPÉ REDESENHADO (Glassmorphism) ---
-        <footer className="border-gray-700 backdrop-blur-sm border-t border-gray-700/50 mt-12">
+        // --- RODAPÉ REDESENHADO (Premium Glassmorphism) ---
+        <footer className="relative mt-20 border-t border-gray-800/80 bg-black/60 backdrop-blur-2xl z-20 overflow-hidden">
             <style>{keyframes}</style>
             
-            <div className="container mx-auto px-4 md:px-8 py-8 text-center animate-surgir">
+            {/* Ambient Glow no fundo do Footer */}
+            <div className="absolute bottom-[-50%] left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-[#f2bd46]/5 rounded-[100%] blur-[80px] pointer-events-none z-0"></div>
+            
+            <div className="container mx-auto px-4 md:px-8 py-12 relative z-10 animate-surgir">
                 
                 {/* PARTE DE CIMA: Logo e Links */}
-                <div className="flex flex-col items-center gap-6 mb-6">
+                <div className="flex flex-col items-center gap-8 mb-8">
                     
-                    {/* Logo (Imagem) */}
+                    {/* Logo (Imagem com Efeito Hover) */}
                     <img 
-                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho para a pasta /public
+                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
                         alt="SmartFridge Logo" 
-                        className="h-11 w-auto mx-auto" // h-10 (40px)
+                        className="h-14 w-auto mx-auto drop-shadow-[0_0_15px_rgba(242,189,70,0.15)] hover:scale-105 transition-transform duration-500" 
                     />
 
-                    {/* ======================================================= */}
-                    {/* --- CORREÇÃO: "so o instagram aqui" --- */}
-                    {/* ======================================================= */}
-                    <div className="flex justify-center items-center text-gray-300">
+                    {/* Botão do Instagram Refinado */}
+                    <div className="flex justify-center items-center">
                         <a 
                             href="https://instagram.com/pronto24h.oficial" 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg 
-                                       py-2 px-4 flex items-center gap-2
-                                       hover:bg-[#1a1a1a] hover:border-gray-600 transition-all"
+                            className="group flex items-center gap-4 bg-black/50 border border-gray-700/80 hover:border-[#f2bd46]/50 rounded-2xl py-3 px-6 transition-all duration-300 hover:shadow-[0_0_20px_rgba(242,189,70,0.15)] hover:-translate-y-1"
                         >
-                            <Instagram size={20} className="text-[#f2bd46]" />
-                            <span>Instagram</span>
+                            <div className="bg-[#1a1a1a] p-2.5 rounded-xl group-hover:bg-[#f2bd46]/20 transition-colors duration-300">
+                                <Instagram size={22} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors duration-300" />
+                            </div>
+                            <span className="font-bold text-gray-300 group-hover:text-white transition-colors tracking-wide">
+                                Siga nosso Instagram
+                            </span>
                         </a>
-                        {/* O botão "Suporte via WhatsApp" foi removido. */}
                     </div>
                 </div>
 
-                {/* PARTE DE BAIXO: Direitos Autorais (Separado por uma linha) */}
-                <div className="border-t border-gray-700/50 pt-6">
-                    <p className="text-sm text-gray-400">&copy; {new Date().getFullYear()} SmartFridge. Todos os direitos reservados.</p>
+                {/* PARTE DE BAIXO: Direitos Autorais (Separado por uma linha com gradiente) */}
+                <div className="border-t border-gray-800/80 pt-8 mt-4 flex flex-col md:flex-row items-center justify-center relative">
+                    {/* Detalhe visual na linha */}
+                    <div className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
+                    
+                    <p className="text-sm text-gray-500 font-medium tracking-wide">
+                        &copy; {new Date().getFullYear()} <span className="text-gray-300 font-bold">SmartFridge</span>. Todos os direitos reservados.
+                    </p>
                 </div>
 
             </div>
