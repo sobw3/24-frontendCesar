@@ -685,9 +685,10 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [showAdminModal, setShowAdminModal] = React.useState(false);
+    
     const handleCpfChange = (e) => { setCpf(formatCPF(e.target.value)); };
     
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon ESTÁTICO) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
     const keyframes = `
         @keyframes surgir {
             from {
@@ -700,18 +701,18 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
             }
         }
         .animate-surgir {
-            animation: surgir 0.6s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
     `;
     
-    // --- Classe do Botão Neon (ESTÁTICO, sem pulso) ---
+    // --- Classe do Botão Neon ---
     const neonButtonClass = `
-        bg-[#f2bd46] text-white font-bold py-3 px-4 
-        flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60 /* Sombra neon estática */
-        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
-        transform hover:scale-105 /* Animação de hover */
+        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
     `;
     
     const handleLoginSubmit = async (e) => {
@@ -729,83 +730,102 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
             setIsLoading(false);
         }
     };
+
     return (
         <>
-            {/* Modal de Admin (Design "Clean" mantido) */}
+            {/* Modal de Admin */}
             <AdminLoginModal show={showAdminModal} onClose={() => setShowAdminModal(false)} onAdminLogin={onAdminLogin} />
             
             {/* --- DESIGN "DARK & NEON" REFINADO --- */}
-            <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
+            <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-4 relative overflow-hidden">
                 <style>{keyframes}</style>
-                <div className="w-full max-w-md">
+                
+                {/* Efeitos de luz no fundo (Ambient Glow) */}
+                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <div className="w-full max-w-md z-10">
                     
-                    {/* Card de Vidro (Glassmorphism) */}
-                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-8 rounded-2xl shadow-2xl animate-surgir">
+                    {/* Card de Vidro (Glassmorphism) Modernizado */}
+                    <div className="bg-black/40 backdrop-blur-md border border-gray-800/60 p-8 rounded-3xl shadow-2xl animate-surgir">
                         
-                        {/* ============================================== */}
-                        {/* --- ALTERAÇÃO AQUI (Logo de Imagem) --- */}
-                        {/* ============================================== */}
+                        {/* --- Cabeçalho com Logo e Boas-vindas --- */}
                         <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '100ms' }}>
                             <img 
-                                src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" // Caminho direto para a pasta /public
-                                alt="SmartFridge Logo" 
-                                className="h-15 w-auto mx-auto" // Ajuste a altura (h-12) como preferir
+                                src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
+                                alt="Daniel Marques Market Logo" 
+                                className="h-16 w-auto mx-auto mb-5 drop-shadow-[0_0_10px_rgba(242,189,70,0.2)]" 
                             />
+                            <h1 className="text-2xl font-extrabold tracking-tight mb-1">
+                                Bem-vindo de volta!
+                            </h1>
+                            <p className="text-gray-400 text-sm">
+                                Faça login para acessar o mercado autônomo
+                            </p>
                         </div>
-                        {/* ============================================== */}
                         
                         <form onSubmit={handleLoginSubmit} className="animate-surgir" style={{ animationDelay: '200ms' }}>
                             
-                            {/* 3. Inputs (Estilo Transparente) */}
-                            <div className="mb-4 relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            {/* Inputs com design refinado */}
+                            <div className="mb-4 relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
                                 <input 
                                     type="text" 
                                     placeholder="Seu CPF" 
                                     value={cpf} 
                                     onChange={handleCpfChange} 
-                                    className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                    className="w-full bg-[#121212] border border-gray-800 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/50 focus:ring-1 focus:ring-[#f2bd46]/50 transition-all duration-300" 
                                     required 
                                 />
                             </div>
-                            <div className="mb-6 relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            
+                            <div className="mb-6 relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
                                 <input 
                                     type="password" 
                                     placeholder="Senha" 
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
-                                    className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
+                                    className="w-full bg-[#121212] border border-gray-800 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/50 focus:ring-1 focus:ring-[#f2bd46]/50 transition-all duration-300" 
                                     required 
                                 />
                             </div>
                             
-                            {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
+                            {error && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
+                                    {error}
+                                </div>
+                            )}
                             
-                            {/* 4. Botão (Neon ESTÁTICO) */}
+                            {/* Botão Principal */}
                             <button 
                                 type="submit" 
                                 className={`w-full ${neonButtonClass}`} 
                                 disabled={isLoading}
                             >
-                                {isLoading ? <Loader2 className="animate-spin" /> : 'Entrar'}
+                                {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Entrar na Loja'}
                             </button>
                         </form>
                         
-                        {/* 5. Links (Centralizados e Empilhados) */}
-                        <div className="flex flex-col items-center gap-2 mt-6 animate-surgir" style={{ animationDelay: '300ms' }}>
-                            <button onClick={() => setPage('forgot-password')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition font-medium">Esqueci minha senha</button>
-                            <button onClick={onSwitchToRegister} className="text-sm text-gray-400 hover:text-[#f2bd46] transition font-medium">Não tem uma conta? Cadastre-se</button>
+                        {/* Links de apoio */}
+                        <div className="flex flex-col items-center gap-3 mt-8 animate-surgir" style={{ animationDelay: '300ms' }}>
+                            <button onClick={() => setPage('forgot-password')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors font-medium">
+                                Esqueci minha senha
+                            </button>
+                            <div className="w-full h-px bg-gray-800/60 my-1"></div>
+                            <button onClick={onSwitchToRegister} className="text-sm text-gray-300 hover:text-white transition-colors font-medium">
+                                Não tem uma conta? <span className="text-[#f2bd46]">Cadastre-se</span>
+                            </button>
                         </div>
                         
-                        {/* 6. Admin (Ícone Sutil) */}
-                        <div className="text-center mt-4 border-t border-gray-700/50 pt-4 animate-surgir" style={{ animationDelay: '400ms' }}>
+                        {/* Botão Admin Secreto/Discreto */}
+                        <div className="absolute top-4 right-4 animate-surgir" style={{ animationDelay: '400ms' }}>
                             <button 
                                 onClick={() => setShowAdminModal(true)} 
-                                className="text-gray-500 hover:text-white transition p-2 rounded-full hover:bg-[#1a1a1a]/50"
+                                className="text-gray-700 hover:text-[#f2bd46] transition-colors p-2 rounded-full hover:bg-gray-900/50"
                                 title="Acessar como Administrador"
                             >
-                                <Shield size={20} />
+                                <Shield size={18} />
                             </button>
                         </div>
                     </div>
