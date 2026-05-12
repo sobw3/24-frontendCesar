@@ -951,15 +951,6 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         }
     `;
     
-    // --- Classe do Botão Neon (Laranja) ---
-    const neonButtonClassOrange = `
-        bg-[#f2bd46] text-white font-bold py-3 px-4 
-        flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
-        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
-        transform hover:scale-105
-    `;
-    
     const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
     const handleCpfChange = (e) => { setFormData({ ...formData, cpf: formatCPF(e.target.value) }); };
     const handlePhoneChange = (e) => { setFormData({ ...formData, phone_number: formatPhone(e.target.value) }); };
