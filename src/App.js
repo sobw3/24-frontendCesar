@@ -987,7 +987,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     return (
         <div 
             className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
         >
             <style>{keyframes}</style>
             
