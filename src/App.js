@@ -539,6 +539,69 @@ const ForgotPasswordPage = ({ setPage }) => {
         }
     };
     
+    const ForgotPasswordPage = ({ setPage }) => {
+    const [step, setStep] = React.useState(1);
+    const [cpf, setCpf] = React.useState('');
+    const [birthDate, setBirthDate] = React.useState('');
+    const [newPassword, setNewPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [success, setSuccess] = React.useState('');
+
+    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-surgir {
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+    `;
+
+    // --- CLASSES DOS BOTÕES (Novo Design) ---
+    const neonButtonClassOrange = `
+        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
+    `;
+
+    const neonButtonClassGreen = `
+        bg-[#22c55e] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
+    `;
+
+    // Manutenção de Lógica Intacta
+    const handleDateChange = (e) => { setBirthDate(formatDate(e.target.value)); };
+
+    const handleVerifyUser = async (e) => {
+        e.preventDefault(); setIsLoading(true); setError('');
+        
+        const [day, month, year] = birthDate.split('/');
+        const birthDateForBackend = `${year}-${month}-${day}`;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/auth/verify-user`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cpf: cpf, birth_date: birthDateForBackend })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Falha na verificação.');
+            setStep(2);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleResetPassword = async (e) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) { setError('As senhas não coincidem.'); return; }
@@ -559,47 +622,24 @@ const ForgotPasswordPage = ({ setPage }) => {
             setIsLoading(false);
         }
     };
-    
-    // --- CLASSES DOS BOTÕES (Novo Design) ---
-    const neonButtonClassOrange = `
-        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
 
-    const neonButtonClassGreen = `
-        bg-[#22c55e] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
-
-    // --- DESIGN "DARK & NEON" (Padrão do App) ---
     return (
         <div 
             className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
             style={{
-                // Mantendo a mesma imagem de fundo da tela de login para consistência
                 backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')`
             }}
         >
             <style>{keyframes}</style>
             
-            {/* Overlay Escuro */}
             <div className="absolute inset-0 bg-black/80 z-0"></div>
 
-            {/* Efeitos de luz no fundo (Ambient Glow) */}
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
             
             <div className="w-full max-w-md z-10">
-                {/* Card de Vidro (Glassmorphism) Modernizado */}
                 <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir relative">
                     
-                    {/* Botão Voltar (Estilizado e Discreto) */}
                     <button 
                         onClick={() => setPage('login')} 
                         className="absolute top-6 left-6 text-gray-400 hover:text-[#f2bd46] flex items-center justify-center transition-colors bg-black/40 hover:bg-black/60 border border-gray-700/50 p-2 rounded-full backdrop-blur-sm"
@@ -609,19 +649,16 @@ const ForgotPasswordPage = ({ setPage }) => {
                         <ArrowLeft size={20} /> 
                     </button>
                     
-                    {/* Título */}
                     <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '200ms' }}>
                         <h2 className="text-2xl font-extrabold tracking-tight mb-1 text-white mt-4">
                             Recuperar Senha
                         </h2>
                     </div>
                     
-                    {/* PASSO 1: VERIFICAÇÃO */}
                     {step === 1 && (
                         <form onSubmit={handleVerifyUser} className="animate-surgir" style={{ animationDelay: '300ms' }}>
                             <p className="text-center text-gray-300 text-sm mb-6">Insira os seus dados para verificarmos a sua identidade.</p>
                             
-                            {/* Inputs com design refinado */}
                             <div className="mb-4 relative group">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
                                 <input 
@@ -652,7 +689,6 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 </div>
                             )}
                             
-                            {/* Botão Laranja (Neon) */}
                             <button 
                                 type="submit" 
                                 className={`w-full ${neonButtonClassOrange}`} 
@@ -663,12 +699,10 @@ const ForgotPasswordPage = ({ setPage }) => {
                         </form>
                     )}
                     
-                    {/* PASSO 2: NOVA SENHA */}
                     {step === 2 && (
                         <form onSubmit={handleResetPassword} className="animate-surgir" style={{ animationDelay: '300ms' }}>
                             <p className="text-center text-green-400/90 text-sm mb-6 font-medium">Usuário verificado! Agora, crie uma nova senha.</p>
                             
-                            {/* Inputs com design refinado */}
                             <div className="mb-4 relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#22c55e] transition-colors duration-300" size={20} />
                                 <input 
@@ -704,7 +738,6 @@ const ForgotPasswordPage = ({ setPage }) => {
                                 </div>
                             )}
                             
-                            {/* Botão Verde (Neon) */}
                             <button 
                                 type="submit" 
                                 className={`w-full ${neonButtonClassGreen}`} 
@@ -718,6 +751,7 @@ const ForgotPasswordPage = ({ setPage }) => {
             </div>
         </div>
     );
+};
 
 // App.js -> SUBSTITUA o seu componente LoginPage por este
 
