@@ -3180,24 +3180,145 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
 // App.js -> SUBSTITUA o seu componente Footer por este
 
 const Footer = () => {
-    
+    // --- ESTADOS PARA OS MODAIS ---
+    const [modalContent, setModalContent] = React.useState(null);
+
     // --- ANIMAÇÃO "SURGIR" REFINADA ---
     const keyframes = `
         @keyframes surgir {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
         .animate-surgir {
             animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out forwards;
+        }
     `;
+
+    // --- AÇÕES ---
+    const handleFranquiaClick = () => {
+        const whatsappNumber = "5511999999999"; // Coloque seu número aqui
+        const message = "Olá! Tenho interesse em ser dono de uma franquia do Daniel Marques Market. Podem me passar mais informações?";
+        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    // --- CONTEÚDOS DOS MODAIS ---
+    const renderModalContent = () => {
+        switch (modalContent) {
+            case 'como-comprar':
+                return (
+                    <div className="flex flex-col gap-6">
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><ShoppingCart size={28} /> Como Comprar</h2>
+                        <p className="text-gray-300 text-sm">Siga os passos abaixo para realizar suas compras de forma rápida e segura:</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
+                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">1</div>
+                                <h4 className="font-bold text-white flex items-center gap-2"><Wallet size={16} className="text-[#f2bd46]"/> Adicione Saldo</h4>
+                                <p className="text-xs text-gray-400">Deposite um saldo na sua carteira digital via PIX ou Cartão de Crédito.</p>
+                            </div>
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
+                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">2</div>
+                                <h4 className="font-bold text-white flex items-center gap-2"><Search size={16} className="text-[#f2bd46]"/> Escolha os Produtos</h4>
+                                <p className="text-xs text-gray-400">Navegue pelo catálogo da máquina selecionada e adicione itens ao carrinho.</p>
+                            </div>
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
+                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">3</div>
+                                <h4 className="font-bold text-white flex items-center gap-2"><CheckCircle2 size={16} className="text-[#f2bd46]"/> Pague e Libere</h4>
+                                <p className="text-xs text-gray-400">Finalize a compra com o seu saldo. A porta da geladeira será destrancada.</p>
+                            </div>
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
+                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">4</div>
+                                <h4 className="font-bold text-white flex items-center gap-2"><Package size={16} className="text-[#f2bd46]"/> Retire os Itens</h4>
+                                <p className="text-xs text-gray-400">Abra a porta, retire exclusivamente os itens pagos e feche a porta. Bom proveito!</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'faq':
+                return (
+                    <div className="flex flex-col gap-6">
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><Info size={28} /> Dúvidas Frequentes</h2>
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
+                                <h4 className="font-bold text-white mb-1">Como peço reembolso?</h4>
+                                <p className="text-xs text-gray-400">Você pode abrir um chamado na aba "Meus Tiquetes" informando o ID da transação. Nossa equipe analisará rapidamente.</p>
+                            </div>
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
+                                <h4 className="font-bold text-white mb-1">A porta não abriu, o que eu faço?</h4>
+                                <p className="text-xs text-gray-400">Verifique sua conexão com a internet. Se o problema persistir, chame o suporte pelo botão de WhatsApp ou abra um Tíquete.</p>
+                            </div>
+                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
+                                <h4 className="font-bold text-white mb-1">Posso usar cartão de crédito direto?</h4>
+                                <p className="text-xs text-gray-400">Sim, você pode recarregar sua carteira virtual utilizando seu cartão de crédito com total segurança.</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'termos':
+                return (
+                    <div className="flex flex-col gap-4">
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><FileText size={28} /> Termos de Uso</h2>
+                        <div className="h-64 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
+                            <p>Bem-vindo ao Daniel Marques Market. Ao utilizar nossos serviços, você concorda com as regras abaixo descritas.</p>
+                            <h4 className="font-bold text-white">1. Uso das Máquinas</h4>
+                            <p>O usuário concorda em retirar apenas os produtos que foram devidamente pagos através do aplicativo. Qualquer tentativa de fraude ou furto será tratada de acordo com as leis vigentes, com auxílio das câmeras de segurança.</p>
+                            <h4 className="font-bold text-white">2. Saldo na Carteira</h4>
+                            <p>Os valores depositados na carteira virtual são de uso exclusivo dentro do ecossistema Daniel Marques Market e não sofrem reajustes ou juros.</p>
+                            <h4 className="font-bold text-white">3. Responsabilidades</h4>
+                            <p>É responsabilidade do usuário fechar corretamente a porta da máquina após a retirada dos produtos. Danos ao equipamento por mau uso podem ser repassados ao usuário cadastrado.</p>
+                        </div>
+                    </div>
+                );
+            case 'privacidade':
+                return (
+                    <div className="flex flex-col gap-4">
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><Shield size={28} /> Política de Privacidade</h2>
+                        <div className="h-64 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
+                            <p>Sua privacidade é nossa prioridade. Coletamos apenas as informações necessárias para garantir o funcionamento seguro do nosso mercado autônomo.</p>
+                            <h4 className="font-bold text-white">1. Dados Coletados</h4>
+                            <p>Coletamos nome, CPF, e-mail e telefone para identificação. Informações de pagamento são processadas diretamente por plataformas seguras (como o Mercado Pago) e não ficam armazenadas em nossos servidores.</p>
+                            <h4 className="font-bold text-white">2. Monitoramento</h4>
+                            <p>Para sua segurança e do condomínio/empresa, as áreas ao redor das máquinas possuem monitoramento por vídeo 24h.</p>
+                            <h4 className="font-bold text-white">3. Compartilhamento</h4>
+                            <p>Não vendemos ou compartilhamos seus dados pessoais com terceiros para fins publicitários sob nenhuma hipótese.</p>
+                        </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
     
     return (
         // --- RODAPÉ REDESENHADO DO ZERO (Premium Corporate Glassmorphism) ---
-        <footer className="relative mt-24 bg-black/90 backdrop-blur-3xl z-20 overflow-hidden">
+        <footer className="relative mt-24 bg-black/90 backdrop-blur-3xl z-20 overflow-hidden text-left">
             <style>{keyframes}</style>
             
+            {/* Modal Glassmorphism de Informações */}
+            {modalContent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setModalContent(null)}></div>
+                    <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-gray-700 shadow-[0_0_40px_rgba(0,0,0,0.8)] rounded-3xl p-6 md:p-8 animate-surgir">
+                        <button onClick={() => setModalContent(null)} className="absolute top-6 right-6 text-gray-400 hover:text-white bg-black/50 p-2 rounded-full transition-colors">
+                            <X size={24} />
+                        </button>
+                        {renderModalContent()}
+                        <div className="mt-8 flex justify-end">
+                            <button onClick={() => setModalContent(null)} className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-xl transition-colors font-bold">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Linha Dourada de Separação com Glow Brilhante */}
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#f2bd46] to-transparent shadow-[0_0_20px_rgba(242,189,70,0.8)]"></div>
             
@@ -3232,10 +3353,10 @@ const Footer = () => {
                             Institucional
                         </h3>
                         <ul className="flex flex-col gap-4">
-                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Como comprar</a></li>
-                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Dúvidas Frequentes (FAQ)</a></li>
-                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Termos de Uso</a></li>
-                            <li><a href="#" className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Política de Privacidade</a></li>
+                            <li><button onClick={() => setModalContent('como-comprar')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Como comprar</button></li>
+                            <li><button onClick={() => setModalContent('faq')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Dúvidas Frequentes (FAQ)</button></li>
+                            <li><button onClick={() => setModalContent('termos')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Termos de Uso</button></li>
+                            <li><button onClick={() => setModalContent('privacidade')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Política de Privacidade</button></li>
                         </ul>
                     </div>
 
@@ -3246,7 +3367,7 @@ const Footer = () => {
                         </h3>
                         <ul className="flex flex-col gap-5">
                             <li>
-                                <a href="#" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                <a href="tel:+5511999999999" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                                     <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
                                         <Phone size={16} className="text-[#f2bd46]" />
                                     </div>
@@ -3254,7 +3375,7 @@ const Footer = () => {
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                <a href="mailto:suporte@danielmarques.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                                     <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
                                         <Mail size={16} className="text-[#f2bd46]" />
                                     </div>
@@ -3263,7 +3384,7 @@ const Footer = () => {
                             </li>
                             <li className="mt-2">
                                 <div className="flex items-start gap-3 text-gray-400">
-                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 mt-1">
+                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 mt-1 flex-shrink-0">
                                         <Building2 size={16} className="text-gray-500" />
                                     </div>
                                     <span className="text-sm leading-relaxed">
@@ -3290,7 +3411,10 @@ const Footer = () => {
                             <p className="text-xs text-gray-300 mb-5 leading-relaxed relative z-10">
                                 Leve o Daniel Marques Market para o seu condomínio ou empresa e invista no modelo de negócio que mais cresce no Brasil.
                             </p>
-                            <button className="w-full bg-[#f2bd46] text-black font-extrabold py-3 px-4 rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-[#e0af40] shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-1 relative z-10">
+                            <button 
+                                onClick={handleFranquiaClick}
+                                className="w-full bg-[#f2bd46] text-black font-extrabold py-3 px-4 rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-[#e0af40] shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-1 relative z-10"
+                            >
                                 <MessageSquare size={18} /> Quero ser Franqueado
                             </button>
                         </div>
