@@ -1163,16 +1163,44 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                         </div>
                     )}
                     
-                    {/* Botão de Já Tenho Conta */}
-                    <div className="text-center mt-8 pt-6 border-t border-gray-700/50">
-                        <button 
-                            onClick={onSwitchToLogin} 
-                            className="text-sm text-gray-300 hover:text-white transition-colors font-medium drop-shadow-md"
-                        >
-                            Já tem uma conta? <span className="text-[#f2bd46] font-bold">Faça login</span>
-                        </button>
+                    {/* Botões de Rodapé e Ajuda */}
+                    <div className="mt-8 pt-6 border-t border-gray-700/50 flex flex-col gap-5">
+                        
+                        {/* Já tem conta */}
+                        <div className="text-center">
+                            <button 
+                                onClick={onSwitchToLogin} 
+                                className="text-sm text-gray-300 hover:text-white transition-colors font-medium drop-shadow-md"
+                            >
+                                Já tem uma conta? <span className="text-[#f2bd46] font-bold">Faça login</span>
+                            </button>
+                        </div>
+
+                        {/* --- NOVO: Banner Discreto de Suporte --- */}
+                        <div className="bg-black/40 border border-gray-700/50 rounded-2xl p-4 flex items-center justify-between gap-3 hover:border-[#f2bd46]/30 hover:bg-black/60 transition-all duration-300 group">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-[#f2bd46]/10 p-2.5 rounded-full text-[#f2bd46] group-hover:scale-110 transition-transform duration-300">
+                                    <Info size={22} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm text-gray-200 font-semibold mb-1">Dificuldade no cadastro?</p>
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        <button className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium">
+                                            Ver tutorial
+                                        </button>
+                                        <span className="text-gray-600 text-xs">•</span>
+                                        <button className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium">
+                                            Chamar suporte
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="hidden sm:flex text-gray-500 group-hover:text-[#f2bd46] transition-colors">
+                                <MessageSquare size={20} />
+                            </div>
+                        </div>
+
                     </div>
-                    
                 </div>
             </div>
         </div>
