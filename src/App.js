@@ -983,6 +983,24 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     }
     const validateStep3 = () => { return formData.password.length >= 6 && formData.password === formData.confirmPassword && formData.terms; }
     
+    // ==========================================
+    // --- NOVO: FUNÇÕES DE SUPORTE E TUTORIAL ---
+    // ==========================================
+    const handleTutorialClick = () => {
+        // Substitua abaixo pelo link do seu vídeo do YouTube
+        const youtubeUrl = "https://www.youtube.com/watch?v=SEU_LINK_AQUI";
+        window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
+    };
+
+    const handleSupportClick = () => {
+        // Coloque o número do WhatsApp com DDI (55 para Brasil) e DDD. Ex: 5511999999999
+        const whatsappNumber = "5511999999999"; 
+        const message = "Olá! Estou com dificuldades para fazer meu cadastro no Daniel Marques Market. Podem me ajudar?";
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    };
+    // ==========================================
+
     // --- DESIGN "DARK & NEON" REFINADO ---
     return (
         <div 
@@ -1185,11 +1203,19 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                                 <div className="text-left">
                                     <p className="text-sm text-gray-200 font-semibold mb-1">Dificuldade no cadastro?</p>
                                     <div className="flex flex-wrap gap-2 items-center">
-                                        <button className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium">
+                                        <button 
+                                            type="button"
+                                            onClick={handleTutorialClick}
+                                            className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium"
+                                        >
                                             Ver tutorial
                                         </button>
                                         <span className="text-gray-600 text-xs">•</span>
-                                        <button className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium">
+                                        <button 
+                                            type="button"
+                                            onClick={handleSupportClick}
+                                            className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium"
+                                        >
                                             Chamar suporte
                                         </button>
                                     </div>
@@ -1206,7 +1232,6 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         </div>
     );
 };
-
 const BannerCarousel = () => {
     // Configurações do carrossel
     const settings = {
