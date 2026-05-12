@@ -689,11 +689,11 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
     // NOVO: Estado para controlar a tela de boas-vindas inicial
     const [isIntro, setIsIntro] = React.useState(true);
 
-    // Efeito para remover a tela de boas-vindas após 3 segundos
+    // Efeito para remover a tela de boas-vindas (reduzido para 2.6s para ser mais dinâmico)
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setIsIntro(false);
-        }, 3000); // 3 segundos de duração da intro
+        }, 2600); 
         return () => clearTimeout(timer);
     }, []);
 
@@ -710,18 +710,19 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
             opacity: 0;
         }
         @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; visibility: hidden; }
+            from { opacity: 1; backdrop-filter: blur(12px); }
+            to { opacity: 0; backdrop-filter: blur(0px); visibility: hidden; }
         }
         .animate-fadeout {
-            animation: fadeOut 0.8s ease-in-out forwards;
+            animation: fadeOut 0.6s ease-in-out forwards;
         }
-        @keyframes pulse-glow {
-            0%, 100% { filter: drop-shadow(0 0 10px rgba(242,189,70,0.5)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 25px rgba(242,189,70,0.8)); transform: scale(1.05); }
+        /* Nova Animação Cinematográfica para o Bem-Vindo */
+        @keyframes textFocus {
+            0% { filter: blur(10px); opacity: 0; transform: scale(0.95); }
+            100% { filter: blur(0px); opacity: 1; transform: scale(1); }
         }
-        .animate-pulse-glow {
-            animation: pulse-glow 2s infinite;
+        .animate-text-focus {
+            animation: textFocus 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     `;
     
@@ -759,7 +760,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
             <div 
                 className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
                 style={{
-                    // Imagem de mercado desfocada/escura para dar contexto. Você pode trocar essa URL!
+                    // Imagem de mercado desfocada/escura para dar contexto.
                     backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')`
                 }}
             >
@@ -772,18 +773,13 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
                 <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-                {/* --- TELA DE INTRODUÇÃO (BOAS-VINDAS) --- */}
+                {/* --- TELA DE INTRODUÇÃO (BOAS-VINDAS MINIMALISTA) --- */}
                 {isIntro ? (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md animate-fadeout" style={{ animationDelay: '2.2s' }}>
-                        <img 
-                            src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
-                            alt="Logo Intro" 
-                            className="h-28 w-auto mb-6 animate-pulse-glow" 
-                        />
-                        <h1 className="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#f2bd46] animate-surgir">
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md animate-fadeout" style={{ animationDelay: '2s' }}>
+                        <h1 className="text-4xl md:text-5xl font-light tracking-[0.2em] text-white animate-text-focus">
                             BEM-VINDO
                         </h1>
-                        <p className="text-gray-400 mt-2 tracking-widest text-sm animate-surgir" style={{ animationDelay: '300ms' }}>
+                        <p className="text-[#f2bd46] mt-4 tracking-[0.3em] text-xs font-semibold animate-surgir" style={{ animationDelay: '600ms' }}>
                             DANIEL MARQUES MARKET
                         </p>
                     </div>
@@ -883,6 +879,7 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
         </>
     );
 };
+
 // App.js -> SUBSTITUA o seu componente RegisterPage por este
 
 const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
