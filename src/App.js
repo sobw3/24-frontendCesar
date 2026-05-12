@@ -560,122 +560,164 @@ const ForgotPasswordPage = ({ setPage }) => {
         }
     };
     
+    // --- CLASSES DOS BOTÕES (Novo Design) ---
+    const neonButtonClassOrange = `
+        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
+    `;
+
+    const neonButtonClassGreen = `
+        bg-[#22c55e] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
+    `;
+
     // --- DESIGN "DARK & NEON" (Padrão do App) ---
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
+        <div 
+            className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+            style={{
+                // Mantendo a mesma imagem de fundo da tela de login para consistência
+                backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')`
+            }}
+        >
             <style>{keyframes}</style>
             
-            {/* Card de Vidro (Glassmorphism) */}
-            <div className="w-full max-w-md 
-                            border-gray-700 backdrop-blur-sm 
-                            border border-gray-700/50 
-                            p-8 rounded-2xl shadow-2xl 
-                            animate-surgir relative"
-            >
-                
-                {/* Botão Voltar (Estilizado) */}
-                <button 
-                    onClick={() => setPage('login')} 
-                    className="absolute top-4 left-4 text-gray-400 hover:text-[#f2bd46] 
-                               flex items-center gap-2 font-medium transition
-                               bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] px-3 py-2 rounded-lg"
-                    style={{ animationDelay: '100ms' }}
-                >
-                    <ArrowLeft size={16} /> 
-                </button>
-                
-                {/* Título (Fonte Leve) */}
-                <h2 className="text-3xl font-light text-center mb-6 text-white animate-surgir" style={{ animationDelay: '200ms' }}>
-                    Recuperar Senha
-                </h2>
-                
-                {step === 1 && (
-                    <form onSubmit={handleVerifyUser} className="animate-surgir" style={{ animationDelay: '300ms' }}>
-                        <p className="text-center text-gray-400 mb-6">Insira os seus dados para verificarmos a sua identidade.</p>
-                        
-                        {/* Inputs (Estilo Transparente) */}
-                        <div className="mb-4 relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input 
-                                type="text" 
-                                placeholder="Seu CPF" 
-                                value={cpf} 
-                                onChange={(e) => setCpf(formatCPF(e.target.value))} 
-                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
-                                required 
-                            />
-                        </div>
-                        {/* --- CORREÇÃO: Input de Data de Nascimento (Texto + Máscara) --- */}
-                        <div className="mb-6 relative">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input 
-                                type="text" 
-                                placeholder="Data de Nascimento (DD/MM/AAAA)"
-                                value={birthDate} 
-                                onChange={handleDateChange} // Usa a máscara
-                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
-                                required 
-                            />
-                        </div>
-                        
-                        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
-                        
-                        {/* Botão Laranja (Neon) */}
-                        <button 
-                            type="submit" 
-                            className={`w-full ${neonButtonClassOrange}`} 
-                            disabled={isLoading}
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Verificar'}
-                        </button>
-                    </form>
-                )}
-                
-                {step === 2 && (
-                    <form onSubmit={handleResetPassword} className="animate-surgir" style={{ animationDelay: '300ms' }}>
-                        <p className="text-center text-green-400 mb-6 font-semibold">Utilizador verificado! Agora, crie uma nova senha.</p>
-                        
-                        {/* Inputs (Estilo Transparente) */}
-                        <div className="mb-4 relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input 
-                                type="password" 
-                                placeholder="Nova senha (mín. 6 caracteres)" 
-                                value={newPassword} 
-                                onChange={(e) => setNewPassword(e.target.value)} 
-                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
-                                required 
-                            />
-                        </div>
-                        <div className="mb-6 relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input 
-                                type="password" 
-                                placeholder="Confirme a nova senha" 
-                                value={confirmPassword} 
-                                onChange={(e) => setConfirmPassword(e.target.value)} 
-                                className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" 
-                                required 
-                            />
-                        </div>
-                        
-                        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
-                        {success && <p className="text-green-400 text-sm text-center mb-4">{success}</p>}
-                        
-                        {/* Botão Verde (Neon) */}
-                        <button 
-                            type="submit" 
-                            className={`w-full ${neonButtonClassGreen}`} 
-                            disabled={isLoading}
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Alterar Senha'}
-                        </button>
-                    </form>
-                )}
+            {/* Overlay Escuro */}
+            <div className="absolute inset-0 bg-black/80 z-0"></div>
+
+            {/* Efeitos de luz no fundo (Ambient Glow) */}
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            
+            <div className="w-full max-w-md z-10">
+                {/* Card de Vidro (Glassmorphism) Modernizado */}
+                <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir relative">
+                    
+                    {/* Botão Voltar (Estilizado e Discreto) */}
+                    <button 
+                        onClick={() => setPage('login')} 
+                        className="absolute top-6 left-6 text-gray-400 hover:text-[#f2bd46] flex items-center justify-center transition-colors bg-black/40 hover:bg-black/60 border border-gray-700/50 p-2 rounded-full backdrop-blur-sm"
+                        style={{ animationDelay: '100ms' }}
+                        title="Voltar para o Login"
+                    >
+                        <ArrowLeft size={20} /> 
+                    </button>
+                    
+                    {/* Título */}
+                    <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '200ms' }}>
+                        <h2 className="text-2xl font-extrabold tracking-tight mb-1 text-white mt-4">
+                            Recuperar Senha
+                        </h2>
+                    </div>
+                    
+                    {/* PASSO 1: VERIFICAÇÃO */}
+                    {step === 1 && (
+                        <form onSubmit={handleVerifyUser} className="animate-surgir" style={{ animationDelay: '300ms' }}>
+                            <p className="text-center text-gray-300 text-sm mb-6">Insira os seus dados para verificarmos a sua identidade.</p>
+                            
+                            {/* Inputs com design refinado */}
+                            <div className="mb-4 relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Seu CPF" 
+                                    value={cpf} 
+                                    onChange={(e) => setCpf(formatCPF(e.target.value))} 
+                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
+                                    required 
+                                />
+                            </div>
+                            
+                            <div className="mb-6 relative group">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Data de Nascimento (DD/MM/AAAA)"
+                                    value={birthDate} 
+                                    onChange={handleDateChange} 
+                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
+                                    required 
+                                />
+                            </div>
+                            
+                            {error && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
+                                    {error}
+                                </div>
+                            )}
+                            
+                            {/* Botão Laranja (Neon) */}
+                            <button 
+                                type="submit" 
+                                className={`w-full ${neonButtonClassOrange}`} 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Verificar Identidade'}
+                            </button>
+                        </form>
+                    )}
+                    
+                    {/* PASSO 2: NOVA SENHA */}
+                    {step === 2 && (
+                        <form onSubmit={handleResetPassword} className="animate-surgir" style={{ animationDelay: '300ms' }}>
+                            <p className="text-center text-green-400/90 text-sm mb-6 font-medium">Usuário verificado! Agora, crie uma nova senha.</p>
+                            
+                            {/* Inputs com design refinado */}
+                            <div className="mb-4 relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#22c55e] transition-colors duration-300" size={20} />
+                                <input 
+                                    type="password" 
+                                    placeholder="Nova senha (mín. 6 caracteres)" 
+                                    value={newPassword} 
+                                    onChange={(e) => setNewPassword(e.target.value)} 
+                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#22c55e]/70 focus:ring-1 focus:ring-[#22c55e]/70 transition-all duration-300" 
+                                    required 
+                                />
+                            </div>
+                            
+                            <div className="mb-6 relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#22c55e] transition-colors duration-300" size={20} />
+                                <input 
+                                    type="password" 
+                                    placeholder="Confirme a nova senha" 
+                                    value={confirmPassword} 
+                                    onChange={(e) => setConfirmPassword(e.target.value)} 
+                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#22c55e]/70 focus:ring-1 focus:ring-[#22c55e]/70 transition-all duration-300" 
+                                    required 
+                                />
+                            </div>
+                            
+                            {error && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
+                                    {error}
+                                </div>
+                            )}
+                            {success && (
+                                <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
+                                    {success}
+                                </div>
+                            )}
+                            
+                            {/* Botão Verde (Neon) */}
+                            <button 
+                                type="submit" 
+                                className={`w-full ${neonButtonClassGreen}`} 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Alterar Senha'}
+                            </button>
+                        </form>
+                    )}
+                </div>
             </div>
         </div>
     );
-};
 
 // App.js -> SUBSTITUA o seu componente LoginPage por este
 
