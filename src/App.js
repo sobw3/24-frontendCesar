@@ -887,39 +887,40 @@ const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
 
 const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     const [step, setStep] = React.useState(1);
-    // --- formData ATUALIZADO (condoId removido) ---
     const [formData, setFormData] = React.useState({ name: '', cpf: '', email: '', phone_number: '', birthDate: '', apartmentBlock: '', apartmentNumber: '', password: '', confirmPassword: '', terms: false });
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [success, setSuccess] = React.useState('');
-    // --- availableCondos e useEffect REMOVIDOS ---
 
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon ESTÁTICO) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animate-surgir {
-            animation: surgir 0.6s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
     `;
+    
+    // --- Classe do Botão Neon (Laranja) Atualizada ---
+    const neonButtonClassOrange = `
+        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
+        flex items-center justify-center gap-2 rounded-xl
+        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
+        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
+        transform hover:-translate-y-1 active:translate-y-0
+    `;
 
-      const neonButtonClassOrange = `
-        bg-[#f2bd46] text-white font-bold py-3 px-4 
-        flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/40 hover:shadow-[#f2bd46]/60
-        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
-        transform hover:scale-105
+    // --- Botão Secundário (Voltar) ---
+    const secondaryButtonClass = `
+        bg-black/40 hover:bg-black/60 border border-gray-700/50 
+        text-white font-medium py-3.5 px-5 rounded-xl transition-all duration-300
+        flex items-center gap-2 backdrop-blur-sm hover:text-[#f2bd46]
     `;
     
+    // --- LÓGICA MANTIDA INTACTA ---
     const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
     const handleCpfChange = (e) => { setFormData({ ...formData, cpf: formatCPF(e.target.value) }); };
     const handlePhoneChange = (e) => { setFormData({ ...formData, phone_number: formatPhone(e.target.value) }); };
@@ -944,7 +945,6 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
                     phone_number: formData.phone_number, 
                     password: formData.password, 
                     birth_date: birthDateForBackend,
-                    // condo_id é definido pelo backend
                     apartment: `Bloco ${formData.apartmentBlock} - Apto ${formData.apartmentNumber}` 
                 })
             });
@@ -960,7 +960,6 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         }
     }
     
-    // Validação da data DD/MM/AAAA (mantida)
     const validateStep1 = () => {
         if (!formData.name || !validateEmail(formData.email) || formData.cpf.length !== 14 || formData.phone_number.length < 14 || formData.birthDate.length !== 10) return false;
         
@@ -979,158 +978,202 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
         return age >= 18;
     }
     
-    // --- VALIDAÇÃO DA ETAPA 2 ATUALIZADA ---
     const validateStep2 = () => { 
-        // Agora verifica se os campos de texto não estão vazios
         return formData.apartmentBlock.trim() && formData.apartmentNumber.trim(); 
     }
     const validateStep3 = () => { return formData.password.length >= 6 && formData.password === formData.confirmPassword && formData.terms; }
     
-    // --- DESIGN "DARK & NEON" ---
+    // --- DESIGN "DARK & NEON" REFINADO ---
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
+        <div 
+            className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+        >
             <style>{keyframes}</style>
             
-            {/* Card de Vidro (Glassmorphism) */}
-            <div className="w-full max-w-xl 
-                            border-gray-700 backdrop-blur-sm 
-                            border border-gray-700/50 
-                            p-8 rounded-2xl shadow-2xl 
-                            animate-surgir"
-            >
-                <h2 className="text-3xl font-light text-center mb-2 text-white">Crie sua conta</h2>
-                <p className="text-gray-400 text-center mb-6">Siga as etapas para ter acesso às máquinas.</p>
-                
-                {/* Barra de Progresso Estilizada */}
-                <div className="w-full bg-[#1a1a1a]/50 rounded-full h-2.5 mb-8">
-                    <div 
-                        className="bg-[#f2bd46] h-2.5 rounded-full transition-all duration-500 ease-out 
-                                   shadow-lg shadow-[#f2bd46]/30" 
-                        style={{ width: `${(step / 3) * 100}%` }}
-                    ></div>
-                </div>
+            {/* Overlay Escuro */}
+            <div className="absolute inset-0 bg-black/80 z-0"></div>
 
-                {/* --- A "JANELA" DA ANIMAÇÃO (SEM ALTURA FIXA) --- */}
-                <div className="overflow-hidden">
-                
-                    {/* --- O "TRILHO" QUE DESLIZA --- */}
-                    <div 
-                        className="flex transition-transform duration-500 ease-in-out" 
-                        style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-                    >
-                        
-                        {/* --- ETAPA 1: DADOS PESSOAIS --- */}
-                        <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">1. Informações Pessoais</h3>
-                            <div className="flex flex-col gap-4">
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div>
-                                    <label className="text-sm text-gray-400 mb-2 block">Data de Nascimento</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input type="text" name="birthDate" placeholder="DD/MM/AAAA" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
+            {/* Ambient Glow */}
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+            {/* Card de Vidro (Glassmorphism) Modernizado */}
+            <div className="w-full max-w-xl z-10">
+                <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir">
+                    
+                    {/* Cabeçalho */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-extrabold tracking-tight mb-2 text-white">Crie sua conta</h2>
+                        <p className="text-gray-300 text-sm">Siga as etapas para ter acesso à loja autônoma.</p>
+                    </div>
+                    
+                    {/* Barra de Progresso Estilizada */}
+                    <div className="w-full bg-black/60 border border-gray-800 rounded-full h-2 mb-8 overflow-hidden">
+                        <div 
+                            className="bg-[#f2bd46] h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(242,189,70,0.8)]" 
+                            style={{ width: `${(step / 3) * 100}%` }}
+                        ></div>
+                    </div>
+
+                    {/* Janela da animação */}
+                    <div className="overflow-hidden">
+                    
+                        {/* Trilho que desliza */}
+                        <div 
+                            className="flex transition-transform duration-500 ease-in-out" 
+                            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
+                        >
+                            
+                            {/* --- ETAPA 1: DADOS PESSOAIS --- */}
+                            <div className="w-full flex-shrink-0 px-1">
+                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
+                                    <User size={20} /> 1. Informações Pessoais
+                                </h3>
+                                <div className="flex flex-col gap-4">
+                                    <div className="relative group">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
                                     </div>
+                                    <div className="relative group">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                    </div>
+                                    <div className="relative group">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                    </div>
+                                    <div className="relative group">
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                    </div>
+                                    <div>
+                                        <div className="relative group mt-1">
+                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                            <input type="text" name="birthDate" placeholder="Data de Nascimento (DD/MM/AAAA)" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-8 flex justify-end items-center">
+                                    <button 
+                                        onClick={() => setStep(step + 1)} 
+                                        disabled={!validateStep1()} 
+                                        className={`flex items-center gap-2 ${neonButtonClassOrange} px-8`}
+                                    >
+                                        Avançar <ArrowRight size={18} />
+                                    </button>
                                 </div>
                             </div>
                             
-                            {/* --- BOTÕES MOVIDOS PARA DENTRO DA ETAPA --- */}
-                            <div className="mt-8 flex justify-end items-center">
-                                <button 
-                                    onClick={() => setStep(step + 1)} 
-                                    disabled={!validateStep1()} 
-                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
-                                >
-                                    Avançar <ArrowRight size={16} />
-                                </button>
-                            </div>
-                        </div>
-                        
-                        {/* --- ETAPA 2: ENDEREÇO (COM CAMPOS DE TEXTO) --- */}
-                        <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">2. Endereço</h3>
-                            <div className="flex flex-col gap-4">
-                                
-                                {/* --- SELECT DE CONDOMÍNIO REMOVIDO --- */}
-                                
-                                {/* --- INPUTS DE TEXTO (BLOCO E APTO) --- */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="relative">
-                                        <label className="text-sm text-gray-400 mb-2 block">Bloco / Torre</label>
-                                        <Building2 className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
-                                    </div>
-                                    <div className="relative">
-                                        <label className="text-sm text-gray-400 mb-2 block">Nº do Apartamento</label>
-                                        <Home className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" />
+                            {/* --- ETAPA 2: ENDEREÇO --- */}
+                            <div className="w-full flex-shrink-0 px-1">
+                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
+                                    <Building2 size={20} /> 2. Endereço
+                                </h3>
+                                <div className="flex flex-col gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="relative group">
+                                            <label className="text-xs text-gray-400 mb-1.5 block font-medium uppercase tracking-wider">Bloco / Torre</label>
+                                            <Building2 className="absolute left-4 top-[65%] -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                            <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                        </div>
+                                        <div className="relative group">
+                                            <label className="text-xs text-gray-400 mb-1.5 block font-medium uppercase tracking-wider">Apartamento</label>
+                                            <Home className="absolute left-4 top-[65%] -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                            <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                        </div>
                                     </div>
                                 </div>
-                                {/* --- FIM DA ALTERAÇÃO --- */}
+                                
+                                <div className="mt-8 flex justify-between items-center">
+                                    <button 
+                                        onClick={() => setStep(step - 1)} 
+                                        className={secondaryButtonClass}
+                                    >
+                                        <ArrowLeft size={18} /> Voltar
+                                    </button>
+                                    <button 
+                                        onClick={() => setStep(step + 1)} 
+                                        disabled={!validateStep2()} 
+                                        className={`flex items-center gap-2 ${neonButtonClassOrange} px-8`}
+                                    >
+                                        Avançar <ArrowRight size={18} />
+                                    </button>
+                                </div>
                             </div>
                             
-                            {/* --- BOTÕES MOVIDOS PARA DENTRO DA ETAPA --- */}
-                            <div className="mt-8 flex justify-between items-center">
-                                <button 
-                                    onClick={() => setStep(step - 1)} 
-                                    className="flex items-center gap-2 bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] text-white font-bold py-3 px-5 rounded-lg transition"
-                                >
-                                    <ArrowLeft size={16} /> Voltar
-                                </button>
-                                <button 
-                                    onClick={() => setStep(step + 1)} 
-                                    disabled={!validateStep2()} 
-                                    className={`flex items-center gap-2 ${neonButtonClassOrange}`}
-                                >
-                                    Avançar <ArrowRight size={16} />
-                                </button>
-                            </div>
-                        </div>
-                        
-                        {/* --- ETAPA 3: SEGURANÇA --- */}
-                        <div className="w-full flex-shrink-0 px-1">
-                            <h3 className="text-xl font-semibold mb-4 text-[#f2bd46]">3. Segurança</h3>
-                            <div className="flex flex-col gap-4">
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-[#1a1a1a]/50 border border-gray-600/50 rounded-lg py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f2bd46]" /></div>
-                                <div className="flex items-center"><input id="terms" name="terms" type="checkbox" checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="h-4 w-4 text-[#f2bd46]-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-[#f2bd46]" /><label htmlFor="terms" className="ml-2 text-sm text-gray-300">Eu declaro que as informações são verdadeiras.</label></div>
-                            </div>
-                            
-                            {/* --- BOTÕES MOVIDOS PARA DENTRO DA ETAPA --- */}
-                            <div className="mt-8 flex justify-between items-center">
-                                <button 
-                                    onClick={() => setStep(step - 1)} 
-                                    className="flex items-center gap-2 bg-[#1a1a1a]/50 hover:bg-[#1a1a1a] text-white font-bold py-3 px-5 rounded-lg transition"
-                                >
-                                    <ArrowLeft size={16} /> Voltar
-                                </button>
-                                <button 
-                                    onClick={handleRegisterSubmit} 
-                                    disabled={!validateStep3() || isLoading} 
-                                    className={`flex items-center justify-center gap-2 px-6 ${neonButtonClassOrange}`}
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin" /> : <>Finalizar <Check size={16} /></>}
-                                </button>
+                            {/* --- ETAPA 3: SEGURANÇA --- */}
+                            <div className="w-full flex-shrink-0 px-1">
+                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
+                                    <Shield size={20} /> 3. Segurança
+                                </h3>
+                                <div className="flex flex-col gap-4">
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                    </div>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
+                                        <input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
+                                    </div>
+                                    
+                                    <div className="flex items-center mt-2 bg-black/40 border border-gray-800 p-4 rounded-xl">
+                                        <input 
+                                            id="terms" 
+                                            name="terms" 
+                                            type="checkbox" 
+                                            checked={formData.terms} 
+                                            onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} 
+                                            className="h-5 w-5 text-[#f2bd46] bg-black border-gray-600 rounded focus:ring-[#f2bd46] focus:ring-offset-black accent-[#f2bd46]" 
+                                        />
+                                        <label htmlFor="terms" className="ml-3 text-sm text-gray-300 cursor-pointer select-none">
+                                            Eu declaro que as informações acima são verdadeiras.
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-8 flex justify-between items-center">
+                                    <button 
+                                        onClick={() => setStep(step - 1)} 
+                                        className={secondaryButtonClass}
+                                    >
+                                        <ArrowLeft size={18} /> Voltar
+                                    </button>
+                                    <button 
+                                        onClick={handleRegisterSubmit} 
+                                        disabled={!validateStep3() || isLoading} 
+                                        className={`flex items-center justify-center gap-2 px-8 ${neonButtonClassOrange}`}
+                                    >
+                                        {isLoading ? <Loader2 className="animate-spin" size={22} /> : <>Finalizar <Check size={18} /></>}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mt-6 animate-surgir">
+                            {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center py-2 px-3 rounded-lg mt-6 animate-surgir">
+                            {success}
+                        </div>
+                    )}
+                    
+                    {/* Botão de Já Tenho Conta */}
+                    <div className="text-center mt-8 pt-6 border-t border-gray-700/50">
+                        <button 
+                            onClick={onSwitchToLogin} 
+                            className="text-sm text-gray-300 hover:text-white transition-colors font-medium drop-shadow-md"
+                        >
+                            Já tem uma conta? <span className="text-[#f2bd46] font-bold">Faça login</span>
+                        </button>
+                    </div>
+                    
                 </div>
-                
-                {error && <p className="text-red-400 text-sm text-center mt-4">{error}</p>}
-                {success && <p className="text-green-400 text-sm text-center mt-4">{success}</p>}
-                
-                {/* --- "Já tenho conta" movido para cá (centralizado) --- */}
-                <div className="text-center mt-6 pt-6 border-t border-gray-700/50">
-                    <button 
-                        onClick={onSwitchToLogin} 
-                        className="text-gray-400 hover:text-[#f2bd46] transition font-medium"
-                    >
-                        Já tenho conta
-                    </button>
-                </div>
-                
             </div>
         </div>
     );
