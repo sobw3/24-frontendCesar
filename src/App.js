@@ -3705,7 +3705,7 @@ const TransferModal = ({
 // App.js -> SUBSTITUA o seu componente WalletPage por este
 
 const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentMethod, updateUserBalance, showToast, condos }) => {
-    // --- ESTADOS (Sem alteração) ---
+    // --- ESTADOS (Logica 100% Intocada) ---
     const [showBalance, setShowBalance] = React.useState(true);
     const [recentTransactions, setRecentTransactions] = React.useState([]);
     const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true);
@@ -3720,40 +3720,30 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
     const [recipientDetails, setRecipientDetails] = React.useState(null);
     const [showConfirmationModal, setShowConfirmationModal] = React.useState(false);
     
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon/Pulso) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon/Pulso Refinados) ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes neon-pulse-[#f2bd46]-text {
-            0%, 100% {
-                text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
-            }
-            50% {
-                text-shadow: 0 0 10px rgba(249, 115, 22, 1), 0 0 20px rgba(249, 115, 22, 1);
-            }
+        @keyframes neon-pulse-gold-text {
+            0%, 100% { text-shadow: 0 0 5px rgba(242, 189, 70, 0.4), 0 0 10px rgba(242, 189, 70, 0.4); }
+            50% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.8), 0 0 20px rgba(242, 189, 70, 0.8); }
         }
         @keyframes neon-pulse-green-icon {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.7)); }
-            50% { filter: drop-shadow(0 0 10px rgba(74, 222, 128, 1)); }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.8)); }
         }
         @keyframes neon-pulse-red-icon {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.7)); }
-            50% { filter: drop-shadow(0 0 10px rgba(248, 113, 113, 1)); }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(248, 113, 113, 0.8)); }
         }
         .animate-surgir {
-            animation: surgir 0.5s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
-        .neon-text-[#f2bd46] {
-            animation: neon-pulse-[#f2bd46]-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .neon-text-gold {
+            animation: neon-pulse-gold-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         .neon-icon-green {
             animation: neon-pulse-green-icon 2s ease-in-out infinite;
@@ -3763,14 +3753,13 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
         }
     `;
 
-    // --- FUNÇÕES DE LÓGICA (Sem alteração) ---
+    // --- FUNÇÕES DE LÓGICA (100% Intocadas) ---
     React.useEffect(() => {
         updateUserBalance();
         const fetchRecent = async () => {
             setIsLoadingTransactions(true);
             try {
                 const token = localStorage.getItem('token');
-                // A função 'getRecentTransactions' no backend já foi corrigida
                 const response = await fetch(`${API_URL}/api/wallet/recent-transactions`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if(response.ok) {
                     const data = await response.json();
@@ -3865,61 +3854,55 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
     };
     
     // ==========================================================
-    // --- CORREÇÃO DO LAYOUT DA "ATIVIDADE RECENTE" ---
+    // --- ATIVIDADE RECENTE (Visual Premium Glassmorphism) ---
     // ==========================================================
     const WalletActivityItem = ({ tx }) => {
         const isDeposit = tx.type === 'deposit' || tx.type === 'transfer_in';
-        const iconClass = isDeposit ? 'neon-icon-green' : 'neon-icon-red';
+        const iconClass = isDeposit ? 'neon-icon-green text-green-400' : 'neon-icon-red text-red-400';
         
         return (
-            // O card agora usa 'flex' para alinhar o ícone e o conteúdo
-            <div 
-                className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4"
-                // Não há necessidade de 'onClick' aqui, pois é apenas um resumo
-            >
+            <div className="animate-surgir bg-black/40 backdrop-blur-md border border-gray-700/50 p-4 sm:p-5 rounded-2xl flex items-center gap-4 sm:gap-5 hover:bg-black/60 hover:border-gray-500/80 transition-all duration-300 shadow-lg group">
                 {/* Ícone (Neon e Colorido) */}
-                <div className={`flex-shrink-0 ${iconClass}`}>
-                    {React.cloneElement(getTransactionIcon(tx.type), { size: 28 })}
+                <div className={`flex-shrink-0 bg-black/50 p-3 rounded-xl border border-gray-800 group-hover:bg-[#1a1a1a] transition-colors ${iconClass}`}>
+                    {React.cloneElement(getTransactionIcon(tx.type), { size: 24 })}
                 </div>
                 
-                {/* --- CORREÇÃO DO ALINHAMENTO --- */}
-                {/* Este 'div' agora usa 'flex justify-between' para separar o nome do valor */}
-                <div className="flex-grow min-w-0 flex justify-between items-center gap-4">
+                <div className="flex-grow min-w-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     {/* Coluna da Esquerda (Nome e Data) */}
                     <div className="min-w-0">
-                        <h4 className="font-semibold capitalize text-white truncate">
+                        <h4 className="font-extrabold capitalize text-white truncate text-lg group-hover:text-gray-200 transition-colors">
                             {tx.description || tx.type.replace(/_/g, ' ')}
                         </h4>
-                        <p className="text-sm text-gray-400">{new Date(tx.created_at).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-xs sm:text-sm text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={14} className="opacity-70" /> {new Date(tx.created_at).toLocaleDateString('pt-BR')}
+                        </p>
                     </div>
                     
                     {/* Coluna da Direita (Valor) */}
-                    <p className={`font-bold text-lg flex-shrink-0 ${isDeposit ? 'text-green-400' : 'text-red-400'}`}>
+                    <p className={`font-black text-xl flex-shrink-0 tracking-tight ${isDeposit ? 'text-green-400' : 'text-red-400'}`}>
                         {tx.amount > 0 ? '+' : '-'} R$ {Math.abs(tx.amount).toFixed(2).replace('.', ',')}
                     </p>
                 </div>
-                {/* --- FIM DA CORREÇÃO --- */}
             </div>
         );
     }
     
-    // Componente de Botão de Ação
+    // Componente de Botão de Ação (Visual Premium)
     const WalletActionCard = ({ icon, label, onClick }) => (
         <div 
             onClick={onClick} 
-            className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-xl 
-                       flex flex-col items-center justify-center gap-2 
-                       hover:bg-[#1a1a1a]/60 hover:border-gray-600 cursor-pointer transition"
+            className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 hover:bg-[#1a1a1a]/80 hover:border-[#f2bd46]/50 cursor-pointer transition-all duration-300 shadow-lg group"
         >
-            {/* Ícone Neon */}
-            <div className="text-[#f2bd46]" style={{ filter: 'drop-shadow(0 0 5px rgba(249, 115, 22, 0.7))' }}>
-                {icon}
+            <div className="bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 group-hover:bg-[#f2bd46]/10 transition-colors duration-300">
+                <div className="text-gray-400 group-hover:text-[#f2bd46] transition-colors duration-300 drop-shadow-[0_0_8px_rgba(242,189,70,0.1)] group-hover:drop-shadow-[0_0_12px_rgba(242,189,70,0.6)]">
+                    {icon}
+                </div>
             </div>
-            <span className="font-semibold text-white">{label}</span>
+            <span className="font-bold text-gray-300 group-hover:text-white text-sm tracking-wide">{label}</span>
         </div>
     );
 
-    // --- JSX (Sem alteração, exceto pela prop 'condos') ---
+    // --- JSX (Logica e props intocadas) ---
     return (
         <>
             <style>{keyframes}</style>
@@ -3953,61 +3936,109 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
                 isVerifying={isVerifying}
             />
 
-            <div className="min-h-screen bg-black text-white">
+            <div 
+                className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            >
+                {/* Overlay Escuro e Ambient Glow */}
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+                
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
-                    <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                        <h1 className="text-2xl font-bold">Minha Carteira</h1>
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Minha <span className="text-[#f2bd46]">Carteira</span></h1>
                     </div>
                 </header>
                 
-                <main className="container mx-auto p-4 md:p-8 flex flex-col gap-8 max-w-2xl">
+                <main className="container mx-auto p-4 md:p-8 flex flex-col gap-8 max-w-2xl relative z-10">
                     
-                    {/* --- CARD DE SALDO (Glassmorphism + Neon) --- */}
-                    <div className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
-                        <div className="flex justify-between items-start mb-10">
-                            <div>
-                                <p className="text-sm text-gray-300">Saldo Disponível</p>
+                    {/* --- CARD DE SALDO (Premium Credit Card Look) --- */}
+                    <div className="animate-surgir relative p-8 rounded-3xl shadow-2xl overflow-hidden group">
+                        {/* Background Layers */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/40 backdrop-blur-2xl border border-gray-700/50 group-hover:border-[#f2bd46]/30 transition-colors duration-500 z-0"></div>
+                        <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#f2bd46]/10 blur-[60px] rounded-full z-0 pointer-events-none"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-start mb-10">
+                                <div>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <Wallet size={16} className="text-[#f2bd46]" /> Saldo Disponível
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => setShowBalance(!showBalance)} 
+                                    className="text-gray-400 hover:text-white bg-black/50 p-2.5 rounded-full border border-gray-700/50 transition-colors"
+                                >
+                                    {showBalance ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
-                            <button onClick={() => setShowBalance(!showBalance)} className="text-gray-400 hover:text-white absolute top-6 right-6">
-                                {showBalance ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
-                        </div>
-                        
-                        {showBalance ? (
-                            // --- EFEITO NEON NO SALDO ---
-                            <p className="text-5xl font-bold text-[#f2bd46] neon-text-[#f2bd46] mt-2">R$ {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}</p>
-                        ) : (
-                            <p className="text-5xl font-bold text-white mt-2">R$ ●●●●,●●</p>
-                        )}
-                        
-                        <div className="flex justify-between items-end mt-4">
-                             <p className="text-lg font-medium opacity-90">{user?.name}</p>
-                             <PiggyBank size={32} className="opacity-70" />
+                            
+                            <div className="flex items-baseline gap-2">
+                                {showBalance ? (
+                                    <>
+                                        <span className="text-2xl text-gray-400 font-bold">R$</span>
+                                        <p className="text-5xl sm:text-6xl font-black text-[#f2bd46] neon-text-gold tracking-tighter">
+                                            {user?.wallet_balance ? parseFloat(user.wallet_balance).toFixed(2).replace('.', ',') : '0,00'}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-2xl text-gray-400 font-bold">R$</span>
+                                        <p className="text-5xl sm:text-6xl font-black text-white tracking-tighter mt-1">●●●●,●●</p>
+                                    </>
+                                )}
+                            </div>
+                            
+                            <div className="flex justify-between items-end mt-8 border-t border-gray-700/50 pt-6">
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-1 font-bold">Titular da Conta</p>
+                                    <p className="text-lg font-bold text-white tracking-wide truncate max-w-[200px] sm:max-w-xs">{user?.name}</p>
+                                </div>
+                                <PiggyBank size={36} className="text-[#f2bd46]/30 group-hover:text-[#f2bd46]/60 transition-colors duration-500" />
+                            </div>
                         </div>
                     </div>
                     
                     {/* --- BOTÕES DE AÇÃO (Glassmorphism) --- */}
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                        <WalletActionCard icon={<ArrowDownToLine size={28} />} label="Depositar" onClick={() => setIsDepositModalOpen(true)} />
-                        <WalletActionCard icon={<ArrowRightLeft size={28} />} label="Transferir" onClick={() => setIsTransferModalOpen(true)} />
-                        <WalletActionCard icon={<History size={28} />} label="Extrato" onClick={() => setPage('history')} />
+                    <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
+                        <WalletActionCard icon={<ArrowDownToLine size={24} />} label="Depositar" onClick={() => setIsDepositModalOpen(true)} />
+                        <WalletActionCard icon={<ArrowRightLeft size={24} />} label="Transferir" onClick={() => setIsTransferModalOpen(true)} />
+                        <WalletActionCard icon={<History size={24} />} label="Extrato" onClick={() => setPage('history')} />
                     </div>
 
-                    {/* --- ATIVIDADE RECENTE (Agora corrigida) --- */}
-                    <div>
-                        <h3 className="text-xl font-bold mb-4">Atividade Recente</h3>
+                    {/* --- ATIVIDADE RECENTE --- */}
+                    <div className="mt-4">
+                        <div className="flex items-center gap-3 mb-6">
+                            <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight">Atividade Recente</h3>
+                            <div className="h-px bg-gradient-to-r from-gray-700 to-transparent flex-grow"></div>
+                        </div>
+                        
                         {isLoadingTransactions ? (
-                            <div className="flex justify-center"><Loader2 className="animate-spin" /></div>
+                            <div className="flex flex-col justify-center items-center h-32 gap-3">
+                                <Loader2 className="animate-spin text-[#f2bd46]" size={32} />
+                                <span className="text-gray-400 text-sm font-bold tracking-widest animate-pulse">CARREGANDO...</span>
+                            </div>
                         ) : recentTransactions.length > 0 ? (
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-4">
                                 {recentTransactions.map(tx => (
                                     <WalletActivityItem key={tx.id} tx={tx} />
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-gray-400 text-center p-4">Nenhuma atividade recente.</p>
+                            <div className="animate-surgir text-center p-8 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-lg flex flex-col items-center">
+                                <div className="bg-gray-800/50 p-4 rounded-full mb-4">
+                                    <History size={32} className="text-gray-500" />
+                                </div>
+                                <h4 className="text-lg font-bold text-white mb-1">Nenhuma atividade recente</h4>
+                                <p className="text-sm text-gray-400">Suas transações recentes aparecerão aqui.</p>
+                            </div>
                         )}
                     </div>
                 </main>
@@ -4015,6 +4046,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
         </>
     );
 };
+
 const AdminStatCard = ({ icon, label, value, colorClass = 'text-[#f2bd46]' }) => (
     <div className="bg-[#1a1a1a] p-6 rounded-lg flex items-center gap-4">
         <div className={`p-3 rounded-lg bg-[#1a1a1a] ${colorClass}`}>{icon}</div>
