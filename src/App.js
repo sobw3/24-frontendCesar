@@ -7496,26 +7496,20 @@ const HistoryPage = ({ setPage, token, showToast }) => {
     // --- Keyframes (Animações) ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         @keyframes neon-pulse-green-icon {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.7)); }
-            50% { filter: drop-shadow(0 0 10px rgba(74, 222, 128, 1)); }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.8)); }
         }
         @keyframes neon-pulse-red-icon {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.7)); }
-            50% { filter: drop-shadow(0 0 10px rgba(248, 113, 113, 1)); }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(248, 113, 113, 0.8)); }
         }
         .animate-surgir {
-            animation: surgir 0.5s ease-out forwards;
-            opacity: 0; /* Começa invisível para a animação */
+            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; 
         }
         .neon-icon-green {
             animation: neon-pulse-green-icon 2s ease-in-out infinite;
@@ -7586,193 +7580,258 @@ const HistoryPage = ({ setPage, token, showToast }) => {
 
     // === RENDERIZAÇÃO ===
 
-    // Componente de Item para a Aba "Minhas Compras" (Sem alteração)
+    // Componente de Item para a Aba "Minhas Compras" (VISUAL ATUALIZADO)
     const PurchaseItem = ({ tx }) => (
         <div 
             onClick={() => openReceiptModal(tx.id)} 
-            className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+            className="animate-surgir bg-black/40 backdrop-blur-md border border-gray-700/50 p-4 sm:p-5 rounded-2xl flex items-center gap-4 sm:gap-5 cursor-pointer hover:bg-black/60 hover:border-[#f2bd46]/40 transition-all duration-300 group shadow-lg"
         >
             {/* Imagem */}
-            <div className="flex-shrink-0 w-16 h-16 relative">
+            <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 relative">
                 <img 
-                    src={tx.items[0].image_url || 'https://placehold.co/100x100/374151/ffffff?text=Sem+Foto'}
+                    src={tx.items[0].image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Foto'}
                     alt={tx.items[0].product_name}
-                    className="w-16 h-16 rounded-md object-cover"
+                    className="w-full h-full rounded-xl object-cover border border-gray-700/50 shadow-md group-hover:scale-105 transition-transform duration-300"
                 />
                 {tx.items.length > 1 && (
-                    <span className="absolute -bottom-2 -right-2 bg-[#f2bd46] text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-gray-800">
+                    <span className="absolute -bottom-2 -right-2 bg-[#f2bd46] text-black text-xs font-black w-7 h-7 rounded-full flex items-center justify-center border-2 border-black shadow-[0_0_10px_rgba(242,189,70,0.6)]">
                         +{tx.items.length - 1}
                     </span>
                 )}
             </div>
             {/* Detalhes da Compra */}
             <div className="flex-grow min-w-0">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="font-bold text-white text-lg truncate">
-                            {tx.items.length === 1 ? tx.items[0].product_name : `${tx.items.length} Itens`}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                    <div className="min-w-0">
+                        <h3 className="font-extrabold text-white text-lg truncate group-hover:text-[#f2bd46] transition-colors">
+                            {tx.items.length === 1 ? tx.items[0].product_name : `${tx.items.length} Itens Comprados`}
                         </h3>
-                        <p className="text-sm text-gray-400">{new Date(tx.created_at).toLocaleString('pt-BR')}</p>
+                        <p className="text-xs sm:text-sm text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={14} className="opacity-70" /> {new Date(tx.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                        </p>
                     </div>
-                    <p className="font-bold text-xl text-red-400 ml-2">
-                        - R$ {parseFloat(tx.amount).toFixed(2).replace('.', ',')}
-                    </p>
+                    <div className="bg-black/50 border border-gray-800 px-3 py-1.5 rounded-lg flex-shrink-0 inline-block w-fit">
+                        <p className="font-bold text-lg sm:text-xl text-white tracking-tight">
+                            <span className="text-gray-500 text-sm font-medium mr-1">R$</span>
+                            {parseFloat(tx.amount).toFixed(2).replace('.', ',')}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     );
 
-    // ==========================================================
-    // --- CORREÇÃO DO LAYOUT DA "ATIVIDADE DA CARTEIRA" ---
-    // ==========================================================
+    // --- CORREÇÃO DO LAYOUT DA "ATIVIDADE DA CARTEIRA" (VISUAL ATUALIZADO) ---
     const WalletActivityItem = ({ tx }) => {
         const isDeposit = tx.type === 'deposit' || tx.type === 'transfer_in';
-        const iconClass = isDeposit ? 'neon-icon-green' : 'neon-icon-red';
+        const iconClass = isDeposit ? 'neon-icon-green text-green-400' : 'neon-icon-red text-red-400';
         
         return (
             <div 
                 onClick={() => openReceiptModal(tx.id)} 
-                className="animate-surgir border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg flex items-center gap-4 cursor-pointer hover:border-gray-600 transition"
+                className="animate-surgir bg-black/40 backdrop-blur-md border border-gray-700/50 p-4 sm:p-5 rounded-2xl flex items-center gap-4 sm:gap-5 cursor-pointer hover:bg-black/60 hover:border-gray-500/80 transition-all duration-300 group shadow-lg"
             >
                 {/* Ícone (Neon e Colorido) */}
-                <div className={`flex-shrink-0 ${iconClass}`}>
-                    {React.cloneElement(getTransactionIcon(tx.type), { size: 28 })}
+                <div className={`flex-shrink-0 bg-black/50 p-3 rounded-xl border border-gray-800 group-hover:bg-[#1a1a1a] transition-colors ${iconClass}`}>
+                    {React.cloneElement(getTransactionIcon(tx.type), { size: 24 })}
                 </div>
                 
-                {/* --- CORREÇÃO DO ALINHAMENTO --- */}
-                {/* Este 'div' agora usa 'flex justify-between' para separar o nome do valor */}
-                <div className="flex-grow min-w-0 flex justify-between items-center gap-4">
-                    {/* Coluna da Esquerda (Nome e Data) */}
+                <div className="flex-grow min-w-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     <div className="min-w-0">
-                        <h3 className="font-bold text-white text-lg truncate">{tx.description}</h3>
-                        <p className="text-sm text-gray-400">{new Date(tx.created_at).toLocaleString('pt-BR')}</p>
+                        <h3 className="font-extrabold text-white text-lg truncate">{tx.description}</h3>
+                        <p className="text-xs sm:text-sm text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={14} className="opacity-70" /> {new Date(tx.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                        </p>
                     </div>
-                    {/* Coluna da Direita (Valor) */}
-                    <p className={`font-bold text-xl flex-shrink-0 ${isDeposit ? 'text-green-400' : 'text-red-400'}`}>
+                    <p className={`font-black text-xl flex-shrink-0 tracking-tight ${isDeposit ? 'text-green-400' : 'text-red-400'}`}>
                         {isDeposit ? '+' : '-'} R$ {parseFloat(tx.amount).toFixed(2).replace('.', ',')}
                     </p>
                 </div>
-                {/* --- FIM DA CORREÇÃO --- */}
             </div>
         );
     }
     
-    // --- CARD DE RESUMO DINÂMICO (Sem alteração) ---
+    // --- CARD DE RESUMO DINÂMICO (VISUAL ATUALIZADO) ---
     const SummaryCard = ({ activeTab }) => {
-        // --- ABA 1: MOSTRA SÓ COMPRAS ---
         if (activeTab === 'compras') {
             return (
-                <div className="animate-surgir mb-8">
-                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Total em Compras (pág.)</p>
-                        <p className="text-2xl font-bold text-[#f2bd46]">R$ {summary.totalPurchases.toFixed(2).replace('.', ',')}</p>
+                <div className="animate-surgir mb-8 relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#f2bd46]/20 to-transparent rounded-3xl blur-xl transition-all duration-500 opacity-60"></div>
+                    <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-6 sm:p-8 rounded-3xl relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+                        <div className="text-center sm:text-left">
+                            <p className="text-xs sm:text-sm text-gray-400 font-bold uppercase tracking-widest mb-2 flex items-center justify-center sm:justify-start gap-2">
+                                <History size={16}/> Resumo da Página
+                            </p>
+                            <div className="flex items-baseline justify-center sm:justify-start gap-2">
+                                <span className="text-xl text-gray-500 font-bold">R$</span>
+                                <p className="text-4xl sm:text-5xl font-black text-[#f2bd46] tracking-tighter drop-shadow-[0_0_15px_rgba(242,189,70,0.3)]">
+                                    {summary.totalPurchases.toFixed(2).replace('.', ',')}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="hidden sm:flex p-5 bg-[#f2bd46]/10 rounded-2xl border border-[#f2bd46]/20 shadow-[0_0_20px_rgba(242,189,70,0.15)]">
+                            <ShoppingCart size={40} className="text-[#f2bd46]" />
+                        </div>
                     </div>
                 </div>
             );
         }
         
-        // --- ABA 2: MOSTRA ENTRADAS E SAÍDAS ---
         if (activeTab === 'carteira') {
             return (
-                <div className="animate-surgir grid grid-cols-2 gap-4 mb-8">
-                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Entradas (pág.)</p>
-                        <p className="text-2xl font-bold text-green-400">R$ {summary.totalWalletIn.toFixed(2).replace('.', ',')}</p>
+                <div className="animate-surgir grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 relative">
+                    {/* Card Entradas */}
+                    <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl relative overflow-hidden shadow-xl group hover:border-green-500/30 transition-all">
+                        <div className="absolute -right-6 -top-6 bg-green-500/10 p-8 rounded-full blur-2xl"></div>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <ArrowDownToLine size={16} className="text-green-400"/> Entradas (pág.)
+                        </p>
+                        <p className="text-3xl font-black text-green-400 tracking-tighter">
+                            + R$ {summary.totalWalletIn.toFixed(2).replace('.', ',')}
+                        </p>
                     </div>
-                    <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Saídas (pág.)</p>
-                        <p className="text-2xl font-bold text-red-400">R$ {summary.totalWalletOut.toFixed(2).replace('.', ',')}</p>
+                    {/* Card Saídas */}
+                    <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl relative overflow-hidden shadow-xl group hover:border-red-500/30 transition-all">
+                        <div className="absolute -right-6 -top-6 bg-red-500/10 p-8 rounded-full blur-2xl"></div>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <ArrowRightLeft size={16} className="text-red-400"/> Saídas (pág.)
+                        </p>
+                        <p className="text-3xl font-black text-red-400 tracking-tighter">
+                            - R$ {summary.totalWalletOut.toFixed(2).replace('.', ',')}
+                        </p>
                     </div>
                 </div>
             );
         }
         
-        return null; // Não mostra nada
+        return null;
     };
     
     return (
         <>
             <style>{keyframes}</style>
             <TransactionReceiptModal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} transactionId={selectedTransactionId} token={token} />
-            <div className="min-h-screen bg-black text-white">
+            
+            <div 
+                className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            >
+                {/* Overlay Escuro e Ambient Glow */}
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+                
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
-                    <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                        <h1 className="text-2xl font-bold">Meu Histórico</h1>
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meu <span className="text-[#f2bd46]">Histórico</span></h1>
                     </div>
                     
-                    {/* --- ABAS (Segmented Control) --- */}
-                    <div className="container mx-auto px-4 md:px-8 max-w-3xl">
-                        <div className="grid grid-cols-2 gap-2 p-1 bg-black/50 rounded-lg">
+                    {/* --- ABAS (Segmented Control Refinado) --- */}
+                    <div className="container mx-auto px-4 pb-5 max-w-3xl">
+                        <div className="flex p-1.5 bg-black/80 border border-gray-800/80 rounded-xl relative shadow-inner">
                             <button 
                                 onClick={() => setActiveTab('compras')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'compras' ? 'bg-[#1a1a1a]/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-[#1a1a1a]/40'}`}
+                                className={`flex-1 py-3 rounded-lg text-sm sm:text-base font-bold text-center transition-all duration-300 z-10 flex items-center justify-center gap-2 ${activeTab === 'compras' ? 'bg-[#f2bd46] text-black shadow-[0_4px_15px_rgba(242,189,70,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
+                                <ShoppingCart size={18} className={activeTab === 'compras' ? 'text-black' : 'text-gray-500'} /> 
                                 Minhas Compras
                             </button>
                             <button 
                                 onClick={() => setActiveTab('carteira')}
-                                className={`py-2 px-4 rounded-md font-bold text-center transition ${activeTab === 'carteira' ? 'bg-[#1a1a1a]/80 text-[#f2bd46]' : 'text-gray-400 hover:bg-[#1a1a1a]/40'}`}
+                                className={`flex-1 py-3 rounded-lg text-sm sm:text-base font-bold text-center transition-all duration-300 z-10 flex items-center justify-center gap-2 ${activeTab === 'carteira' ? 'bg-[#f2bd46] text-black shadow-[0_4px_15px_rgba(242,189,70,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
-                                Atividade da Carteira
+                                <Wallet size={18} className={activeTab === 'carteira' ? 'text-black' : 'text-gray-500'} /> 
+                                Carteira
                             </button>
                         </div>
                     </div>
-                    <div className="h-4"></div>
                 </header>
                 
-
-                <main className="container mx-auto p-4 md:p-8">
-                    <div className="max-w-3xl mx-auto flex flex-col gap-4">
-                        {isLoading ? <Loader2 className="animate-spin mx-auto mt-10" size={48} /> :
-                            error ? <p className="text-red-400 text-center">{error}</p> :
-                            (
-                                <>
-                                    {/* --- CARD DE RESUMO DINÂMICO --- */}
-                                    <SummaryCard activeTab={activeTab} />
-                                
-                                    {/* Renderização da Aba de Compras */}
-                                    {activeTab === 'compras' && (
-                                        purchases.length > 0 ? (
-                                            <div className="flex flex-col gap-4">
-                                                {purchases.map(tx => <PurchaseItem key={tx.id} tx={tx} />)}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
-                                                <ShoppingCart size={48} className="mx-auto mb-4" />
-                                                <h2 className="text-2xl font-semibold mb-2">Sem compras por aqui</h2>
-                                                <p>Seu histórico de pedidos aparecerá aqui.</p>
-                                            </div>
-                                        )
-                                    )}
-                                    
-                                    {/* Renderização da Aba de Carteira (agora corrigida) */}
-                                    {activeTab === 'carteira' && (
-                                        walletActivity.length > 0 ? (
-                                            <div className="flex flex-col gap-4">
-                                                {walletActivity.map(tx => <WalletActivityItem key={tx.id} tx={tx} />)}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg">
-                                                <Wallet size={48} className="mx-auto mb-4" />
-                                                <h2 className="text-2xl font-semibold mb-2">Sem atividade na carteira</h2>
-                                                <p>Seu extrato de depósitos e transferências aparecerá aqui.</p>
-                                            </div>
-                                        )
-                                    )}
-                                    
-                                    {/* Paginação (Estilizada) */}
-                                    {historyData.transactions?.length > 0 && (
-                                        <div className="flex justify-center items-center gap-2 mt-6">
-                                            <button onClick={() => fetchHistoryData(historyData.pagination.page - 1)} disabled={historyData.pagination.page === 1} className="p-2 bg-[#1a1a1a]/50 rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowLeft size={16} /></button>
-                                            <span className="text-gray-400">Página {historyData.pagination.page} de {Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))}</span>
-                                            <button onClick={() => fetchHistoryData(historyData.pagination.page + 1)} disabled={historyData.pagination.page === Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))} className="p-2 bg-[#1a1a1a]/50 rounded-md disabled:opacity-50 hover:bg-[#1a1a1a] transition"><ArrowRight size={16} /></button>
+                {/* --- CONTEÚDO PRINCIPAL --- */}
+                <main className="container mx-auto p-4 md:p-8 relative z-10">
+                    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+                        {isLoading ? (
+                            <div className="flex flex-col justify-center items-center h-64 gap-4">
+                                <Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" />
+                                <span className="text-gray-400 font-bold tracking-widest animate-pulse text-sm">CARREGANDO...</span>
+                            </div>
+                        ) : error ? (
+                            <div className="text-center p-8 bg-red-900/10 border border-red-500/20 text-red-400 rounded-2xl backdrop-blur-md shadow-lg flex flex-col items-center gap-3">
+                                <AlertTriangle size={32}/>
+                                <p className="font-bold text-lg">Oops! Algo deu errado.</p>
+                                <p className="text-sm opacity-80">{error}</p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* --- CARD DE RESUMO DINÂMICO --- */}
+                                <SummaryCard activeTab={activeTab} />
+                            
+                                {/* Renderização da Aba de Compras */}
+                                {activeTab === 'compras' && (
+                                    purchases.length > 0 ? (
+                                        <div className="flex flex-col gap-4">
+                                            {purchases.map(tx => <PurchaseItem key={tx.id} tx={tx} />)}
                                         </div>
-                                    )}
-                                </>
-                            )
-                        }
+                                    ) : (
+                                        <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                            <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                                                <ShoppingCart size={48} className="text-gray-500" />
+                                            </div>
+                                            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Sem compras por aqui</h2>
+                                            <p className="max-w-xs mx-auto text-sm">Seu histórico de pedidos aparecerá aqui assim que você fizer a primeira compra.</p>
+                                        </div>
+                                    )
+                                )}
+                                
+                                {/* Renderização da Aba de Carteira */}
+                                {activeTab === 'carteira' && (
+                                    walletActivity.length > 0 ? (
+                                        <div className="flex flex-col gap-4">
+                                            {walletActivity.map(tx => <WalletActivityItem key={tx.id} tx={tx} />)}
+                                        </div>
+                                    ) : (
+                                        <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                            <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                                                <Wallet size={48} className="text-gray-500" />
+                                            </div>
+                                            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Sem atividade na carteira</h2>
+                                            <p className="max-w-xs mx-auto text-sm">Seu extrato de depósitos e transferências aparecerá aqui.</p>
+                                        </div>
+                                    )
+                                )}
+                                
+                                {/* Paginação (Estilizada) */}
+                                {historyData.transactions?.length > 0 && (
+                                    <div className="flex justify-center items-center gap-4 mt-8 pb-12">
+                                        <button 
+                                            onClick={() => fetchHistoryData(historyData.pagination.page - 1)} 
+                                            disabled={historyData.pagination.page === 1} 
+                                            className="p-3 bg-black/50 border border-gray-700 hover:bg-[#f2bd46] hover:text-black hover:border-[#f2bd46] rounded-xl disabled:opacity-30 disabled:hover:bg-black/50 disabled:hover:text-white disabled:hover:border-gray-700 transition-all shadow-md"
+                                        >
+                                            <ArrowLeft size={18} />
+                                        </button>
+                                        
+                                        <div className="bg-black/60 border border-gray-800 px-6 py-2.5 rounded-xl text-sm font-bold tracking-wide">
+                                            <span className="text-gray-400">Pág.</span> <span className="text-white">{historyData.pagination.page}</span> <span className="text-gray-500 mx-1">/</span> <span className="text-gray-400">{Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))}</span>
+                                        </div>
+                                        
+                                        <button 
+                                            onClick={() => fetchHistoryData(historyData.pagination.page + 1)} 
+                                            disabled={historyData.pagination.page === Math.ceil((historyData?.pagination?.total || 0) / (historyData?.pagination?.limit || 10))} 
+                                            className="p-3 bg-black/50 border border-gray-700 hover:bg-[#f2bd46] hover:text-black hover:border-[#f2bd46] rounded-xl disabled:opacity-30 disabled:hover:bg-black/50 disabled:hover:text-white disabled:hover:border-gray-700 transition-all shadow-md"
+                                        >
+                                            <ArrowRight size={18} />
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
                 </main>
             </div>
