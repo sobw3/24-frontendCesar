@@ -3055,33 +3055,39 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
     const [showPasswordModal, setShowPasswordModal] = React.useState(false);
     const token = localStorage.getItem('token');
     
-    // --- ANIMAÇÃO "SURGIR" ---
+    // --- ANIMAÇÃO "SURGIR" E NEON ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(242, 189, 70, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(242, 189, 70, 0.4); }
         }
         .animate-surgir {
-            /* Adiciona um 'stagger' (atraso) para cada card */
-            animation: surgir 0.5s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
     `;
 
-    // Componente de item de perfil (REDESENHADO)
+    // Função para pegar a inicial do nome
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        return name.charAt(0).toUpperCase();
+    };
+
+    // Componente de item de perfil (REDESENHADO - Visual Premium)
     const ProfileItem = ({ label, value, icon }) => (
-        <div className="flex items-start gap-4">
-            <div className="text-[#f2bd46] mt-1">{icon}</div>
-            <div>
-                <label className="block text-gray-400 text-sm">{label}</label>
-                {/* Agora que o backend envia, o 'N/A' só aparecerá se for realmente nulo */}
-                <p className="text-white font-medium">{value || 'N/A'}</p>
+        <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors duration-300 group">
+            <div className="bg-black/50 p-3 rounded-xl border border-gray-800 group-hover:bg-[#f2bd46]/10 group-hover:border-[#f2bd46]/30 transition-all duration-300">
+                <div className="text-gray-400 group-hover:text-[#f2bd46] transition-colors duration-300">
+                    {icon}
+                </div>
+            </div>
+            <div className="flex flex-col justify-center min-w-0">
+                <label className="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">{label}</label>
+                <p className="text-white font-medium truncate text-lg">{value || 'N/A'}</p>
             </div>
         </div>
     );
@@ -3090,7 +3096,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
         <>
             <style>{keyframes}</style>
             
-            {/* Os modais são renderizados aqui (agora redesenhados) */}
+            {/* Os modais são renderizados aqui */}
             <EditProfileModal 
                 user={user}
                 isOpen={showEditModal} 
@@ -3099,76 +3105,124 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
                 token={token}
             />
             <ChangePasswordModal
-                user={user} // Passa o 'user'
+                user={user}
                 isOpen={showPasswordModal}
                 onClose={() => setShowPasswordModal(false)}
                 onSave={onAccountUpdate}
                 token={token}
             />
         
-            <div className="min-h-screen bg-black text-white">
+            <div 
+                className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            >
+                {/* Overlay Escuro e Ambient Glow */}
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+                
                 {/* --- HEADER (Glassmorphism) --- */}
-                <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
-                    <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                        <h1 className="text-2xl font-bold">Minha Conta</h1>
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Minha <span className="text-[#f2bd46]">Conta</span></h1>
                     </div>
                 </header>
                 
-                <main className="container mx-auto p-4 md:p-8">
-                    <div className="max-w-2xl mx-auto flex flex-col gap-8">
+                <main className="container mx-auto p-4 md:p-8 relative z-10">
+                    <div className="max-w-3xl mx-auto flex flex-col gap-8">
                     
-                        {/* --- Seção 1: Meus Dados (Glassmorphism + Animação) --- */}
-                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '100ms' }}>
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-[#f2bd46]">Meus Dados</h3>
-                                {/* Botão Editar (Neon Azul) */}
+                        {/* --- FOTO DE PERFIL E BOAS VINDAS (NOVO) --- */}
+                        <div className="animate-surgir flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-4" style={{ animationDelay: '50ms' }}>
+                            <div className="relative">
+                                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#f2bd46] to-[#d49f2b] p-1 flex items-center justify-center" style={{ animation: 'pulse-glow 3s infinite' }}>
+                                    <div className="w-full h-full bg-black rounded-full flex items-center justify-center border-4 border-black">
+                                        <span className="text-5xl font-black text-[#f2bd46]">{getInitials(user?.name)}</span>
+                                    </div>
+                                </div>
+                                <div className="absolute bottom-0 right-0 bg-[#1a1a1a] p-2 rounded-full border border-gray-700 shadow-lg text-[#f2bd46]">
+                                    <Shield size={18} />
+                                </div>
+                            </div>
+                            <div className="text-center sm:text-left mt-2">
+                                <h2 className="text-3xl font-extrabold text-white tracking-tight">{user?.name || 'Usuário'}</h2>
+                                <p className="text-gray-400 mt-1 flex items-center justify-center sm:justify-start gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-green-500"></span> Conta Verificada e Ativa
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* --- Seção 1: Meus Dados (Glassmorphism Premium) --- */}
+                        <div className="animate-surgir bg-black/40 backdrop-blur-2xl border border-gray-700/50 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden group" style={{ animationDelay: '100ms' }}>
+                            {/* Reflexo interno suave */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#f2bd46]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#f2bd46]/10 transition-colors duration-500"></div>
+                            
+                            <div className="flex justify-between items-center mb-8 relative z-10 border-b border-gray-800/80 pb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-[#f2bd46]/20 p-2 rounded-lg">
+                                        <User size={24} className="text-[#f2bd46]" />
+                                    </div>
+                                    <h3 className="text-2xl font-extrabold text-white tracking-tight">Dados Pessoais</h3>
+                                </div>
+                                {/* Botão Editar (Premium Dourado/Neon) */}
                                 <button 
                                     onClick={() => setShowEditModal(true)} 
-                                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition
-                                               bg-blue-500/10 hover:bg-blue-500/20 
-                                               border border-blue-500/30 rounded-lg py-2 px-3 font-medium text-sm"
+                                    className="flex items-center gap-2 text-[#f2bd46] hover:text-black transition-all duration-300
+                                               bg-[#f2bd46]/10 hover:bg-[#f2bd46] 
+                                               border border-[#f2bd46]/30 rounded-xl py-2 px-4 font-bold text-sm shadow-[0_0_15px_rgba(242,189,70,0.15)] hover:shadow-[0_0_20px_rgba(242,189,70,0.4)]"
                                 >
                                     <Edit size={16} /> Editar
                                 </button>
                             </div>
-                            {/* Ícones maiores (size 24) e mais espaçamento (gap-y-6) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                                <ProfileItem label="Nome Completo" value={user?.name} icon={<User size={24} />} />
-                                <ProfileItem label="E-mail" value={user?.email} icon={<Mail size={24} />} />
-                                <ProfileItem label="Telefone" value={user?.phone_number} icon={<Phone size={24} />} />
-                                <ProfileItem label="CPF" value={user?.cpf} icon={<User size={24} />} />
-                                <ProfileItem label="Apartamento" value={user?.apartment} icon={<Home size={24} />} />
-                                {/* --- CORREÇÃO DO BUG "N/A" --- */}
-                                {/* Este código agora funcionará pois o backend está enviando 'birth_date' */}
+                            
+                            {/* Grid de Informações */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 relative z-10">
+                                <ProfileItem label="E-mail" value={user?.email} icon={<Mail size={22} />} />
+                                <ProfileItem label="Telefone" value={user?.phone_number} icon={<Phone size={22} />} />
+                                <ProfileItem label="CPF" value={user?.cpf} icon={<FileText size={22} />} />
+                                <ProfileItem label="Apartamento" value={user?.apartment} icon={<Building2 size={22} />} />
                                 <ProfileItem 
                                     label="Data de Nascimento" 
                                     value={user?.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'N/A'} 
-                                    icon={<Calendar size={24} />} 
+                                    icon={<Calendar size={22} />} 
                                 />
                             </div>
                         </div>
                         
-                        {/* --- Seção 2: Segurança (Glassmorphism + Animação) --- */}
-                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 p-6 rounded-lg animate-surgir" style={{ animationDelay: '200ms' }}>
-                            <h3 className="text-xl font-bold text-[#f2bd46] mb-4">Segurança</h3>
-                            {/* Botão Alterar Senha (Redesenhado) */}
+                        {/* --- Seção 2: Segurança (Glassmorphism Premium) --- */}
+                        <div className="animate-surgir bg-black/40 backdrop-blur-2xl border border-gray-700/50 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden" style={{ animationDelay: '200ms' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="bg-blue-500/20 p-2 rounded-lg">
+                                    <Lock size={24} className="text-blue-400" />
+                                </div>
+                                <h3 className="text-2xl font-extrabold text-white tracking-tight">Segurança da Conta</h3>
+                            </div>
+                            
+                            {/* Botão Alterar Senha (Redesenhado e Imersivo) */}
                             <button 
                                 onClick={() => setShowPasswordModal(true)} 
-                                className="w-full bg-[#1a1a1a]/80 border border-gray-600/50 hover:bg-[#1a1a1a] 
-                                           text-white font-medium py-4 px-4 rounded-lg 
-                                           flex justify-between items-center transition"
+                                className="w-full bg-black/60 border border-gray-700/80 hover:border-blue-500/50 hover:bg-[#1a1a1a] 
+                                           text-white font-bold py-5 px-6 rounded-2xl 
+                                           flex justify-between items-center transition-all duration-300 group shadow-lg"
                             >
-                                <span className="flex items-center gap-3">
-                                    <KeyRound size={20} className="text-blue-400" />
-                                    Alterar Senha
+                                <span className="flex items-center gap-4">
+                                    <div className="bg-black p-3 rounded-xl border border-gray-800 group-hover:bg-blue-500/10 transition-colors">
+                                        <KeyRound size={22} className="text-gray-400 group-hover:text-blue-400 transition-colors" />
+                                    </div>
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-lg">Alterar Senha</span>
+                                        <span className="text-xs text-gray-500 font-medium">Mantenha sua conta segura atualizando sua senha regularmente.</span>
+                                    </div>
                                 </span>
-                                <ArrowRight size={20} />
+                                <div className="bg-gray-800 group-hover:bg-blue-500 p-2 rounded-full transition-colors">
+                                    <ArrowRight size={20} className="text-gray-400 group-hover:text-black transition-colors" />
+                                </div>
                             </button>
                         </div>
-                        
-                        {/* --- Seção 3: Sair (REMOVIDA) --- */}
-                        {/* O card de "Sair da Conta" foi removido, como solicitado. */}
                         
                     </div>
                 </main>
@@ -3176,7 +3230,6 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
         </>
     );
 };
-
 // App.js -> SUBSTITUA o seu componente Footer por este
 
 const Footer = () => {
