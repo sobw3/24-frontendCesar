@@ -3114,7 +3114,7 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
         
             <div 
                 className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
             >
                 {/* Overlay Escuro e Ambient Glow */}
                 <div className="absolute inset-0 bg-black/85 z-0"></div>
@@ -3991,7 +3991,7 @@ const WalletPage = ({ user, setPage, setPaymentData, setDepositData, setPaymentM
 
             <div 
                 className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
             >
                 {/* Overlay Escuro e Ambient Glow */}
                 <div className="absolute inset-0 bg-black/85 z-0"></div>
@@ -7265,7 +7265,7 @@ const MyTicketsPage = ({ setPage }) => {
 
             <div 
                 className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
             >
                 {/* Overlay Escuro e Ambient Glow */}
                 <div className="absolute inset-0 bg-black/85 z-0"></div>
@@ -8030,7 +8030,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
             
             <div 
                 className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
             >
                 {/* Overlay Escuro e Ambient Glow */}
                 <div className="absolute inset-0 bg-black/85 z-0"></div>
