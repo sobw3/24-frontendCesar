@@ -7157,20 +7157,22 @@ const MyTicketsPage = ({ setPage }) => {
     const [error, setError] = React.useState('');
     const token = localStorage.getItem('token');
 
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Premium) ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(242, 189, 70, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(242, 189, 70, 0.5); }
         }
         .animate-surgir {
-            animation: surgir 0.5s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2.5s infinite;
         }
     `;
 
@@ -7204,72 +7206,109 @@ const MyTicketsPage = ({ setPage }) => {
     };
     
     return (
-        <div className="min-h-screen bg-black text-white">
+        <>
             {/* Injeta as animações */}
             <style>{keyframes}</style>
-            
-            {/* --- HEADER (Glassmorphism) --- */}
-            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
-                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                    <h1 className="text-2xl font-bold">Meus Tiquetes</h1>
-                </div>
-            </header>
-            
-            <main className="container mx-auto p-4 md:p-8">
-                <div className="max-w-3xl mx-auto flex flex-col gap-4">
-                    {isLoading ? <Loader2 className="animate-spin mx-auto mt-10" size={48} /> :
-                        error ? <p className="text-red-400 text-center">{error}</p> :
-                            tickets.length > 0 ? tickets.map(ticket => (
+
+            <div 
+                className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            >
+                {/* Overlay Escuro e Ambient Glow */}
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+                
+                {/* --- HEADER (Glassmorphism) --- */}
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meus <span className="text-[#f2bd46]">Tiquetes</span></h1>
+                    </div>
+                </header>
+                
+                <main className="container mx-auto p-4 md:p-8 relative z-10">
+                    <div className="max-w-3xl mx-auto flex flex-col gap-5">
+                        
+                        {isLoading ? (
+                            <div className="flex flex-col justify-center items-center h-64 gap-4">
+                                <Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" />
+                                <span className="text-gray-400 font-bold tracking-widest animate-pulse text-sm">CARREGANDO...</span>
+                            </div>
+                        ) : error ? (
+                            <div className="text-center p-8 bg-red-900/10 border border-red-500/20 text-red-400 rounded-2xl backdrop-blur-md shadow-lg flex flex-col items-center gap-3">
+                                <p className="font-bold text-lg">Oops! Algo deu errado.</p>
+                                <p className="text-sm opacity-80">{error}</p>
+                            </div>
+                        ) : tickets.length > 0 ? (
+                            tickets.map((ticket, index) => (
                                 
-                                // --- CARD DE TICKET (Redesenhado) ---
+                                // --- CARD DE TICKET (Premium Glassmorphism) ---
                                 <div 
                                     key={ticket.id} 
-                                    className={`animate-surgir border-gray-700 backdrop-blur-sm border rounded-lg p-4 flex gap-4 
+                                    className={`animate-surgir bg-black/40 backdrop-blur-xl border p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row gap-4 sm:gap-6 transition-all duration-300 shadow-lg group hover:-translate-y-1
                                                 ${ticket.is_read 
-                                                    ? 'border-gray-700/50' // LIDO
-                                                    : 'border-[#f2bd46]/50 shadow-lg shadow-[#f2bd46]/10' // NÃO LIDO
+                                                    ? 'border-gray-700/50 hover:bg-black/60 hover:border-gray-500/50' // LIDO
+                                                    : 'border-[#f2bd46]/40 animate-pulse-glow bg-[#f2bd46]/5' // NÃO LIDO
                                                 }`}
+                                    style={{ animationDelay: `${index * 50}ms` }}
                                 >
-                                    {/* Ícone de Status (Novo) */}
-                                    <div className="flex-shrink-0 mt-1">
-                                        {ticket.is_read ? (
-                                            <CheckCircle2 size={20} className="text-gray-500" />
-                                        ) : (
-                                            <Bell size={20} className="text-[#f2bd46]" />
-                                        )}
+                                    {/* Ícone de Status */}
+                                    <div className="flex-shrink-0 flex items-start">
+                                        <div className={`p-3 rounded-xl border ${ticket.is_read ? 'bg-black/50 border-gray-800' : 'bg-[#f2bd46]/20 border-[#f2bd46]/40 shadow-[0_0_15px_rgba(242,189,70,0.3)]'}`}>
+                                            {ticket.is_read ? (
+                                                <CheckCircle2 size={24} className="text-gray-500" />
+                                            ) : (
+                                                <Bell size={24} className="text-[#f2bd46]" />
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     {/* Conteúdo */}
-                                    <div className="flex-grow">
-                                        <p className="text-gray-200 text-base">{ticket.message}</p>
-                                        <p className="text-xs text-gray-500 mt-2">{new Date(ticket.created_at).toLocaleString('pt-BR')}</p>
+                                    <div className="flex-grow min-w-0 flex flex-col justify-center">
+                                        <p className={`text-base sm:text-lg leading-relaxed mb-2 ${ticket.is_read ? 'text-gray-300' : 'text-white font-medium'}`}>
+                                            {ticket.message}
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-gray-500 font-medium flex items-center gap-1.5 mt-auto">
+                                            <Calendar size={14} className="opacity-70" /> 
+                                            {new Date(ticket.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                                        </p>
                                     </div>
                                     
-                                    {/* Botão (Novo) */}
+                                    {/* Botão de Marcar como Lido */}
                                     {!ticket.is_read && (
-                                        <div className="flex-shrink-0 self-center">
+                                        <div className="flex-shrink-0 self-start sm:self-center w-full sm:w-auto mt-4 sm:mt-0">
                                             <button 
                                                 onClick={() => handleMarkAsRead(ticket.id)} 
-                                                className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white text-xs font-semibold py-2 px-3 rounded-md transition"
+                                                className="w-full sm:w-auto bg-[#f2bd46]/10 text-[#f2bd46] hover:bg-[#f2bd46] hover:text-black border border-[#f2bd46]/30 text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
                                             >
-                                                Marcar como lida
+                                                <Check size={16} /> Marcar como lida
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             
-                            )) : (
-                                // --- "Empty State" (Redesenhado) ---
-                                <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
-                                    <Ticket size={48} className="mx-auto mb-4" />
-                                    <h2 className="text-2xl font-semibold mb-2">Nenhum tiquete por aqui</h2>
-                                    <p>Você não recebeu nenhuma mensagem ou notificação do administrador.</p>
+                            ))
+                        ) : (
+                            // --- "Empty State" (Redesenhado) ---
+                            <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                <div className="bg-gray-800/50 p-6 rounded-full mb-6 border border-gray-700/50 shadow-inner">
+                                    <Ticket size={48} className="text-gray-500" />
                                 </div>
-                            )}
-                </div>
-            </main>
-        </div>
+                                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Nenhum tiquete por aqui</h2>
+                                <p className="max-w-xs mx-auto text-sm text-gray-400 leading-relaxed">
+                                    Você não recebeu nenhuma mensagem ou notificação do administrador recentemente.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </main>
+            </div>
+        </>
     );
 };
 
