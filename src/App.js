@@ -4336,171 +4336,266 @@ const EntradasVendasPage = ({ condominiums, token }) => {
     const summary = reportData.summary;
     const ticketMedio = summary.total_orders > 0 ? summary.total_revenue / summary.total_orders : 0;
 
+    // ==============================================
+    // --- ANIMAÇÕES E COMPONENTES VISUAIS PREMIUM ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-surgir {
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+    `;
+
+    // Card de Estatística Premium Local (Substitui o AdminStatCard antigo visualmente)
+    const StatCard = ({ icon, label, value, colorClass, delay }) => (
+        <div 
+            className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-gray-500/50 transition-all duration-300"
+            style={{ animationDelay: delay }}
+        >
+            <div className={`absolute -right-10 -top-10 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
+            <div className="flex items-start mb-4 relative z-10">
+                <div className={`p-3 rounded-2xl bg-black/50 border border-gray-800 ${colorClass} shadow-inner group-hover:scale-110 transition-transform`}>
+                    {icon}
+                </div>
+            </div>
+            <div className="relative z-10">
+                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">{label}</p>
+                <p className={`text-2xl lg:text-3xl font-black tracking-tighter ${colorClass}`}>{value}</p>
+            </div>
+        </div>
+    );
+
     return (
-        <div className="flex flex-col gap-6">
-            <h2 className="text-2xl md:text-3xl font-bold">Relatório de Vendas</h2>
+        <div className="flex flex-col gap-8 pb-12 relative z-10">
+            <style>{keyframes}</style>
             
-            {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
+                        Relatório de Vendas
+                    </h2>
+                    <p className="text-gray-400 font-medium text-sm">Acompanhamento detalhado de entradas e estornos</p>
+                </div>
+            </div>
+            
+            {/* --- FILTROS RESPONSIVOS (Painel Glassmorphism) --- */}
+            <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 relative overflow-hidden animate-surgir" style={{ animationDelay: '50ms' }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-end relative z-10">
                     <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Condomínio</label>
+                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer">
                             {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
                     <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">De</label>
-                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> De</label>
+                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
                     </div>
                     <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> Até</label>
+                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
                     </div>
                     
-                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
-                        <Filter size={16} /> Aplicar
+                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2 border border-blue-400/50">
+                        Hoje
+                    </button>
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] flex justify-center items-center gap-2">
+                        <Filter size={18} /> Aplicar
                     </button>
                 </div>
             </div>
 
             {/* --- CARDS DE RESUMO --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <AdminStatCard icon={<DollarSign size={28} />} label="Faturamento" value={`R$ ${summary.total_revenue?.toFixed(2)}`} colorClass="text-green-400" />
-                <AdminStatCard icon={<PiggyBank size={28} />} label="Lucro Líquido" value={`R$ ${summary.total_net_profit?.toFixed(2)}`} colorClass="text-teal-400" />
-                <AdminStatCard icon={<ArrowRightLeft size={28} />} label="Reembolsado" value={`R$ ${summary.total_refunded?.toFixed(2)}`} colorClass="text-red-400" />
-                <AdminStatCard icon={<ShoppingCart size={28} />} label="Vendas Pagas" value={summary.total_orders} colorClass="text-blue-400" />
-                <AdminStatCard icon={<UsersIcon size={28} />} label="Ticket Médio" value={`R$ ${ticketMedio.toFixed(2)}`} colorClass="text-purple-400" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
+                <StatCard icon={<DollarSign size={24} />} label="Faturamento" value={`R$ ${summary.total_revenue?.toFixed(2) || '0.00'}`} colorClass="text-green-400" delay="100ms" />
+                <StatCard icon={<PiggyBank size={24} />} label="Lucro Líquido" value={`R$ ${summary.total_net_profit?.toFixed(2) || '0.00'}`} colorClass="text-teal-400" delay="150ms" />
+                <StatCard icon={<ArrowRightLeft size={24} />} label="Reembolsado" value={`R$ ${summary.total_refunded?.toFixed(2) || '0.00'}`} colorClass="text-red-400" delay="200ms" />
+                <StatCard icon={<ShoppingCart size={24} />} label="Vendas Pagas" value={summary.total_orders || 0} colorClass="text-blue-400" delay="250ms" />
+                <StatCard icon={<UsersIcon size={24} />} label="Ticket Médio" value={`R$ ${ticketMedio.toFixed(2)}`} colorClass="text-purple-400" delay="300ms" />
             </div>
 
-            <h3 className="text-xl font-bold mt-4 flex items-center gap-2">
-                <History className="text-[#f2bd46]" /> Histórico de Transações
-            </h3>
+            {/* --- HISTÓRICO DE TRANSAÇÕES --- */}
+            <div className="mt-4 animate-surgir" style={{ animationDelay: '350ms' }}>
+                <h3 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 mb-6 tracking-tight">
+                    <div className="bg-gray-800 p-2 rounded-xl border border-gray-700">
+                        <History className="text-white" size={24} />
+                    </div>
+                    Lista de Transações
+                </h3>
 
-            {isLoading ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={40} /></div> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
-                <>
-                    {/* --- VERSÃO DESKTOP (Tabela Completa) --- */}
-                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
-                        <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-[#1a1a1a] text-gray-200">
-                                <tr>
-                                    <th className="p-4 w-10"></th>
-                                    <th className="p-4">Cliente</th>
-                                    <th className="p-4">Data</th>
-                                    <th className="p-4">Faturamento</th>
-                                    <th className="p-4">Lucro Líquido</th>
-                                    <th className="p-4">Status</th>
-                                    <th className="p-4 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {reportData.log?.length > 0 ? reportData.log.map(item => (
-                                    <React.Fragment key={item.id}>
-                                        <tr className={`transition ${item.status === 'refunded' ? 'bg-red-900/10 opacity-70' : 'hover:bg-[#1a1a1a]/50'}`}>
-                                            <td className="p-4"><button onClick={() => toggleRow(item.id)} className="text-gray-400 hover:text-white transition">{expandedRow === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</button></td>
-                                            <td className="p-4 font-medium">{item.user_name} <span className="text-gray-500 text-xs block">{item.user_cpf}</span></td>
-                                            <td className="p-4 text-sm text-gray-300">{new Date(item.created_at).toLocaleString('pt-BR')}</td>
-                                            <td className={`p-4 font-bold ${item.status === 'refunded' ? 'line-through text-gray-500' : 'text-green-400'}`}>R$ {parseFloat(item.amount).toFixed(2)}</td>
-                                            <td className={`p-4 font-bold ${item.status === 'refunded' ? 'line-through text-gray-500' : 'text-teal-400'}`}>R$ {parseFloat(item.net_profit).toFixed(2)}</td>
-                                            <td className="p-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-bold border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                    {item.status === 'paid' ? 'PAGO' : 'REEMBOLSADO'}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <button onClick={() => handleRefund(item.id, item.amount)} disabled={item.status === 'refunded'} className="bg-red-500/10 hover:bg-red-500/20 text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold py-2 px-3 rounded-lg border border-red-500/20 transition flex items-center gap-1 mx-auto">
-                                                    <ArrowRightLeft size={14} /> Reembolsar
-                                                </button>
-                                            </td>
+                {isLoading ? (
+                    <div className="flex flex-col justify-center items-center h-48 gap-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl">
+                        <Loader2 className="animate-spin text-[#f2bd46]" size={40} />
+                        <span className="text-gray-400 font-bold tracking-widest text-sm animate-pulse">CARREGANDO DADOS...</span>
+                    </div>
+                ) : error ? (
+                    <div className="bg-red-900/20 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3">
+                        <AlertTriangle size={24} /> {error}
+                    </div>
+                ) : (
+                    <>
+                        {/* --- VERSÃO DESKTOP (Tabela Premium Glassmorphism) --- */}
+                        <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
+                            <div className="overflow-x-auto custom-scrollbar">
+                                <table className="w-full text-left whitespace-nowrap">
+                                    <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                        <tr>
+                                            <th className="p-5 w-10"></th>
+                                            <th className="p-5">Cliente</th>
+                                            <th className="p-5">Data & Hora</th>
+                                            <th className="p-5">Faturamento</th>
+                                            <th className="p-5">Lucro Líquido</th>
+                                            <th className="p-5">Status</th>
+                                            <th className="p-5 text-center">Ações</th>
                                         </tr>
-                                        {expandedRow === item.id && (
-                                            <tr className="bg-black/50">
-                                                <td colSpan="7" className="p-4 pl-12">
-                                                    <div className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-700">
-                                                        <h4 className="font-bold text-[#f2bd46] text-sm mb-2">Detalhes do Pedido #{item.id}</h4>
-                                                        <ul className="space-y-1 text-sm text-gray-300">
-                                                            {item.items.map((prod, idx) => (
-                                                                <li key={idx} className="flex justify-between border-b border-gray-700 pb-1 last:border-0">
-                                                                    <span>{prod.quantity}x {prod.product_name}</span>
-                                                                    <span className="font-mono text-gray-400">R$ {parseFloat(prod.price).toFixed(2)}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/80">
+                                        {reportData.log?.length > 0 ? reportData.log.map(item => (
+                                            <React.Fragment key={item.id}>
+                                                <tr className={`transition-colors duration-300 ${item.status === 'refunded' ? 'bg-red-900/10' : 'hover:bg-white/5'}`}>
+                                                    <td className="p-5">
+                                                        <button onClick={() => toggleRow(item.id)} className="text-gray-500 hover:text-[#f2bd46] transition-colors bg-black/50 p-1.5 rounded-lg border border-gray-700">
+                                                            {expandedRow === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                        </button>
+                                                    </td>
+                                                    <td className="p-5">
+                                                        <span className="font-bold text-white block">{item.user_name}</span>
+                                                        <span className="text-gray-500 text-xs font-mono mt-0.5 block">{item.user_cpf}</span>
+                                                    </td>
+                                                    <td className="p-5 text-sm text-gray-400 font-medium">
+                                                        {new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                                                    </td>
+                                                    <td className={`p-5 font-black tracking-tight ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-white'}`}>
+                                                        R$ {parseFloat(item.amount).toFixed(2)}
+                                                    </td>
+                                                    <td className={`p-5 font-black tracking-tight ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-teal-400'}`}>
+                                                        R$ {parseFloat(item.net_profit).toFixed(2)}
+                                                    </td>
+                                                    <td className="p-5">
+                                                        <span className={`px-3 py-1.5 rounded-full text-xs font-black tracking-wider border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
+                                                            {item.status === 'paid' ? 'PAGO' : 'ESTORNADO'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-5 text-center">
+                                                        <button 
+                                                            onClick={() => handleRefund(item.id, item.amount)} 
+                                                            disabled={item.status === 'refunded'} 
+                                                            className="bg-transparent hover:bg-red-500/20 text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold py-2 px-4 rounded-xl border border-red-500/30 transition-all duration-300 flex items-center gap-2 mx-auto"
+                                                        >
+                                                            <ArrowRightLeft size={14} /> Reembolsar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                
+                                                {/* Detalhes da Linha Expandida */}
+                                                {expandedRow === item.id && (
+                                                    <tr className="bg-black/60 border-b border-gray-700/80 shadow-inner">
+                                                        <td colSpan="7" className="p-6 pl-16">
+                                                            <div className="bg-black/50 p-5 rounded-2xl border border-gray-700/50 shadow-lg">
+                                                                <h4 className="font-black text-gray-400 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                                    <Package size={14} /> Produtos do Pedido #{item.id}
+                                                                </h4>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                    {item.items.map((prod, idx) => (
+                                                                        <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/5 p-3 rounded-xl">
+                                                                            <span className="text-sm text-gray-300 font-medium flex items-center gap-2">
+                                                                                <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-xs font-bold">{prod.quantity}x</span> 
+                                                                                {prod.product_name}
+                                                                            </span>
+                                                                            <span className="font-mono font-bold text-[#f2bd46]">R$ {parseFloat(prod.price).toFixed(2)}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        )) : (
+                                            <tr><td colSpan="7" className="text-center p-12 text-gray-500 font-medium">Nenhum registro encontrado neste período.</td></tr>
                                         )}
-                                    </React.Fragment>
-                                )) : <tr><td colSpan="7" className="text-center p-8 text-gray-400">Nenhum registro encontrado.</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* --- VERSÃO MOBILE (Cards) --- */}
-                    <div className="md:hidden flex flex-col gap-4">
-                        {reportData.log?.length > 0 ? reportData.log.map(item => (
-                            <div key={item.id} className={`bg-[#1a1a1a] rounded-xl p-4 shadow-md border border-gray-700 ${item.status === 'refunded' ? 'opacity-75 border-red-900/30' : ''}`}>
-                                <div className="flex justify-between items-start mb-3">
-                                    <div>
-                                        <h4 className="font-bold text-white text-lg">{item.user_name}</h4>
-                                        <p className="text-xs text-gray-500">{new Date(item.created_at).toLocaleString('pt-BR')}</p>
-                                    </div>
-                                    <span className={`px-2 py-1 rounded text-[10px] font-bold border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                        {item.status === 'paid' ? 'PAGO' : 'REEMBOLSADO'}
-                                    </span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center mb-4 bg-black/50 p-3 rounded-lg">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-gray-400">Valor</span>
-                                        <span className={`font-bold ${item.status === 'refunded' ? 'line-through text-gray-500' : 'text-green-400'}`}>R$ {parseFloat(item.amount).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex flex-col text-right">
-                                        <span className="text-xs text-gray-400">Lucro</span>
-                                        <span className={`font-bold ${item.status === 'refunded' ? 'line-through text-gray-500' : 'text-teal-400'}`}>R$ {parseFloat(item.net_profit).toFixed(2)}</span>
-                                    </div>
-                                </div>
-
-                                {/* Área Expansível Mobile */}
-                                {expandedRow === item.id && (
-                                    <div className="mb-4 bg-black/30 p-3 rounded border border-gray-700/50 animate-surgir">
-                                        <p className="text-xs font-bold text-[#f2bd46] mb-2 border-b border-gray-700 pb-1">Itens Comprados:</p>
-                                        <ul className="space-y-2">
-                                            {item.items.map((prod, idx) => (
-                                                <li key={idx} className="flex justify-between text-xs text-gray-300">
-                                                    <span>{prod.quantity}x {prod.product_name}</span>
-                                                    <span>R$ {parseFloat(prod.price).toFixed(2)}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                <div className="flex gap-2">
-                                    <button onClick={() => toggleRow(item.id)} className="flex-1 bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white py-2 rounded-lg text-sm font-medium transition">
-                                        {expandedRow === item.id ? 'Ocultar Itens' : 'Ver Itens'}
-                                    </button>
-                                    <button 
-                                        onClick={() => handleRefund(item.id, item.amount)} 
-                                        disabled={item.status === 'refunded'}
-                                        className="flex-1 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 py-2 rounded-lg text-sm font-medium transition disabled:opacity-30 disabled:cursor-not-allowed"
-                                    >
-                                        {item.status === 'refunded' ? 'Estornado' : 'Reembolsar'}
-                                    </button>
-                                </div>
+                                    </tbody>
+                                </table>
                             </div>
-                        )) : (
-                            <div className="text-center p-8 bg-[#1a1a1a] rounded-lg text-gray-400">Nenhuma venda encontrada.</div>
-                        )}
-                    </div>
-                    
-                    {/* Paginação */}
-                    <div className="mt-4">
-                        <Pagination currentPage={currentPage} totalPages={Math.ceil((reportData?.pagination?.total || 0) / (reportData?.pagination?.limit || 10))} onPageChange={fetchLogData} />
-                    </div>
-                </>
-            )}
+                        </div>
+
+                        {/* --- VERSÃO MOBILE (Cards Premium Glassmorphism) --- */}
+                        <div className="md:hidden flex flex-col gap-4">
+                            {reportData.log?.length > 0 ? reportData.log.map(item => (
+                                <div key={item.id} className={`bg-black/40 backdrop-blur-xl rounded-2xl p-5 shadow-lg border ${item.status === 'refunded' ? 'border-red-900/50 opacity-80' : 'border-gray-700/50'}`}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h4 className="font-extrabold text-white text-lg tracking-tight">{item.user_name}</h4>
+                                            <p className="text-xs text-gray-400 font-medium mt-0.5 flex items-center gap-1">
+                                                <Calendar size={12} /> {new Date(item.created_at).toLocaleString('pt-BR')}
+                                            </p>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded text-[10px] font-black tracking-widest border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
+                                            {item.status === 'paid' ? 'PAGO' : 'ESTORNADO'}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex justify-between items-center mb-5 bg-black/60 border border-gray-800 p-3.5 rounded-xl shadow-inner">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Faturamento</span>
+                                            <span className={`font-black text-lg ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-white'}`}>R$ {parseFloat(item.amount).toFixed(2)}</span>
+                                        </div>
+                                        <div className="w-px h-8 bg-gray-700"></div>
+                                        <div className="flex flex-col text-right">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Lucro</span>
+                                            <span className={`font-black text-lg ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-teal-400'}`}>R$ {parseFloat(item.net_profit).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Área Expansível Mobile */}
+                                    {expandedRow === item.id && (
+                                        <div className="mb-5 bg-black/50 p-4 rounded-xl border border-gray-800 shadow-inner animate-surgir">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-2 border-b border-gray-800 pb-2">
+                                                <Package size={14} /> Itens Comprados
+                                            </p>
+                                            <ul className="space-y-3">
+                                                {item.items.map((prod, idx) => (
+                                                    <li key={idx} className="flex justify-between items-center text-xs text-gray-300 font-medium">
+                                                        <span className="flex items-center gap-2">
+                                                            <span className="bg-gray-800 text-white px-1.5 py-0.5 rounded">{prod.quantity}x</span> {prod.product_name}
+                                                        </span>
+                                                        <span className="font-mono text-[#f2bd46] font-bold">R$ {parseFloat(prod.price).toFixed(2)}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3">
+                                        <button onClick={() => toggleRow(item.id)} className="flex-1 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-white py-2.5 rounded-xl text-xs font-bold transition-colors">
+                                            {expandedRow === item.id ? 'Ocultar Itens' : 'Ver Produtos'}
+                                        </button>
+                                        <button 
+                                            onClick={() => handleRefund(item.id, item.amount)} 
+                                            disabled={item.status === 'refunded'}
+                                            className="flex-1 bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex justify-center items-center gap-1"
+                                        >
+                                            <ArrowRightLeft size={14} /> {item.status === 'refunded' ? 'Estornado' : 'Reembolsar'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium">Nenhuma venda encontrada.</div>
+                            )}
+                        </div>
+                        
+                        {/* Paginação */}
+                        <div className="mt-8 flex justify-center">
+                            <Pagination currentPage={currentPage} totalPages={Math.ceil((reportData?.pagination?.total || 0) / (reportData?.pagination?.limit || 10))} onPageChange={fetchLogData} />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };
