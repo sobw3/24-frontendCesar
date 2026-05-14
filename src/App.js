@@ -4607,9 +4607,9 @@ const CentralCashierPage = ({ token }) => {
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
     
-    // --- ESTADOS DA PAGINAÇÃO (NOVO) ---
+    // --- ESTADOS DA PAGINAÇÃO ---
     const [currentPage, setCurrentPage] = React.useState(1);
-    const itemsPerPage = 10; // Define quantos itens aparecem por página
+    const itemsPerPage = 10; 
 
     // --- ESTADOS DO MODAL ---
     const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -4639,10 +4639,10 @@ const CentralCashierPage = ({ token }) => {
         fetchData();
     }, [fetchData]);
 
-    // --- LÓGICA DE PAGINAÇÃO (NOVO) ---
+    // --- LÓGICA DE PAGINAÇÃO ---
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem); // Fatia apenas os itens da página atual
+    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem); 
     const totalPages = Math.ceil(history.length / itemsPerPage);
 
     const nextPage = () => {
@@ -4678,100 +4678,218 @@ const CentralCashierPage = ({ token }) => {
         }
     };
 
+    // ==============================================
+    // --- ANIMAÇÕES E COMPONENTES VISUAIS ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(242, 189, 70, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(242, 189, 70, 0.5); }
+        }
+        .animate-surgir {
+            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
+    `;
+
+    // Card Premium Local
+    const StatCard = ({ icon, label, value, colorClass, delay }) => (
+        <div 
+            className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-gray-500/50 transition-all duration-300"
+            style={{ animationDelay: delay }}
+        >
+            <div className={`absolute -right-10 -top-10 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
+            <div className="flex items-start mb-4 relative z-10">
+                <div className={`p-3 rounded-2xl bg-black/50 border border-gray-800 ${colorClass} shadow-inner group-hover:scale-110 transition-transform`}>
+                    {icon}
+                </div>
+            </div>
+            <div className="relative z-10">
+                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">{label}</p>
+                <p className={`text-2xl lg:text-3xl font-black tracking-tighter ${colorClass}`}>{value}</p>
+            </div>
+        </div>
+    );
+
     return (
-        <div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6">Caixa Central</h2>
+        <div className="flex flex-col gap-6 md:gap-8 pb-12 relative z-10">
+            <style>{keyframes}</style>
+
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
+                        Caixa Central
+                    </h2>
+                    <p className="text-gray-400 font-medium text-sm">Controle financeiro, saldos e retiradas</p>
+                </div>
+            </div>
             
-            {isLoading ? <Loader2 className="animate-spin mx-auto" /> : error ? <p className="text-red-400 bg-red-900/20 p-4 rounded">{error}</p> : (
+            {isLoading ? (
+                <div className="flex flex-col justify-center items-center h-[50vh] gap-4">
+                    <Loader2 className="animate-spin text-[#f2bd46] drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" size={56} />
+                    <span className="text-[#f2bd46] font-bold tracking-widest animate-pulse text-sm">CARREGANDO CAIXA...</span>
+                </div>
+            ) : error ? (
+                <div className="bg-red-900/10 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3 animate-surgir">
+                    <AlertTriangle size={24} /> {error}
+                </div>
+            ) : (
                 <>
                     {/* --- CARDS DE RESUMO --- */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <AdminStatCard icon={<DollarSign size={32} />} label="Lucro Líquido" value={`R$ ${parseFloat(summary.net_profit).toFixed(2)}`} colorClass="text-green-400" />
-                        <AdminStatCard icon={<ShoppingCart size={32} />} label="Custo Mercadoria" value={`R$ ${parseFloat(summary.cost_of_goods).toFixed(2)}`} colorClass="text-yellow-400" />
-                        <AdminStatCard icon={<Wallet size={32} />} label="Saldo em Carteiras" value={`R$ ${(summary.total_wallet_balance || 0).toFixed(2)}`} colorClass="text-cyan-400" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-2">
+                        <StatCard icon={<DollarSign size={28} />} label="Lucro Líquido" value={`R$ ${parseFloat(summary.net_profit).toFixed(2)}`} colorClass="text-green-400" delay="0ms" />
+                        <StatCard icon={<ShoppingCart size={28} />} label="Custo Mercadoria" value={`R$ ${parseFloat(summary.cost_of_goods).toFixed(2)}`} colorClass="text-yellow-400" delay="50ms" />
+                        <StatCard icon={<Wallet size={28} />} label="Saldo em Carteiras" value={`R$ ${(summary.total_wallet_balance || 0).toFixed(2)}`} colorClass="text-cyan-400" delay="100ms" />
                     </div>
 
                     {/* --- HEADER DA SEÇÃO --- */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                        <h3 className="text-xl font-bold flex items-center gap-2">
-                            <History size={24} className="text-[#f2bd46]"/>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-4 animate-surgir" style={{ animationDelay: '150ms' }}>
+                        <h3 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 tracking-tight">
+                            <div className="bg-gray-800 p-2 rounded-xl border border-gray-700">
+                                <History size={24} className="text-[#f2bd46]"/>
+                            </div>
                             Histórico de Movimentações
                         </h3>
-                        <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
+                        <button 
+                            onClick={() => setIsModalOpen(true)} 
+                            className="w-full sm:w-auto bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 sm:py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-0.5"
+                        >
                             <PlusCircle size={20} /> Nova Retirada
                         </button>
                     </div>
 
                     {/* --- TABELA OTIMIZADA COM PAGINAÇÃO --- */}
-                    <div className="bg-[#1a1a1a] rounded-lg shadow-md overflow-hidden border border-gray-700 flex flex-col">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left whitespace-nowrap">
-                                <thead className="bg-[#1a1a1a]/50">
-                                    <tr>
-                                        <th className="p-4 text-gray-300 font-medium">Data</th>
-                                        <th className="p-4 text-gray-300 font-medium">Tipo</th>
-                                        <th className="p-4 text-gray-300 font-medium">Valor</th>
-                                        <th className="p-4 text-gray-300 font-medium">Usuário/Origem</th>
-                                        <th className="p-4 text-gray-300 font-medium">Condomínio</th>
-                                        <th className="p-4 text-gray-300 font-medium">Detalhes</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-700">
-                                    {currentItems.length > 0 ? currentItems.map((item, index) => (
-                                        <tr key={`${item.type}-${item.id}-${index}`} className="hover:bg-[#1a1a1a]/30 transition">
-                                            <td className="p-4 text-sm text-gray-400">
-                                                {new Date(item.created_at).toLocaleDateString('pt-BR')} <span className="text-xs opacity-70">{new Date(item.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                                                    item.type === 'entrada' 
-                                                    ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                                                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                    <div className="animate-surgir" style={{ animationDelay: '200ms' }}>
+                        
+                        {/* --- VERSÃO DESKTOP (Tabela Glassmorphism) --- */}
+                        <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50 mb-6">
+                            <div className="overflow-x-auto custom-scrollbar">
+                                <table className="w-full text-left whitespace-nowrap">
+                                    <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                        <tr>
+                                            <th className="p-5">Data & Hora</th>
+                                            <th className="p-5">Tipo</th>
+                                            <th className="p-5">Valor</th>
+                                            <th className="p-5">Usuário/Origem</th>
+                                            <th className="p-5">Condomínio</th>
+                                            <th className="p-5">Detalhes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/80">
+                                        {currentItems.length > 0 ? currentItems.map((item, index) => (
+                                            <tr key={`${item.type}-${item.id}-${index}`} className="hover:bg-white/5 transition-colors duration-300">
+                                                <td className="p-5 text-sm text-gray-300 font-medium">
+                                                    {new Date(item.created_at).toLocaleDateString('pt-BR')} 
+                                                    <span className="text-xs text-gray-500 font-mono ml-2">{new Date(item.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
+                                                </td>
+                                                <td className="p-5">
+                                                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-wider border ${
+                                                        item.type === 'entrada' 
+                                                        ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+                                                        : 'bg-red-500/10 text-red-400 border-red-500/30'
+                                                    }`}>
+                                                        {item.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className={`p-5 font-black tracking-tight ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {item.amount > 0 ? '+' : ''} R$ {parseFloat(item.amount).toFixed(2)}
+                                                </td>
+                                                <td className="p-5 text-gray-300 font-medium">{item.user_name || '-'}</td>
+                                                <td className="p-5 text-gray-400">{item.condo_name || '-'}</td>
+                                                <td className="p-5 text-sm text-gray-400 truncate max-w-[200px]" title={item.details}>
+                                                    {item.details}
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="6" className="text-center p-12 text-gray-500 font-medium">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <Info size={32} className="opacity-50" />
+                                                        <p>Nenhuma movimentação registrada.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* --- VERSÃO MOBILE (Cards Premium Glassmorphism) --- */}
+                        <div className="md:hidden flex flex-col gap-4 mb-6">
+                            {currentItems.length > 0 ? currentItems.map((item, index) => (
+                                <div key={`${item.type}-${item.id}-${index}`} className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-5 shadow-lg">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`p-2 rounded-lg ${item.amount > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                {item.amount > 0 ? <ArrowDownToLine size={16} /> : <ArrowRightLeft size={16} />}
+                                            </span>
+                                            <div>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest border ${
+                                                    item.type === 'entrada' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'
                                                 }`}>
                                                     {item.type.toUpperCase()}
                                                 </span>
-                                            </td>
-                                            <td className={`p-4 font-bold ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className={`font-black text-lg tracking-tight block ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                                                 {item.amount > 0 ? '+' : ''} R$ {parseFloat(item.amount).toFixed(2)}
-                                            </td>
-                                            <td className="p-4 text-gray-300">{item.user_name || '-'}</td>
-                                            <td className="p-4 text-gray-300">{item.condo_name || '-'}</td>
-                                            <td className="p-4 text-sm text-gray-400 truncate max-w-[200px]" title={item.details}>
-                                                {item.details}
-                                            </td>
-                                        </tr>
-                                    )) : (
-                                        <tr>
-                                            <td colSpan="6" className="text-center p-10 text-gray-500">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <Info size={32} />
-                                                    <p>Nenhuma movimentação registrada.</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                            </span>
+                                            <span className="text-[10px] text-gray-500 font-medium flex items-center justify-end gap-1 mt-1">
+                                                <Calendar size={10} /> {new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-black/50 border border-gray-800 p-3 rounded-xl shadow-inner space-y-2">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-500 font-bold uppercase">Origem/Usuário:</span>
+                                            <span className="text-gray-300 font-medium truncate max-w-[150px]">{item.user_name || '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-500 font-bold uppercase">Condomínio:</span>
+                                            <span className="text-gray-300 font-medium truncate max-w-[150px]">{item.condo_name || '-'}</span>
+                                        </div>
+                                        <div className="pt-2 mt-2 border-t border-gray-800">
+                                            <p className="text-xs text-gray-400 leading-relaxed italic">"{item.details}"</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium flex flex-col items-center gap-2">
+                                    <Info size={32} className="opacity-50" />
+                                    <p>Nenhuma movimentação registrada.</p>
+                                </div>
+                            )}
                         </div>
 
-                        {/* --- RODAPÉ DE PAGINAÇÃO (NOVO) --- */}
+                        {/* --- RODAPÉ DE PAGINAÇÃO (Premium Look) --- */}
                         {history.length > 0 && (
-                            <div className="bg-[#1a1a1a] p-4 border-t border-gray-700 flex justify-between items-center">
-                                <span className="text-sm text-gray-400">
-                                    Página <span className="text-white font-bold">{currentPage}</span> de {totalPages}
+                            <div className="bg-black/60 backdrop-blur-2xl p-4 sm:px-6 rounded-2xl border border-gray-700/80 shadow-xl flex justify-between items-center">
+                                <span className="text-xs sm:text-sm text-gray-400 font-medium">
+                                    Página <span className="text-white font-black bg-gray-800 px-2 py-1 rounded">{currentPage}</span> de {totalPages}
                                 </span>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 sm:gap-3">
                                     <button 
                                         onClick={prevPage} 
                                         disabled={currentPage === 1}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === 1 ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#1a1a1a] text-white hover:bg-[#1a1a1a]'}`}
+                                        className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === 1 ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600 shadow-md'}`}
                                     >
                                         Anterior
                                     </button>
                                     <button 
                                         onClick={nextPage} 
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition ${currentPage === totalPages ? 'bg-[#1a1a1a] text-gray-500 cursor-not-allowed' : 'bg-[#f2bd46] text-white hover:bg-[#f2bd46]'}`}
+                                        className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-[#f2bd46] text-black hover:bg-[#e0af40] border border-[#f2bd46]/50 shadow-[0_0_10px_rgba(242,189,70,0.2)]'}`}
                                     >
                                         Próxima
                                     </button>
@@ -4782,30 +4900,48 @@ const CentralCashierPage = ({ token }) => {
                 </>
             )}
             
-            {/* Modal de Retirada */}
+            {/* --- MODAL DE RETIRADA (Premium Glassmorphism) --- */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
-                        <h2 className="text-xl font-bold mb-6 text-white">Registrar Saída</h2>
-                        <form onSubmit={handleWithdrawalSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm text-gray-400 mb-1">Valor (R$)</label>
-                                <input type="number" step="0.01" name="amount" value={withdrawalData.amount} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none" placeholder="0.00" required />
+                <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-surgir" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="relative z-10 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-gray-700/80 w-full max-w-md animate-surgir overflow-hidden">
+                        
+                        <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#f2bd46]/10 blur-[50px] rounded-full pointer-events-none"></div>
+
+                        <div className="flex items-center gap-3 mb-6 relative z-10">
+                            <div className="bg-[#f2bd46]/20 p-2.5 rounded-xl border border-[#f2bd46]/30">
+                                <PlusCircle size={24} className="text-[#f2bd46]" />
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm text-gray-400 mb-1">Origem</label>
-                                <select name="type" value={withdrawalData.type} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none">
+                            <h2 className="text-2xl font-extrabold text-white tracking-tight">Registrar Saída</h2>
+                        </div>
+                        
+                        <form onSubmit={handleWithdrawalSubmit} className="relative z-10">
+                            <div className="mb-5">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Valor da Retirada (R$)</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <DollarSign size={18} className="text-gray-500" />
+                                    </div>
+                                    <input type="number" step="0.01" name="amount" value={withdrawalData.amount} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] pl-10 pr-4 py-3.5 rounded-xl text-white font-bold text-lg outline-none transition-all placeholder-gray-700" placeholder="0.00" required />
+                                </div>
+                            </div>
+                            
+                            <div className="mb-5">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Origem do Saldo</label>
+                                <select name="type" value={withdrawalData.type} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] p-3.5 rounded-xl text-white outline-none transition-all appearance-none cursor-pointer">
                                     <option value="net_profit">Lucro Líquido</option>
                                     <option value="cost_of_goods">Custo de Mercadoria</option>
                                 </select>
                             </div>
-                            <div className="mb-6">
-                                <label className="block text-sm text-gray-400 mb-1">Motivo</label>
-                                <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black border border-gray-600 focus:border-[#f2bd46] p-3 rounded-lg text-white outline-none" placeholder="Ex: Retirada de sócios" required />
+                            
+                            <div className="mb-8">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Motivo / Descrição</label>
+                                <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] p-3.5 rounded-xl text-white outline-none transition-all placeholder-gray-700" placeholder="Ex: Retirada de sócios, Pagamento de boleto..." required />
                             </div>
-                            <div className="flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#1a1a1a]">Cancelar</button>
-                                <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Confirmar</button>
+                            
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-gray-300 font-bold bg-gray-800/50 hover:bg-gray-800 border border-gray-700 transition-colors">Cancelar</button>
+                                <button type="submit" className="w-full sm:w-auto bg-[#f2bd46] hover:bg-[#e0af40] px-8 py-3.5 rounded-xl text-black font-extrabold shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-0.5 transition-all">Confirmar Retirada</button>
                             </div>
                         </form>
                     </div>
