@@ -5646,147 +5646,233 @@ const StockManagement = ({ condominiums, token }) => {
         } catch (err) { alert(err.message); }
     };
 
+    // ==============================================
+    // --- ANIMAÇÕES E CLASSES PREMIUM ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slide-down-toast {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-surgir {
+            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .animate-toast-premium {
+            animation: slide-down-toast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
+    `;
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 md:gap-8 pb-12 relative z-10">
+            <style>{keyframes}</style>
+            
             <AddProductToInventoryModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSave={handleAddProduct} token={token} condoId={selectedCondoId} productsInInventory={inventory} />
             
+            {/* --- TOAST PREMIUM --- */}
             {toast.show && (
-                <div className="fixed top-24 right-8 bg-green-500 text-white py-3 px-6 rounded-lg shadow-lg flex items-center gap-3 z-[999] animate-fade-in-fast">
-                    <CheckCircle2 size={20} /> <span>{toast.message}</span>
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-8 bg-black/80 backdrop-blur-xl border border-green-500/50 text-white py-3 px-5 sm:px-6 rounded-2xl shadow-[0_10px_40px_rgba(34,197,94,0.3)] flex items-center gap-3 z-[999] animate-toast-premium">
+                    <div className="bg-green-500/20 p-1.5 rounded-full border border-green-500/30">
+                        <CheckCircle2 size={18} className="text-green-400" />
+                    </div>
+                    <span className="font-bold text-sm tracking-wide">{toast.message}</span>
                 </div>
             )}
             
             {/* --- HEADER RESPONSIVO --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-2xl md:text-3xl font-bold">Gestão de Estoque</h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 border-b border-gray-800/80 pb-6 animate-surgir">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
+                        Gestão de Estoque
+                    </h2>
+                    <p className="text-gray-400 font-medium text-sm">Controle de entradas, quantidades e validades</p>
+                </div>
+                
                 <div className="flex w-full md:w-auto gap-3">
-                    <button onClick={() => setIsAddModalOpen(true)} disabled={!selectedCondoId} className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a] disabled:opacity-50">
+                    <button 
+                        onClick={() => setIsAddModalOpen(true)} 
+                        disabled={!selectedCondoId} 
+                        className="flex-1 md:flex-none bg-black/40 hover:bg-white/10 text-white font-extrabold py-3.5 md:py-3 px-5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-700/80"
+                    >
                         <PlusCircle size={20} /> <span className="md:hidden">Adicionar</span> <span className="hidden md:inline">Adicionar Produto</span>
                     </button>
-                    <button onClick={handleSaveAllChanges} disabled={isSaving || isStockLoading} className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition disabled:bg-[#1a1a1a] disabled:opacity-50 shadow-lg shadow-green-600/20">
-                        {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
+                    <button 
+                        onClick={handleSaveAllChanges} 
+                        disabled={isSaving || isStockLoading} 
+                        className="flex-1 md:flex-none bg-green-600 hover:bg-green-500 text-white font-extrabold py-3.5 md:py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 disabled:bg-gray-800 disabled:text-gray-500 disabled:opacity-50 shadow-[0_0_15px_rgba(22,163,74,0.4)] hover:shadow-[0_0_25px_rgba(22,163,74,0.6)] hover:-translate-y-0.5"
+                    >
+                        {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                         <span className="md:hidden">Salvar</span> <span className="hidden md:inline">Salvar Alterações</span>
                     </button>
                 </div>
             </div>
             
-            {/* --- FILTROS E PESQUISA --- */}
-            <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700">
-                <div className="flex flex-col md:flex-row gap-4 items-end">
+            {/* --- FILTROS E PESQUISA (Painel Glassmorphism) --- */}
+            <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 relative overflow-hidden animate-surgir" style={{ animationDelay: '50ms' }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
+                
+                <div className="flex flex-col md:flex-row gap-5 items-end relative z-10">
                     <div className="w-full md:w-1/3">
-                        <label className="text-sm text-gray-400 mb-1 block">Selecionar Condomínio</label>
-                        <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full bg-black border border-gray-600 rounded-lg py-3 px-4 focus:border-[#f2bd46] outline-none transition text-white">
-                            <option value="">-- Selecione --</option>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Selecionar Condomínio</label>
+                        <select 
+                            onChange={(e) => setSelectedCondoId(e.target.value)} 
+                            value={selectedCondoId} 
+                            className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer appearance-none"
+                        >
+                            <option value="">-- Selecione o Condomínio --</option>
                             {condominiums.map(condo => <option key={condo.id} value={condo.id}>{condo.name}</option>)}
                         </select>
                     </div>
-                    {/* Barra de Pesquisa (NOVO) */}
+                    
                     <div className="w-full md:flex-grow">
-                        <label className="text-sm text-gray-400 mb-1 block">Pesquisar no Estoque</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Pesquisar no Estoque</label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Search className="text-gray-500" size={18} />
+                            </div>
                             <input 
                                 type="text" 
                                 placeholder="Nome do produto..." 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 disabled={!selectedCondoId}
-                                className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:border-[#f2bd46] outline-none transition text-white disabled:opacity-50"
+                                className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 pl-11 pr-4 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all text-white disabled:opacity-30 disabled:cursor-not-allowed placeholder-gray-600"
                             />
                         </div>
                     </div>
                 </div>
             </div>
             
-            {isStockLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : selectedCondoId && (
-                <>
-                    {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden shadow-md border border-gray-700">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#1a1a1a] text-gray-200">
-                                <tr>
-                                    <th className="p-4">Produto</th>
-                                    <th className="p-4 w-48">Quantidade</th>
-                                    <th className="p-4 w-48">Validade</th>
-                                    <th className="p-4 w-24 text-center">Ações</th> 
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {filteredInventory.map(product => (
-                                    <tr key={product.id} className="hover:bg-[#1a1a1a]/50 transition">
-                                        <td className="p-4 flex items-center gap-3">
-                                            <img src={product.image_url || 'https://placehold.co/40x40'} className="h-10 w-10 rounded object-cover bg-black" alt=""/>
-                                            <span className="font-medium text-white">{product.name}</span>
-                                        </td>
-                                        <td className="p-4">
-                                            <input type="number" value={inventoryQuantities[product.id] || 0} onChange={(e) => handleInventoryChange(product.id, e.target.value)} 
-                                                className={`w-24 bg-black p-2 rounded-md text-center border focus:border-[#f2bd46] outline-none ${inventoryQuantities[product.id] <= 5 ? 'border-red-500/50 text-red-400' : 'border-gray-600 text-white'}`} 
-                                            />
-                                        </td>
-                                        <td className="p-4">
-                                            <input type="date" value={inventoryDates[product.id] || ''} onChange={(e) => handleDateChange(product.id, e.target.value)} className="bg-black p-2 rounded-md border border-gray-600 focus:border-[#f2bd46] outline-none text-gray-300" />
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <button onClick={() => handleRemoveProduct(product.id, product.name)} className="text-red-400 hover:bg-red-400/10 p-2 rounded transition"><Trash2 size={18} /></button>
-                                        </td>
+            {isStockLoading ? (
+                <div className="flex flex-col justify-center items-center h-64 gap-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl animate-surgir">
+                    <Loader2 className="animate-spin text-[#f2bd46]" size={48} />
+                    <span className="text-gray-400 font-bold tracking-widest text-sm animate-pulse">CARREGANDO ESTOQUE...</span>
+                </div>
+            ) : selectedCondoId && (
+                <div className="animate-surgir" style={{ animationDelay: '100ms' }}>
+                    
+                    {/* --- VISÃO PC (Tabela Detalhada Premium) --- */}
+                    <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left whitespace-nowrap">
+                                <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                    <tr>
+                                        <th className="p-5">Produto</th>
+                                        <th className="p-5 w-48 text-center">Quantidade</th>
+                                        <th className="p-5 w-48 text-center">Validade (Opcional)</th>
+                                        <th className="p-5 w-24 text-center">Ações</th> 
                                     </tr>
-                                ))}
-                                {filteredInventory.length === 0 && <tr><td colSpan="4" className="text-center p-8 text-gray-500">Nenhum produto encontrado.</td></tr>}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800/80">
+                                    {filteredInventory.length > 0 ? filteredInventory.map(product => (
+                                        <tr key={product.id} className="hover:bg-white/5 transition-colors duration-300">
+                                            <td className="p-5 flex items-center gap-4">
+                                                <img src={product.image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Img'} className="h-12 w-12 rounded-xl object-cover border border-gray-700/50 shadow-sm" alt=""/>
+                                                <span className="font-extrabold text-white text-base truncate max-w-[250px]">{product.name}</span>
+                                            </td>
+                                            <td className="p-5">
+                                                <div className="flex justify-center">
+                                                    <input 
+                                                        type="number" 
+                                                        value={inventoryQuantities[product.id] || 0} 
+                                                        onChange={(e) => handleInventoryChange(product.id, e.target.value)} 
+                                                        className={`w-24 bg-black/50 py-2.5 px-3 rounded-xl text-center border focus:ring-2 focus:outline-none font-bold text-lg transition-all ${inventoryQuantities[product.id] <= 5 ? 'border-red-500 text-red-400 focus:ring-red-500/50' : 'border-gray-600 text-white focus:border-[#f2bd46] focus:ring-[#f2bd46]/50'}`} 
+                                                    />
+                                                </div>
+                                            </td>
+                                            <td className="p-5">
+                                                <div className="flex justify-center">
+                                                    <input 
+                                                        type="date" 
+                                                        value={inventoryDates[product.id] || ''} 
+                                                        onChange={(e) => handleDateChange(product.id, e.target.value)} 
+                                                        className="w-40 bg-black/50 py-2.5 px-3 rounded-xl border border-gray-600 focus:border-[#f2bd46] focus:ring-2 focus:ring-[#f2bd46]/50 outline-none text-sm text-gray-300 font-medium transition-all [color-scheme:dark]" 
+                                                    />
+                                                </div>
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <button 
+                                                    onClick={() => handleRemoveProduct(product.id, product.name)} 
+                                                    className="text-red-400 bg-red-400/10 hover:bg-red-400/20 border border-red-400/20 p-2.5 rounded-xl transition-all"
+                                                    title="Remover do Condomínio"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr><td colSpan="4" className="text-center p-12 text-gray-500 font-medium">Nenhum produto correspondente no estoque.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    {/* --- VISÃO MOBILE (Cards de Edição) --- */}
+                    {/* --- VISÃO MOBILE (Cards de Edição Operacional Premium) --- */}
                     <div className="md:hidden flex flex-col gap-4">
                         {filteredInventory.length > 0 ? filteredInventory.map(product => (
-                            <div key={product.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <img src={product.image_url || 'https://placehold.co/60x60'} className="h-14 w-14 rounded-lg object-cover bg-black" alt=""/>
-                                        <div>
-                                            <h3 className="font-bold text-white text-lg">{product.name}</h3>
-                                            <p className="text-xs text-gray-400">ID: {product.id}</p>
+                            <div key={product.id} className="bg-black/40 backdrop-blur-xl p-5 rounded-2xl border border-gray-700/50 shadow-lg relative overflow-hidden flex flex-col">
+                                
+                                <div className="flex justify-between items-start mb-5">
+                                    <div className="flex gap-4 items-start w-full pr-4">
+                                        <img src={product.image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Img'} className="h-16 w-16 rounded-xl object-cover border border-gray-700/50 shadow-md shrink-0" alt=""/>
+                                        <div className="flex-1 min-w-0 pt-1">
+                                            <h3 className="font-extrabold text-white text-lg leading-tight tracking-tight mb-1">{product.name}</h3>
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">ID: {product.id.substring(0,8)}</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleRemoveProduct(product.id, product.name)} className="text-red-400 bg-red-500/10 p-2 rounded-lg"><Trash2 size={18} /></button>
+                                    <button 
+                                        onClick={() => handleRemoveProduct(product.id, product.name)} 
+                                        className="text-red-400 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-xl shrink-0 transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs text-gray-400 mb-1 block">Quantidade</label>
-                                        <div className="relative">
-                                            <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                <div className="bg-black/60 border border-gray-800 p-4 rounded-xl shadow-inner">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex flex-col">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <Package size={12} /> Qtde.
+                                            </label>
                                             <input 
                                                 type="number" 
                                                 value={inventoryQuantities[product.id] || 0} 
                                                 onChange={(e) => handleInventoryChange(product.id, e.target.value)} 
-                                                className={`w-full bg-black py-3 pl-10 pr-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#f2bd46] font-bold text-lg 
-                                                ${inventoryQuantities[product.id] <= 5 ? 'border-red-500 text-red-400' : 'border-gray-600 text-white'}`} 
+                                                className={`w-full bg-black/50 py-3 px-3 rounded-xl border text-center font-black text-xl transition-all focus:outline-none focus:ring-2 
+                                                ${inventoryQuantities[product.id] <= 5 ? 'border-red-500/80 text-red-400 focus:ring-red-500/50' : 'border-gray-600 text-white focus:border-[#f2bd46] focus:ring-[#f2bd46]/50'}`} 
                                             />
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400 mb-1 block">Validade</label>
-                                        <div className="relative">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                        <div className="flex flex-col">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <Calendar size={12} /> Validade
+                                            </label>
                                             <input 
                                                 type="date" 
                                                 value={inventoryDates[product.id] || ''} 
                                                 onChange={(e) => handleDateChange(product.id, e.target.value)} 
-                                                className="w-full bg-black py-3 pl-10 pr-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#f2bd46] text-sm text-gray-300" 
+                                                className="w-full h-full bg-black/50 py-3 px-2 rounded-xl border border-gray-600 focus:border-[#f2bd46] focus:ring-2 focus:ring-[#f2bd46]/50 text-xs text-gray-300 font-bold transition-all outline-none [color-scheme:dark]" 
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
-                                <Package size={48} className="mx-auto mb-3 opacity-20" />
-                                <p>Nenhum produto encontrado neste condomínio.</p>
+                            <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium flex flex-col items-center gap-3">
+                                <Package size={40} className="opacity-30" />
+                                <p>Nenhum produto correspondente no estoque deste condomínio.</p>
                             </div>
                         )}
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
