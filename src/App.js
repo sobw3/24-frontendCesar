@@ -2593,16 +2593,16 @@ const PaymentPage = ({ paymentData, setPage, paymentMethod, user, cart, onPaymen
 };
 
 const PostPaymentStatusPage = ({ user, setPage }) => {
-    // === CONSTANTES DE TEMPO ===
+    // === CONSTANTES DE TEMPO (Lógica Intocada) ===
     const UNLOCK_TIME = 11; // 11 segundos para destravar
     const RELOCK_TIME = 20; // 20 segundos para retravar
 
-    // === ESTADOS ===
+    // === ESTADOS (Lógica Intocada) ===
     const [stage, setStage] = React.useState('processing'); // 'processing' | 'success'
     const [countdown, setCountdown] = React.useState(UNLOCK_TIME);
     const propsRef = React.useRef({ user, setPage });
 
-    // === LÓGICA PRINCIPAL DE ESTADO E TEMPO (Vozes removidas) ===
+    // === LÓGICA PRINCIPAL DE ESTADO E TEMPO (100% Intocada) ===
     React.useEffect(() => {
         propsRef.current = { user, setPage };
         
@@ -2645,65 +2645,48 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
 
 
     // ==============================================
-    // --- ANIMAÇÕES (PULSO SÓ NO TEXTO) ---
+    // --- ANIMAÇÕES (Premium Glassmorphism & Neon) ---
     // ==============================================
     const keyframes = `
         @keyframes surgir {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes draw-check { 100% { stroke-dashoffset: 0; } }
-        @keyframes fade-in-scale { 
-            0% { opacity: 0; transform: scale(0.7); } 
-            100% { opacity: 1; transform: scale(1); } 
+        @keyframes pulse-glow-gold {
+            0%, 100% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.4), 0 0 20px rgba(242, 189, 70, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(242, 189, 70, 0.8), 0 0 30px rgba(242, 189, 70, 0.8); }
+        }
+        @keyframes pulse-glow-green {
+            0%, 100% { text-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(74, 222, 128, 0.8), 0 0 30px rgba(74, 222, 128, 0.8); }
         }
 
-        /* --- ANIMAÇÕES DE PULSO (SÓ TEXTO) --- */
-        @keyframes neon-pulse-text-[#f2bd46] {
-            0%, 100% {
-                text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
-            }
-            50% {
-                text-shadow: 0 0 10px rgba(249, 115, 22, 1), 0 0 20px rgba(249, 115, 22, 1);
-            }
-        }
-        @keyframes neon-pulse-text-green {
-            0%, 100% {
-                text-shadow: 0 0 5px rgba(74, 222, 128, 0.7), 0 0 10px rgba(74, 222, 128, 0.7);
-            }
-            50% {
-                text-shadow: 0 0 10px rgba(74, 222, 128, 1), 0 0 20px rgba(74, 222, 128, 1);
-            }
-        }
-        
-        /* --- ANIMAÇÕES DE PULSO (SVG) REMOVIDAS --- */
-
-        /* --- CLASSES DE ANIMAÇÃO --- */
         .animate-surgir {
-            animation: surgir 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-neon-text-[#f2bd46] {
-            animation: neon-pulse-text-[#f2bd46] 1.5s ease-in-out infinite;
+            animation: pulse-glow-gold 1.5s ease-in-out infinite;
         }
         .animate-neon-text-green {
-            animation: neon-pulse-text-green 1.5s ease-in-out infinite;
+            animation: pulse-glow-green 1.5s ease-in-out infinite;
         }
     `;
 
-    // --- COMPONENTE INTERNO: O CRONÔMETRO (COM "NEON CLEAN" SÓ NO NÚMERO) ---
+    // --- COMPONENTE INTERNO: O CRONÔMETRO (Premium Clean com Neon Text) ---
     const TimerCircle = ({ duration, remaining, colorClass, textAnimationClass, filterId }) => {
         const radius = 90;
         const circumference = 2 * Math.PI * radius;
-        // Calcula o "preenchimento" do círculo
         const offset = circumference - (remaining / duration) * circumference;
 
         return (
-            <div className="relative w-48 h-48 mb-8">
-                <svg className="w-full h-full" viewBox="0 0 200 200">
-                    {/* --- DEFINIÇÃO DO FILTRO SVG (ESTÁTICO) --- */}
+            <div className="relative w-56 h-56 mb-8 flex justify-center items-center mx-auto">
+                {/* Glow de fundo do círculo */}
+                <div className={`absolute inset-0 rounded-full blur-[40px] opacity-20 ${colorClass === 'text-[#f2bd46]' ? 'bg-[#f2bd46]' : 'bg-green-400'}`}></div>
+                
+                <svg className="w-full h-full relative z-10" viewBox="0 0 200 200">
                     <defs>
                         <filter id={filterId}>
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
                             <feMerge>
                                 <feMergeNode in="blur" />
                                 <feMergeNode in="SourceGraphic" />
@@ -2711,21 +2694,20 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
                         </filter>
                     </defs>
                     
-                    {/* Círculo de Fundo (cinza) */}
+                    {/* Círculo de Fundo (cinza escuro) */}
                     <circle
-                        className="text-gray-700/50"
-                        strokeWidth="10"
+                        className="text-gray-800"
+                        strokeWidth="8"
                         stroke="currentColor"
                         fill="transparent"
                         r={radius}
                         cx="100"
                         cy="100"
                     />
-                    {/* Círculo de Progresso (Laranja ou Verde) */}
+                    {/* Círculo de Progresso (Laranja ou Verde animado) */}
                     <circle
-                        // --- ANIMAÇÃO DE PULSO REMOVIDA DO CÍRCULO ---
-                        className={`transition-all duration-500 ease-linear ${colorClass}`}
-                        strokeWidth="10"
+                        className={`transition-all duration-1000 ease-linear ${colorClass}`}
+                        strokeWidth="8"
                         strokeDasharray={circumference}
                         strokeDashoffset={offset}
                         strokeLinecap="round"
@@ -2735,16 +2717,12 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
                         cx="100"
                         cy="100"
                         style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
-                        // Filtro estático (neon clean, sem pulso)
                         filter={`url(#${filterId})`}
                     />
                 </svg>
-                {/* Texto do Timer (Dentro do Círculo) */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span 
-                        // --- ANIMAÇÃO DE PULSO SÓ NO TEXTO ---
-                        className={`text-6xl font-bold ${colorClass} ${textAnimationClass}`}
-                    >
+                {/* Texto do Timer (Dentro do Círculo com Efeito Neon) */}
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <span className={`text-7xl font-black ${colorClass} ${textAnimationClass} tracking-tighter`}>
                         {countdown}
                     </span>
                 </div>
@@ -2752,54 +2730,87 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
         );
     };
 
-
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4 text-center">
+        <div 
+            className="min-h-screen text-white flex flex-col justify-center items-center p-4 text-center relative overflow-hidden bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+        >
             <style>{keyframes}</style>
             
-            {/* --- CARD PRINCIPAL (Glassmorphism) --- */}
-            <div className="w-full max-w-md 
-                            border-gray-700 backdrop-blur-sm 
-                            border border-gray-700/50 
-                            p-8 rounded-2xl shadow-2xl 
-                            flex flex-col items-center justify-center 
-                            min-h-[450px] overflow-hidden relative 
-                            animate-surgir"
-            >
+            {/* Overlay Escuro */}
+            <div className="absolute inset-0 bg-black/85 z-0"></div>
+            
+            {/* --- CARD PRINCIPAL (Premium Glassmorphism) --- */}
+            <div className="w-full max-w-lg bg-black/60 backdrop-blur-2xl border border-gray-700/60 p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative z-10 animate-surgir flex flex-col items-center overflow-hidden min-h-[600px]">
                 
+                {/* Ambient Glow no Topo do Card */}
+                <div className={`absolute -top-32 -left-32 w-64 h-64 blur-[80px] rounded-full pointer-events-none transition-colors duration-1000 ${stage === 'processing' ? 'bg-[#f2bd46]/10' : 'bg-green-500/10'}`}></div>
+
                 {/* --- CONTEÚDO DA ETAPA: PROCESSANDO --- */}
-                <div className={`transition-all duration-500 ease-in-out 
-                                ${stage === 'processing' ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <div className="flex flex-col items-center justify-center">
-                        <TimerCircle 
-                            duration={UNLOCK_TIME} 
-                            remaining={countdown} 
-                            colorClass="text-[#f2bd46]"
-                            textAnimationClass="animate-neon-text-[#f2bd46]" // <-- SÓ O NÚMERO PULSA
-                            filterId="glow-[#f2bd46]-filter"
-                        />
-                        <h1 className="text-3xl font-bold">Pagamento Aprovado!</h1>
-                        <p className="text-gray-400 mt-3 text-base">Sua porta será destravada em <span className="font-bold text-white">{countdown}</span>s...</p>
-                    </div>
+                <div className={`absolute w-full px-8 transition-all duration-700 ease-in-out flex flex-col items-center ${stage === 'processing' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 -translate-y-10 pointer-events-none'}`}>
+                    <TimerCircle 
+                        duration={UNLOCK_TIME} 
+                        remaining={countdown} 
+                        colorClass="text-[#f2bd46]"
+                        textAnimationClass="animate-neon-text-[#f2bd46]"
+                        filterId="glow-[#f2bd46]-filter"
+                    />
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Pagamento <span className="text-[#f2bd46]">Aprovado!</span></h1>
+                    <p className="text-gray-400 text-base sm:text-lg mb-8">
+                        Prepare-se. Sua porta será destravada em <strong className="text-white text-xl">{countdown}</strong> segundos...
+                    </p>
                 </div>
 
                 {/* --- CONTEÚDO DA ETAPA: SUCESSO --- */}
-                <div className={`absolute transition-all duration-500 ease-in-out 
-                                ${stage === 'success' ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <div className="flex flex-col items-center justify-center">
-                        <TimerCircle 
-                            duration={RELOCK_TIME} 
-                            remaining={countdown} 
-                            colorClass="text-green-400"
-                            textAnimationClass="animate-neon-text-green" // <-- SÓ O NÚMERO PULSA
-                            filterId="glow-green-filter"
-                        />
-                        <h1 className="text-3xl font-bold text-green-400">Porta Destravada!</h1>
-                        <p className="text-gray-400 mt-3 text-base">
-                            Sua porta irá travar novamente em <span className="font-bold text-white">{countdown}</span>s.
-                        </p>
+                <div className={`absolute w-full px-8 transition-all duration-700 ease-in-out flex flex-col items-center ${stage === 'success' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+                    <TimerCircle 
+                        duration={RELOCK_TIME} 
+                        remaining={countdown} 
+                        colorClass="text-green-400"
+                        textAnimationClass="animate-neon-text-green"
+                        filterId="glow-green-filter"
+                    />
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Porta <span className="text-green-400">Destravada!</span></h1>
+                    <p className="text-gray-400 text-base sm:text-lg mb-8">
+                        Retire seus produtos. A porta travará novamente em <strong className="text-white text-xl">{countdown}</strong> segundos.
+                    </p>
+                </div>
+
+                {/* --- ÁREA DE AVISOS IMPORTANTES (Sempre visível) --- */}
+                <div className="w-full mt-auto pt-6 border-t border-gray-800/80">
+                    <div className="bg-black/40 border border-gray-700/50 rounded-2xl p-5 space-y-4 text-left shadow-inner">
+                        <div className="flex items-start gap-3">
+                            <div className="bg-blue-500/10 p-2 rounded-lg border border-blue-500/20 mt-0.5">
+                                <Shield size={18} className="text-blue-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Ambiente Monitorado</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Para sua segurança, esta área possui vigilância por câmeras 24h.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-3">
+                            <div className="bg-[#f2bd46]/10 p-2 rounded-lg border border-[#f2bd46]/20 mt-0.5">
+                                <AlertTriangle size={18} className="text-[#f2bd46]" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Atenção aos Produtos</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Retire exclusivamente os itens que foram pagos. Evite transtornos e cobranças extras.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-3">
+                            <div className="bg-green-500/10 p-2 rounded-lg border border-green-500/20 mt-0.5">
+                                <CheckCircle2 size={18} className="text-green-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Feche a Porta</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Não se esqueça de fechar bem a porta da geladeira ao sair. Bom proveito!</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );
