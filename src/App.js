@@ -1726,89 +1726,97 @@ const speak = async (text) => {
 const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartTotal, userBalance }) => {
     if (!isOpen) return null;
     
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon/Pulso) ---
-    // (Necessário para o botão neon)
-    const keyframes = `
-        @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        @keyframes neon-pulse-shadow {
-            0%, 100% {
-                box-shadow: 0 0 8px rgba(249, 115, 22, 0.5), 0 0 12px rgba(249, 115, 22, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 12px rgba(249, 115, 22, 0.8), 0 0 20px rgba(249, 115, 22, 0.8);
-            }
-        }
-        .animate-surgir {
-            animation: surgir 0.3s ease-out forwards;
-        }
-        .neon-button-[#f2bd46] {
-            animation: neon-pulse-shadow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-    `;
-    
     const remainingBalance = userBalance - cartTotal;
-    
-    // --- Classe do Botão Neon (Confirmar) ---
-    const neonButtonClass = `
-        bg-[#f2bd46] text-white font-bold py-3 px-6 
-        flex items-center justify-center gap-2 rounded-lg 
-        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
-        neon-button-[#f2bd46] 
+
+    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Premium Glow) ---
+    const keyframes = `
+        @keyframes surgir-modal {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .animate-surgir-modal {
+            animation: surgir-modal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out forwards;
+        }
     `;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 animate-fade-in-fast">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <style>{keyframes}</style>
-            {/* --- MODAL REDESENHADO (Glassmorphism e Animação) --- */}
-            <div className="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 p-8 rounded-xl shadow-2xl w-full max-w-md animate-surgir">
+            
+            {/* Overlay Escuro com Desfoque */}
+            <div 
+                className="absolute inset-0 bg-black/80 backdrop-blur-md animate-fade-in"
+                onClick={!isLoading ? onClose : undefined}
+            ></div>
+            
+            {/* --- MODAL REDESENHADO (Premium Glassmorphism) --- */}
+            <div className="relative z-10 w-full max-w-md bg-black/80 backdrop-blur-2xl border border-gray-700/80 shadow-[0_20px_60px_rgba(0,0,0,0.9)] p-6 sm:p-8 rounded-3xl animate-surgir-modal overflow-hidden">
                 
+                {/* Ambient Glow interno para dar profundidade */}
+                <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#f2bd46]/10 blur-[50px] rounded-full pointer-events-none"></div>
+
                 {/* Ícone de Destaque */}
-                <div className="w-16 h-16 bg-[#f2bd46]/20 border-2 border-[#f2bd46] rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Wallet size={32} className="text-[#f2bd46]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-[#f2bd46]/20 to-transparent border border-[#f2bd46]/40 shadow-[0_0_20px_rgba(242,189,70,0.2)] rounded-full flex items-center justify-center mx-auto mb-6 relative z-10">
+                    <Wallet size={36} className="text-[#f2bd46]" />
                 </div>
                 
-                <h2 className="text-2xl font-bold text-white text-center mb-4">Confirmar Pagamento</h2>
-                <p className="text-gray-300 text-center mb-6">Você está prestes a finalizar sua compra. Por favor, confirme os valores.</p>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white text-center mb-2 tracking-tight">Confirmar Pagamento</h2>
+                <p className="text-gray-400 text-sm text-center mb-8 px-2 leading-relaxed">
+                    Você está prestes a finalizar sua compra. Por favor, verifique o resumo abaixo.
+                </p>
                 
-                {/* Resumo Financeiro (Mais Estilizado) */}
-                <div className="bg-[#1a1a1a]/80 p-4 rounded-lg space-y-3 border border-gray-600/50">
-                    <p className="flex justify-between text-lg">
-                        <span className="text-gray-300">Valor Total da Compra:</span> 
-                        <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
-                    </p>
-                    <p className="flex justify-between">
-                        <span className="text-gray-300">Seu Saldo Atual:</span> 
-                        <span className="font-bold text-green-400">R$ {userBalance.toFixed(2).replace('.', ',')}</span>
-                    </p>
-                    <hr className="border-gray-600 my-2"/>
-                    <p className="flex justify-between text-lg">
-                        <span className="text-gray-300">Seu Saldo Restante:</span> 
-                        <span className="font-bold text-white">R$ {remainingBalance.toFixed(2).replace('.', ',')}</span>
-                    </p>
+                {/* Resumo Financeiro (Premium Receipt Look) */}
+                <div className="bg-black/50 border border-gray-800 p-5 rounded-2xl space-y-4 mb-8 shadow-inner relative z-10">
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <ShoppingCart size={16} /> Valor da Compra
+                        </span> 
+                        <span className="text-lg font-bold text-white">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <Wallet size={16} /> Seu Saldo Atual
+                        </span> 
+                        <span className="text-lg font-bold text-green-400">R$ {userBalance.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    
+                    {/* Linha divisória com gradiente */}
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700 to-transparent my-2"></div>
+                    
+                    <div className="flex justify-between items-center pt-1">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Saldo Restante</span> 
+                        <span className="text-2xl font-black text-[#f2bd46] tracking-tight">R$ {remainingBalance.toFixed(2).replace('.', ',')}</span>
+                    </div>
                 </div>
                 
-                <div className="flex justify-center gap-4 mt-8">
+                {/* Botões de Ação */}
+                <div className="flex flex-col sm:flex-row justify-center gap-3 relative z-10">
                     <button 
                         onClick={onClose} 
-                        className="bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                        disabled={isLoading}
+                        className="w-full order-2 sm:order-1 bg-black/40 border border-gray-700 hover:bg-white/10 hover:border-gray-500 text-gray-300 hover:text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50"
                     >
                         Cancelar
                     </button>
+                    
                     <button 
                         onClick={onConfirm} 
                         disabled={isLoading} 
-                        className={neonButtonClass} // --- BOTÃO NEON APLICADO ---
+                        className="w-full order-1 sm:order-2 bg-[#f2bd46] text-black font-extrabold py-3.5 px-6 flex items-center justify-center gap-2 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 hover:-translate-y-0.5 disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none disabled:transform-none"
                     >
-                        {isLoading ? <Loader2 className="animate-spin" /> : 'Confirmar e Pagar'}
+                        {isLoading ? (
+                            <Loader2 size={20} className="animate-spin" />
+                        ) : (
+                            <> <CheckCircle2 size={20} /> Confirmar </>
+                        )}
                     </button>
                 </div>
             </div>
