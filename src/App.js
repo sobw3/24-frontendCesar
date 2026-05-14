@@ -55,39 +55,53 @@ const getTransactionIcon = (type) => {
         }
     };
 
-const Toast = ({ message, show }) => {
-    // --- NOVAS ANIMAÇÕES ---
+const Toast = ({ show, message }) => {
+    // Se o estado for falso, o pop-up fica invisível
+    if (!show) return null;
+
+    // Lógica inteligente (sem alterar os seus estados): 
+    // Identifica se a mensagem é um erro para mudar a cor para vermelho
+    const isError = message.toLowerCase().includes('erro') || 
+                    message.toLowerCase().includes('falha') || 
+                    message.toLowerCase().includes('insuficiente') || 
+                    message.toLowerCase().includes('obrigatório');
+
+    const Icon = isError ? AlertTriangle : CheckCircle2;
+    const titleText = isError ? 'Atenção' : 'Sucesso!';
+
+    // Animação de entrada suave caindo do topo
     const keyframes = `
-        @keyframes slide-up-fade-in {
-            from {
-                opacity: 0;
-                transform: translate(-50%, 100%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, 0);
-            }
+        @keyframes toast-slide-down {
+            0% { opacity: 0; transform: translateY(-40px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .animate-slide-up-fade {
-            animation: slide-up-fade-in 0.3s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+        .animate-toast {
+            animation: toast-slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     `;
-    
-    if (!show) return null;
-    
+
     return (
-        <>
+        <div className="fixed top-8 left-0 right-0 z-[9999] flex justify-center px-4 pointer-events-none">
             <style>{keyframes}</style>
-            <div className="fixed bottom-5 left-1/2 -translate-x-1/2 
-                            bg-[#1a1a1a]/80 backdrop-blur-sm 
-                            border border-green-500/50 
-                            text-white py-3 px-6 rounded-lg 
-                            shadow-2xl flex items-center gap-3 
-                            z-[999] animate-slide-up-fade">
-                <CheckCircle2 size={20} className="text-green-400" />
-                <span>{message}</span>
+            
+            <div className={`animate-toast bg-black/85 backdrop-blur-3xl border ${isError ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-[#f2bd46]/50 shadow-[0_0_20px_rgba(242,189,70,0.2)]'} shadow-[0_15px_40px_rgba(0,0,0,0.8)] rounded-2xl p-4 sm:p-5 flex items-center gap-4 max-w-sm w-full relative overflow-hidden`}>
+                
+                {/* Glow Ambiente de fundo no Pop-up */}
+                <div className={`absolute top-0 left-0 w-32 h-32 ${isError ? 'bg-red-500/10' : 'bg-[#f2bd46]/10'} blur-[40px] rounded-full pointer-events-none`}></div>
+
+                {/* Ícone Destaque em uma caixa de vidro */}
+                <div className={`${isError ? 'bg-red-500/20 border-red-500/30' : 'bg-[#f2bd46]/20 border-[#f2bd46]/30'} border p-3 rounded-xl shadow-inner relative z-10 flex-shrink-0`}>
+                    <Icon size={24} className={isError ? 'text-red-400' : 'text-[#f2bd46]'} />
+                </div>
+                
+                {/* Textos do Pop-up */}
+                <div className="flex flex-col relative z-10 min-w-0">
+                    <span className="text-white font-extrabold text-base tracking-tight truncate">{titleText}</span>
+                    <span className="text-gray-300 text-sm font-medium leading-snug mt-0.5">{message}</span>
+                </div>
+                
             </div>
-        </>
+        </div>
     );
 };
 
