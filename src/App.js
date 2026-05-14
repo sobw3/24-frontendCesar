@@ -6689,7 +6689,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
     const [error, setError] = React.useState('');
     const [condominiums, setCondominiums] = React.useState([]);
     
-    // --- FILTROS ---
+    // --- FILTROS (Lógica Intocada) ---
     const [filterInputs, setFilterInputs] = React.useState({ startDate: '', endDate: '', condoId: 'all' });
     
     const getTodayInBrasilia = () => {
@@ -6738,109 +6738,193 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
         setFilterInputs({ startDate: '', endDate: '', condoId: 'all' });
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#f2bd46]" size={48}/></div>;
-    if (error) return <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p>;
+    // ==============================================
+    // --- ANIMAÇÕES (Premium Glassmorphism) ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-surgir {
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        /* Custom Scrollbar para áreas com overflow */
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
+    `;
+
+    // --- NOVO CARD DE ESTATÍSTICA (Visual Substitui o AdminStatCard antigo) ---
+    const StatCard = ({ icon, label, value, colorClass, delay }) => (
+        <div 
+            className="animate-surgir bg-black/40 backdrop-blur-2xl border border-gray-700/50 p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden group hover:border-gray-500/50 transition-all duration-300"
+            style={{ animationDelay: delay }}
+        >
+            {/* Glow de fundo que acompanha a cor do card */}
+            <div className={`absolute -right-10 -top-10 w-32 h-32 blur-[50px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
+            
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className={`p-3.5 rounded-2xl bg-black/50 border border-gray-800 ${colorClass} group-hover:scale-110 group-hover:shadow-[0_0_15px_currentColor] transition-all duration-300 shadow-inner`}>
+                    {icon}
+                </div>
+            </div>
+            <div className="relative z-10">
+                <p className="text-xs sm:text-sm font-extrabold text-gray-500 uppercase tracking-widest mb-2">{label}</p>
+                <p className={`text-3xl sm:text-4xl font-black tracking-tighter ${colorClass} drop-shadow-md`}>{value}</p>
+            </div>
+        </div>
+    );
+
+    // --- TELAS DE LOADING E ERRO (Modernizadas) ---
+    if (isLoading) return (
+        <div className="flex flex-col justify-center items-center h-[70vh] gap-4">
+            <Loader2 className="animate-spin text-[#f2bd46] drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" size={56} />
+            <span className="text-[#f2bd46] font-bold tracking-widest animate-pulse text-sm">SINCRONIZANDO DADOS...</span>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="flex justify-center items-center h-[50vh]">
+            <div className="bg-red-900/10 border border-red-500/30 text-red-400 p-8 rounded-3xl backdrop-blur-xl shadow-2xl flex flex-col items-center max-w-lg text-center animate-surgir">
+                <AlertTriangle size={48} className="mb-4 text-red-500" />
+                <h3 className="text-xl font-bold text-white mb-2">Erro de Conexão</h3>
+                <p className="text-sm opacity-80">{error}</p>
+                <button onClick={fetchStats} className="mt-6 bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold py-2 px-6 rounded-xl transition-colors border border-red-500/30">Tentar Novamente</button>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="flex flex-col gap-6 md:gap-8 pb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Dashboard de Gestão</h2>
+        <div className="flex flex-col gap-8 pb-12 relative z-10">
+            <style>{keyframes}</style>
+
+            {/* Cabeçalho do Dashboard */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#f2bd46] to-yellow-200 tracking-tight mb-1">
+                        Dashboard de Gestão
+                    </h2>
+                    <p className="text-gray-400 font-medium text-sm">Visão geral e acompanhamento em tempo real</p>
+                </div>
+                <div className="bg-black/40 border border-gray-800 px-4 py-2 rounded-xl backdrop-blur-md flex items-center gap-2 text-sm text-gray-300 font-bold">
+                    <Calendar size={16} className="text-[#f2bd46]"/> {new Date().toLocaleDateString('pt-BR')}
+                </div>
+            </div>
             
-            {/* --- CARDS DE MÉTRICAS (GRID RESPONSIVA) --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <AdminStatCard 
+            {/* --- CARDS DE MÉTRICAS (GRID RESPONSIVA REFINADA) --- */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+                <StatCard 
                     icon={<DollarSign size={28} />} 
                     label="Faturamento Hoje" 
                     value={`R$ ${(stats?.revenue_today || 0).toFixed(2).replace('.',',')}`} 
                     colorClass="text-green-400" 
+                    delay="0ms"
                 />
-                <AdminStatCard 
+                <StatCard 
                     icon={<PiggyBank size={28} />} 
                     label="Lucro Líquido Hoje" 
                     value={`R$ ${(stats?.net_profit_today || 0).toFixed(2).replace('.',',')}`} 
                     colorClass="text-teal-400" 
+                    delay="50ms"
                 />
-                <AdminStatCard 
+                <StatCard 
                     icon={<ShoppingCart size={28} />} 
                     label="Pedidos Hoje" 
                     value={stats?.orders_today || 0} 
-                    colorClass="text-blue-400" 
+                    colorClass="text-[#f2bd46]" 
+                    delay="100ms"
                 />
-                <AdminStatCard 
+                <StatCard 
                     icon={<UsersIcon size={28} />} 
                     label="Total Utilizadores" 
                     value={stats?.total_users || 0} 
                     colorClass="text-purple-400" 
+                    delay="150ms"
                 />
             </div>
 
             {/* --- SEÇÃO OPERACIONAL --- */}
-            <div className="mt-4">
-                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-[#f2bd46] pb-2 mb-4">Operacional e Inventário</h3>
+            <div className="mt-4 animate-surgir" style={{ animationDelay: '200ms' }}>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20">
+                        <LayoutDashboard size={24} className="text-blue-400" />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">Operacional e Inventário</h3>
+                </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                    {/* Valor de Inventário */}
-                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md">
+                    {/* Wrappers com Glassmorphism para os Widgets existentes */}
+                    <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-5 shadow-2xl hover:border-gray-600 transition-colors">
                         <InventoryValueWidget data={stats?.inventory_value || {}} />
                     </div>
                     
-                    {/* Promoção do Dia */}
-                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md"> 
+                    <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-5 shadow-2xl hover:border-gray-600 transition-colors"> 
                         <DailyPromotionsWidget token={token} />
                     </div>
 
-                    {/* Próximo da Validade */}
-                    <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
+                    <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-5 shadow-2xl hover:border-gray-600 transition-colors custom-scrollbar overflow-x-auto">
                         <ExpiringSoonWidget token={token} condominiums={condominiums} />
                     </div>
                 </div>
             </div>
             
             {/* --- WIDGET ÚLTIMOS PEDIDOS --- */}
-            <div className="mt-4 bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-hidden">
+            <div className="mt-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-6 shadow-2xl animate-surgir custom-scrollbar overflow-x-auto" style={{ animationDelay: '250ms' }}>
                 <LatestOrdersWidget token={token} condominiums={condominiums} />
             </div>
             
             {/* --- SEÇÃO DE VENDAS (PERFORMANCE) --- */}
-            <div className="mt-8">
-                <h3 className="text-xl md:text-2xl font-bold border-b-2 border-[#f2bd46] pb-2 mb-4">Performance de Vendas</h3>
+            <div className="mt-8 animate-surgir" style={{ animationDelay: '300ms' }}>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-[#f2bd46]/10 p-2 rounded-xl border border-[#f2bd46]/20">
+                        <BarChart size={24} className="text-[#f2bd46]" />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">Performance de Vendas</h3>
+                </div>
 
-                {/* --- FILTROS RESPONSIVOS --- */}
-                <div className="bg-[#1a1a1a] p-4 rounded-xl mb-6 shadow-md border border-gray-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                {/* --- FILTROS RESPONSIVOS (Painel de Controle Glassmorphism) --- */}
+                <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 mb-8 relative overflow-hidden">
+                    {/* Detalhe visual de linha no topo do filtro */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-end relative z-10">
                         <div className="w-full">
-                            <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                            <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Condomínio</label>
+                            <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all appearance-none cursor-pointer">
                                 <option value="all">Geral (Todos)</option>
                                 {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         </div>
 
                         <div className="w-full">
-                            <label className="text-sm text-gray-400 mb-1 block">De</label>
-                            <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block flex items-center gap-2"><Calendar size={14}/> De</label>
+                            <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
                         </div>
 
                         <div className="w-full">
-                            <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                            <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block flex items-center gap-2"><Calendar size={14}/> Até</label>
+                            <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
                         </div>
 
-                        <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">
-                            Hoje
+                        <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2 border border-blue-400/50">
+                            <Filter size={18} /> Filtrar Hoje
                         </button>
 
-                        <button onClick={handleClearFilters} className="w-full bg-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold py-2 px-4 rounded-lg transition border border-gray-600">
-                            Limpar
+                        <button onClick={handleClearFilters} className="w-full bg-black/50 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-gray-300 font-bold py-3 px-4 rounded-xl transition-all border border-gray-600 flex justify-center items-center gap-2">
+                            <Trash2 size={18} /> Limpar
                         </button>
                     </div>
                 </div>
                 
                 {/* --- LISTAS TOP/LEAST --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                     <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
+                     <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-5 sm:p-6 shadow-2xl custom-scrollbar overflow-x-auto hover:border-[#f2bd46]/30 transition-colors group">
                         <SalesPerformanceWidget title="🏆 Mais Vendidos" data={stats?.top_sellers || []} type="top" />
                      </div>
-                     <div className="bg-[#1a1a1a] rounded-xl p-4 shadow-md overflow-x-auto">
+                     <div className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-5 sm:p-6 shadow-2xl custom-scrollbar overflow-x-auto hover:border-red-500/30 transition-colors group">
                         <SalesPerformanceWidget title="📉 Menos Vendidos" data={stats?.least_sellers || []} type="least" />
                      </div>
                 </div>
