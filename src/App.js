@@ -1808,39 +1808,38 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     
-    // --- NOVO ESTADO: Controla o modal de confirmação ---
+    // --- NOVO ESTADO: Controla o modal de confirmação (MANTIDO) ---
     const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
 
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Neon ESTÁTICO) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES E NEON (Visual Premium) ---
     const keyframes = `
         @keyframes surgir {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.4), 0 0 20px rgba(242, 189, 70, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(242, 189, 70, 0.8), 0 0 30px rgba(242, 189, 70, 0.8); }
         }
         .animate-surgir {
-            animation: surgir 0.5s ease-out forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
         }
-        .neon-text-[#f2bd46] {
-            /* Neon estático, sem pulso */
-            text-shadow: 0 0 5px rgba(249, 115, 22, 0.7), 0 0 10px rgba(249, 115, 22, 0.7);
+        .neon-text-gold {
+            animation: pulse-glow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     `;
     
-    // --- Classe do Botão Neon (Comprar) ---
+    // --- Classe do Botão Neon (Visual Premium Atualizado) ---
     const neonButtonClass = `
-        bg-[#f2bd46] text-white font-bold py-3 px-4 
-        flex items-center justify-center gap-2 rounded-lg 
-        shadow-lg shadow-[#f2bd46]/30 hover:shadow-[#f2bd46]/50
-        transition-all disabled:bg-[#1a1a1a] disabled:shadow-none
-        transform hover:scale-105
+        w-full bg-[#f2bd46] text-black font-extrabold py-4 px-6 text-base sm:text-lg
+        flex items-center justify-center gap-2 rounded-2xl 
+        shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)]
+        transition-all duration-300 disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none disabled:transform-none
+        transform hover:-translate-y-1
     `;
 
+    // --- FUNÇÕES DE LÓGICA (100% Intocadas) ---
     const updateQuantity = (productId, amount) => {
         const newCart = cart.map(item => {
             if (item.id === productId) return { ...item, quantity: Math.max(0, item.quantity + amount) };
@@ -1864,7 +1863,6 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
     const canAfford = userBalance >= cartTotal;
     const difference = cartTotal - userBalance;
 
-    // --- AÇÃO ATUALIZADA: Esta é a ação de confirmação final ---
     const handleConfirmPayment = async () => {
         setIsLoading(true); 
         setError('');
@@ -1881,29 +1879,27 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
             setPaymentData({ orderId: data.orderId }); 
             onPaymentSuccess();
             
-            // ==========================================================
-            // --- CORREÇÃO DO BUG AQUI ---
             // Limpa o carrinho após o pagamento ser bem-sucedido
             setCart([]);
-            // ==========================================================
             
-            setIsConfirmModalOpen(false); // Fecha o modal
+            setIsConfirmModalOpen(false); 
             setPage('postPayment'); 
 
         } catch (err) {
             setError(err.message);
-            setIsConfirmModalOpen(false); // Fecha o modal em caso de erro
+            setIsConfirmModalOpen(false); 
         } finally {
             setIsLoading(false);
         }
     };
 
+    // --- JSX (Visual Premium Glassmorphism Aplicado) ---
     return (
-        <div className="min-h-screen bg-black text-white">
+        <>
             {/* Injeta as animações CSS na página */}
             <style>{keyframes}</style>
             
-            {/* --- MODAL DE CONFIRMAÇÃO --- */}
+            {/* --- MODAL DE CONFIRMAÇÃO (Lógica Mantida) --- */}
             <PaymentConfirmationModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}
@@ -1913,111 +1909,193 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
                 userBalance={userBalance}
             />
 
-            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm shadow-md sticky top-0 z-20 border-b border-gray-700/50">
-                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                    <h1 className="text-2xl font-bold">Meu Carrinho</h1>
-                </div>
-            </header>
-            <main className="container mx-auto p-4 md:p-8">
-                {cart.length === 0 ? (
-                    // --- CARD VAZIO (Estilo de Vidro) ---
-                    <div className="text-center p-8 border-gray-700 backdrop-blur-sm border border-gray-700/50 text-gray-400 rounded-lg animate-surgir">
-                        <ShoppingCart size={48} className="mx-auto mb-4" />
-                        <h2 className="text-2xl font-semibold mb-2">Seu carrinho está vazio</h2>
-                        <p>Adicione produtos da loja para começar a comprar.</p>
-                        <button onClick={() => setPage('home')} className="mt-6 bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-6 rounded-lg transition">Voltar para a Loja</button>
+            <div 
+                className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat pb-20"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+            >
+                {/* Overlay Escuro e Ambient Glow */}
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+                
+                {/* --- HEADER (Glassmorphism) --- */}
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button 
+                            onClick={() => setPage('home')} 
+                            className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meu <span className="text-[#f2bd46]">Carrinho</span></h1>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* --- LISTA DE ITENS VISUAL (Estilo de Vidro) --- */}
-                        <div className="lg:col-span-2 flex flex-col gap-4">
-                            {cart.map(item => (
-                                // --- CARD DO ITEM (Estilo de Vidro) ---
-                                <div key={item.id} className="border-gray-700 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 flex items-center gap-4 animate-surgir">
-                                    {/* Imagem (Maior e Quadrada) */}
-                                    <img 
-                                        src={item.image_url || `https://placehold.co/100x100/374151/ffffff?text=${item.name.replace(' ', '+')}`} 
-                                        alt={item.name} 
-                                        className="w-24 h-24 aspect-square rounded-md object-cover" 
-                                    />
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-lg">{item.name}</h3>
-                                        <p className="text-[#f2bd46] font-bold text-xl">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
-                                    </div>
-                                    {/* Botões de Quantidade (Estilo Moderno) */}
-                                    <div className="flex items-center gap-3 bg-[#1a1a1a]/80 rounded-lg p-1">
-                                        <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-[#1a1a1a] rounded-md"><Minus size={16} /></button>
-                                        <span className="font-bold w-6 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-[#1a1a1a] rounded-md"><Plus size={16} /></button>
-                                    </div>
-                                    <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500 p-2"><Trash2 size={20} /></button>
-                                </div>
-                            ))}
+                </header>
+                
+                <main className="container mx-auto p-4 md:p-8 relative z-10">
+                    {cart.length === 0 ? (
+                        // --- CARD VAZIO (Estilo Premium Glassmorphism) ---
+                        <div className="animate-surgir max-w-2xl mx-auto mt-10 text-center p-12 bg-black/40 backdrop-blur-2xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-2xl flex flex-col items-center">
+                            <div className="bg-gray-800/50 p-6 rounded-full mb-6 border border-gray-700/50 shadow-inner">
+                                <ShoppingCart size={56} className="text-gray-500" />
+                            </div>
+                            <h2 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Seu carrinho está vazio</h2>
+                            <p className="max-w-sm mx-auto text-sm md:text-base text-gray-400 leading-relaxed mb-8">
+                                Parece que você ainda não escolheu nenhum produto. Explore nossa máquina e adicione seus itens favoritos!
+                            </p>
+                            <button 
+                                onClick={() => setPage('home')} 
+                                className="bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 px-8 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-1"
+                            >
+                                Voltar para a Loja
+                            </button>
                         </div>
-                        
-                        {/* --- RESUMO DE PAGAMENTO (Estilo de Vidro e Neon) --- */}
-                        <div className="border-gray-700 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 h-fit sticky top-24 animate-surgir">
-                            <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-4">Resumo do Pedido</h2>
-                            <div className="flex justify-between mb-2 text-gray-300"><span>Subtotal</span><span>R$ {cartTotal.toFixed(2).replace('.', ',')}</span></div>
-                            <div className="flex justify-between mb-4 text-gray-300"><span>Taxas</span><span>R$ 0,00</span></div>
-                            
-                            {/* --- TOTAL (Sem Neon) --- */}
-                            <div className="flex justify-between text-white items-center font-bold text-3xl mb-4 border-t border-gray-700 pt-4">
-                                <span>Total</span>
-                                <span className="text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
-                            </div>
-                            
-                            {/* --- SALDO (Design "Mais Bonito") --- */}
-                            <div className="bg-[#1a1a1a]/80 p-4 rounded-lg flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <Wallet size={20} className="text-green-400" />
-                                    <span className="text-gray-300">Saldo em Carteira</span>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+                            {/* --- LISTA DE ITENS VISUAL (Estilo Premium) --- */}
+                            <div className="lg:col-span-2 flex flex-col gap-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-lg font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2">
+                                        <Package size={18} className="text-[#f2bd46]" /> Produtos Selecionados
+                                    </h3>
+                                    <span className="text-sm font-bold text-gray-500 bg-gray-800/50 px-3 py-1 rounded-full">{cart.length} item(s)</span>
                                 </div>
-                                <span className="font-bold text-green-400 text-lg">R$ {userBalance.toFixed(2).replace('.', ',')}</span>
-                            </div>
-
-                            {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
-                            
-                            {/* --- ALERTA DE SALDO INSUFICIENTE (UX Melhorada) --- */}
-                            {!canAfford && !isLoading && (
-                                <div className="text-center p-4 bg-red-900/50 border border-red-500/50 text-red-300 rounded-lg mb-4">
-                                    <div className="flex items-center justify-center gap-2 font-bold">
-                                        <AlertTriangle size={18} />
-                                        <span>Saldo insuficiente!</span>
-                                    </div>
-                                    <p className="text-sm mt-2">Faltam R$ {difference.toFixed(2).replace('.', ',')} para completar a compra.</p>
-                                    <button onClick={() => setPage('wallet')} className="font-bold bg-[#f2bd46] text-white rounded-md py-2 px-4 text-sm mt-3 hover:bg-[#f2bd46]">
-                                        Adicionar Saldo
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* --- BOTÕES DE AÇÃO --- */}
-                            <div className="flex flex-col gap-3">
-                                <button 
-                                    onClick={() => setIsConfirmModalOpen(true)} // Abre o modal
-                                    className={neonButtonClass}
-                                    disabled={isLoading || !canAfford}
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin" /> : <> <CheckCircle2 /> Finalizar Pagamento </>}
-                                </button>
                                 
-                                <button 
-                                    onClick={clearCart} 
-                                    className="w-full text-sm bg-red-500/20 text-red-400 font-semibold py-2 rounded-lg hover:bg-red-500/30 transition"
-                                >
-                                    Limpar Carrinho
-                                </button>
+                                {cart.map((item, index) => (
+                                    // --- CARD DO ITEM ---
+                                    <div 
+                                        key={item.id} 
+                                        className="bg-black/40 backdrop-blur-xl border border-gray-700/50 hover:border-gray-500/80 hover:bg-black/60 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-6 animate-surgir shadow-lg transition-all duration-300 group"
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        {/* Imagem */}
+                                        <img 
+                                            src={item.image_url || `https://placehold.co/120x120/1a1a1a/4B5563?text=Foto`} 
+                                            alt={item.name} 
+                                            className="w-full sm:w-28 sm:h-28 aspect-square rounded-xl object-cover border border-gray-700/50 shadow-md group-hover:scale-105 transition-transform duration-500" 
+                                        />
+                                        
+                                        <div className="flex-grow min-w-0 flex flex-col justify-center text-center sm:text-left w-full">
+                                            <h3 className="font-extrabold text-white text-lg sm:text-xl truncate">{item.name}</h3>
+                                            <p className="text-2xl font-black text-[#f2bd46] mt-1 tracking-tight">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
+                                        </div>
+                                        
+                                        {/* Controles e Lixeira */}
+                                        <div className="flex sm:flex-col items-center justify-between sm:justify-center w-full sm:w-auto gap-4 sm:gap-3 border-t sm:border-t-0 border-gray-800 pt-4 sm:pt-0 sm:pl-4 sm:border-l">
+                                            {/* Botões de Quantidade Modernos */}
+                                            <div className="flex items-center gap-1 bg-black/60 border border-gray-700 rounded-xl p-1 shadow-inner">
+                                                <button onClick={() => updateQuantity(item.id, -1)} className="p-2 sm:p-2.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors">
+                                                    <Minus size={16} />
+                                                </button>
+                                                <span className="font-bold w-8 text-center text-white text-lg">{item.quantity}</span>
+                                                <button onClick={() => updateQuantity(item.id, 1)} className="p-2 sm:p-2.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors">
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
+                                            
+                                            <button 
+                                                onClick={() => removeFromCart(item.id)} 
+                                                className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-bold"
+                                            >
+                                                <Trash2 size={18} /> <span className="sm:hidden">Remover</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* --- RESUMO DO PEDIDO (Estilo de Vidro e Premium) --- */}
+                            <div className="lg:col-span-1">
+                                <div className="bg-black/40 backdrop-blur-2xl border border-gray-700/50 rounded-3xl p-6 sm:p-8 h-fit sticky top-28 animate-surgir shadow-2xl relative overflow-hidden group">
+                                    {/* Ambient Glow no Resumo */}
+                                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#f2bd46]/5 blur-[60px] rounded-full pointer-events-none z-0 group-hover:bg-[#f2bd46]/10 transition-colors duration-500"></div>
+                                    
+                                    <div className="relative z-10">
+                                        <h2 className="text-xl font-extrabold mb-6 border-b border-gray-800 pb-4 text-white uppercase tracking-widest flex items-center gap-2">
+                                            <FileText size={20} className="text-[#f2bd46]" /> Resumo
+                                        </h2>
+                                        
+                                        <div className="flex justify-between mb-3 text-gray-400 font-medium">
+                                            <span>Subtotal</span>
+                                            <span className="text-white">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                        <div className="flex justify-between mb-6 text-gray-400 font-medium">
+                                            <span>Taxas de conveniência</span>
+                                            <span className="text-green-400 font-bold">Grátis</span>
+                                        </div>
+                                        
+                                        {/* --- TOTAL (Neon Gold) --- */}
+                                        <div className="flex justify-between text-white items-end font-black text-4xl mb-8 border-t border-gray-800 pt-6">
+                                            <span className="text-lg text-gray-400 uppercase tracking-widest mb-1">Total</span>
+                                            <span className="text-[#f2bd46] neon-text-gold tracking-tighter">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                        
+                                        {/* --- SALDO DA CARTEIRA --- */}
+                                        <div className="bg-black/50 border border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 shadow-inner">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-green-500/10 p-2 rounded-lg">
+                                                    <Wallet size={20} className="text-green-400" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Seu Saldo</span>
+                                                    <span className="font-bold text-green-400 text-lg">R$ {userBalance.toFixed(2).replace('.', ',')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {error && (
+                                            <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium p-3 rounded-xl mb-6 text-center flex items-center justify-center gap-2">
+                                                <AlertTriangle size={16} /> {error}
+                                            </div>
+                                        )}
+                                        
+                                        {/* --- ALERTA DE SALDO INSUFICIENTE (Premium Look) --- */}
+                                        {!canAfford && !isLoading && (
+                                            <div className="p-5 bg-red-900/20 border border-red-500/30 rounded-2xl mb-6 shadow-lg backdrop-blur-sm">
+                                                <div className="flex items-center gap-2 font-extrabold text-red-400 mb-2">
+                                                    <AlertTriangle size={20} /> Saldo Insuficiente
+                                                </div>
+                                                <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                                                    Faltam <span className="font-bold text-white">R$ {difference.toFixed(2).replace('.', ',')}</span> para você concluir este pedido.
+                                                </p>
+                                                <button 
+                                                    onClick={() => setPage('wallet')} 
+                                                    className="w-full font-bold bg-white text-black rounded-xl py-3 text-sm hover:bg-gray-200 transition-colors shadow-md flex items-center justify-center gap-2"
+                                                >
+                                                    <PlusCircle size={18} /> Adicionar Saldo Agora
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* --- BOTÕES DE AÇÃO PRINCIPAIS --- */}
+                                        <div className="flex flex-col gap-4">
+                                            <button 
+                                                onClick={() => setIsConfirmModalOpen(true)}
+                                                className={neonButtonClass}
+                                                disabled={isLoading || !canAfford}
+                                            >
+                                                {isLoading ? (
+                                                    <Loader2 className="animate-spin" size={24} />
+                                                ) : (
+                                                    <> <CheckCircle2 size={22} /> {canAfford ? 'Finalizar Pagamento' : 'Saldo Bloqueado'} </>
+                                                )}
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={clearCart} 
+                                                className="w-full text-sm bg-transparent border border-red-500/30 text-red-400 font-bold py-3.5 rounded-2xl hover:bg-red-500/10 hover:border-red-500/50 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Trash2 size={16} /> Limpar Carrinho
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </main>
-        </div>
+                    )}
+                </main>
+            </div>
+        </>
     );
 };
-
 // App.js -> SUBSTITUA o seu componente PixPaymentPage por este
 
 const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
