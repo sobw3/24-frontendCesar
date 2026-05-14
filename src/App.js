@@ -5573,9 +5573,9 @@ const StockManagement = ({ condominiums, token }) => {
     
     React.useEffect(() => { fetchInventory(); }, [fetchInventory]);
 
-    // --- FILTRAGEM (Pesquisa Local) ---
+    // --- FILTRAGEM (Pesquisa Local com Trava de Segurança) ---
     const filteredInventory = inventory.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleInventoryChange = (productId, quantity) => {
@@ -5826,7 +5826,7 @@ const StockManagement = ({ condominiums, token }) => {
                                         <img src={product.image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Img'} className="h-16 w-16 rounded-xl object-cover border border-gray-700/50 shadow-md shrink-0" alt=""/>
                                         <div className="flex-1 min-w-0 pt-1">
                                             <h3 className="font-extrabold text-white text-lg leading-tight tracking-tight mb-1">{product.name}</h3>
-                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">ID: {product.id.substring(0,8)}</p>
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">ID: {product.id}</p>
                                         </div>
                                     </div>
                                     <button 
