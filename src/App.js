@@ -2851,77 +2851,99 @@ const EnjoyPage = ({ setPage, user }) => {
 
 const DepositSuccessPage = ({ setPage }) => {
     
-    // O seu useEffect de 5 segundos está perfeito e foi mantido
+    // --- LÓGICA INTOCADA ---
     React.useEffect(() => {
-        // Inicia um temporizador para redirecionar para a carteira após 5 segundos
         const timer = setTimeout(() => {
             setPage('wallet');
         }, 5000);
-        // Limpa o temporizador se o utilizador sair da página antes
         return () => clearTimeout(timer);
     }, [setPage]);
 
-    // --- DEFINIÇÃO DAS ANIMAÇÕES (Surgindo + Checkmark + Barra de Progresso) ---
+    // --- DEFINIÇÃO DAS ANIMAÇÕES PREMIUM ---
     const keyframes = `
         @keyframes surgir {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes draw-check { 
             100% { stroke-dashoffset: 0; } 
         }
         @keyframes fade-in-scale { 
-            0% { opacity: 0; transform: scale(0.7); } 
+            0% { opacity: 0; transform: scale(0.5); } 
+            60% { transform: scale(1.1); }
             100% { opacity: 1; transform: scale(1); } 
         }
-        /* Nova animação para a barra de progresso de 5s */
         @keyframes fill-redirect-bar {
             from { width: 0%; }
             to { width: 100%; }
         }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.3); }
+        }
         .animate-surgir {
-            animation: surgir 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-fill-redirect {
-            /* Duração de 5 segundos (5000ms) */
             animation: fill-redirect-bar 5s linear forwards;
+        }
+        .animate-glow {
+            animation: pulse-glow 2.5s infinite ease-in-out;
         }
     `;
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4 text-center">
+        <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-4 text-center relative overflow-hidden">
             <style>{keyframes}</style>
             
-            {/* --- CARD REDESENHADO (Glassmorphism) --- */}
+            {/* --- GLOW AMBIENTAL NO FUNDO --- */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-green-500/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+            
+            {/* --- CARD REDESENHADO (Glassmorphism Premium) --- */}
             <div className="w-full max-w-md 
-                            border-gray-700 backdrop-blur-sm 
-                            border border-gray-700/50 
-                            p-8 rounded-2xl shadow-2xl 
+                            bg-black/40 backdrop-blur-2xl 
+                            border border-green-500/30 
+                            p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] 
                             flex flex-col items-center justify-center 
-                            min-h-[400px] overflow-hidden relative 
-                            animate-surgir"
+                            min-h-[420px] overflow-hidden relative 
+                            animate-surgir z-10"
             >
                 
-                {/* --- ÍCONE DE CHECKMARK ANIMADO (Neon Verde) --- */}
-                <svg className="w-32 h-32" viewBox="0 0 52 52" style={{ animation: `fade-in-scale 0.5s ease-out forwards` }}>
-                    <path d="M14 27l5.917 4.917L38 18"
-                        fill="none" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"
-                        className="stroke-current text-green-400"
-                        style={{
-                            filter: 'drop-shadow(0 0 10px rgba(74, 222, 128, 0.7))', // Neon
-                            strokeDasharray: 48, strokeDashoffset: 48,
-                            animation: `draw-check 0.6s ease-out 0.3s forwards`
-                        }}/>
-                </svg>
+                {/* --- ÍCONE DE CHECKMARK ANIMADO COM CÍRCULO GLOW --- */}
+                <div 
+                    className="w-32 h-32 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center mb-8 animate-glow"
+                    style={{ animation: `fade-in-scale 0.6s ease-out forwards` }}
+                >
+                    <svg className="w-16 h-16" viewBox="0 0 52 52">
+                        <path d="M14 27l5.917 4.917L38 18"
+                            fill="none" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"
+                            className="stroke-current text-green-400"
+                            style={{
+                                filter: 'drop-shadow(0 0 8px rgba(74, 222, 128, 0.7))',
+                                strokeDasharray: 48, strokeDashoffset: 48,
+                                animation: `draw-check 0.6s ease-out 0.4s forwards`
+                            }}
+                        />
+                    </svg>
+                </div>
 
-                <h1 className="text-3xl font-bold text-green-400 mt-4">Depósito Aprovado!</h1>
-                <p className="text-gray-300 mt-3 text-base">O valor foi creditado na sua carteira.</p>
-                <p className="text-gray-400 mt-1 text-sm">A redirecionar para a carteira...</p>
+                <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-200 tracking-tight mb-3">
+                    Depósito Aprovado!
+                </h1>
+                
+                <p className="text-gray-300 text-lg font-medium mb-8">
+                    O valor já está disponível na sua carteira.
+                </p>
+                
+                <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">
+                    Redirecionando...
+                </p>
                 
                 {/* --- BARRA DE PROGRESSO DE REDIRECIONAMENTO (5s) --- */}
-                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-[#1a1a1a]/50">
-                    <div className="h-full bg-green-500 animate-fill-redirect"
-                         style={{ filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.5))' }}
+                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-gray-900/80">
+                    <div 
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-400 animate-fill-redirect"
+                        style={{ filter: 'drop-shadow(0 0 6px rgba(52, 211, 153, 0.8))' }}
                     ></div>
                 </div>
             </div>
