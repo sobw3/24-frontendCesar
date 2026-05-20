@@ -3574,7 +3574,7 @@ const Footer = () => {
                                         <Building2 size={16} className="text-gray-500" />
                                     </div>
                                     <span className="text-sm leading-relaxed">
-                                        Hotel S4<br/>
+                                        Hotel S4, Distribuidora Empório M4 Business <br/>
                                         R. 36 Sul, 15<br/>
                                         Águas Claras, Brasília - DF, 71931-360
                                     </span>
