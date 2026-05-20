@@ -1007,7 +1007,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
     };
 
     const handleSupportClick = () => {
-        // Coloque o número do WhatsApp com DDI (55 para Brasil) e DDD. Ex: 5511999999999
+        // Coloque o número do WhatsApp com DDI (55 para Brasil) e DDD. Ex: 5561992729183
         const whatsappNumber = "5561992729183"; 
         const message = "Olá! Estou com dificuldades para fazer meu cadastro no Daniel Marques Market. Podem me ajudar?";
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -3390,7 +3390,7 @@ const Footer = () => {
 
     // --- AÇÕES ---
     const handleFranquiaClick = () => {
-        const whatsappNumber = "5511999999999"; // Coloque seu número aqui
+        const whatsappNumber = "5561992729183"; // Coloque seu número aqui
         const message = "Olá! Tenho interesse em ser dono de uma franquia do Daniel Marques Market. Podem me passar mais informações?";
         window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
