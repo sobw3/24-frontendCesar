@@ -1008,7 +1008,7 @@ const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
 
     const handleSupportClick = () => {
         // Coloque o número do WhatsApp com DDI (55 para Brasil) e DDD. Ex: 5511999999999
-        const whatsappNumber = "5511999999999"; 
+        const whatsappNumber = "5561992729183"; 
         const message = "Olá! Estou com dificuldades para fazer meu cadastro no Daniel Marques Market. Podem me ajudar?";
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -3557,7 +3557,7 @@ const Footer = () => {
                                     <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
                                         <Phone size={16} className="text-[#f2bd46]" />
                                     </div>
-                                    <span className="text-sm font-medium">(11) 99999-9999</span>
+                                    <span className="text-sm font-medium">(61) 99272-9183</span>
                                 </a>
                             </li>
                             <li>
