@@ -3553,7 +3553,7 @@ const Footer = () => {
                         </h3>
                         <ul className="flex flex-col gap-5">
                             <li>
-                                <a href="tel:+5511999999999" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                <a href="tel:+5561992729183" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                                     <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
                                         <Phone size={16} className="text-[#f2bd46]" />
                                     </div>
@@ -3574,9 +3574,9 @@ const Footer = () => {
                                         <Building2 size={16} className="text-gray-500" />
                                     </div>
                                     <span className="text-sm leading-relaxed">
-                                        Edifício Corporate Business<br/>
-                                        Av. Paulista, 1000 - Bela Vista<br/>
-                                        São Paulo - SP, 01310-100
+                                        Hotel S4<br/>
+                                        R. 36 Sul, 15<br/>
+                                        Águas Claras, Brasília - DF, 71931-360
                                     </span>
                                 </div>
                             </li>
