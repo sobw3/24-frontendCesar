@@ -3561,7 +3561,7 @@ const Footer = () => {
                                 </a>
                             </li>
                             <li>
-                                <a href="mailto:suporte@danielmarques.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
+                                <a href="mailto:danielmarquesmarket@gmail.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                                     <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
                                         <Mail size={16} className="text-[#f2bd46]" />
                                     </div>
