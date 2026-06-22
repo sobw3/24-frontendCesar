@@ -10,6 +10,8 @@ import Slider from "react-slick"; // E adicione esta também
 // --- CONFIGURAÇÃO DA API ---
 const API_URL = process.env.REACT_APP_API_URL || 'https://two4hprontobackendcesar.onrender.com';
 const MERCADOPAGO_PUBLIC_KEY = process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY;
+const BRAND_LOGO_URL = 'https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png';
+
 
 
 // --- FUNÇÕES HELPER ---
@@ -1272,7 +1274,7 @@ const BannerCarousel = () => {
                         <img 
                             src={banner.imageUrl} 
                             alt={`Banner ${banner.id}`} 
-                            className="w-full h-56 md:h-64 object-cover rounded-3xl"
+                            className="w-full h-36 sm:h-44 md:h-64 object-cover rounded-3xl"
                         />
                     </div>
                 ))}
@@ -1296,6 +1298,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
     const [isSearchFocused, setIsSearchFocused] = React.useState(false);
     const [unreadTickets, setUnreadTickets] = React.useState(0);
     const [selectedCategory, setSelectedCategory] = React.useState('Todos');
+    const [dailyDeals, setDailyDeals] = React.useState([]);
 
     const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
 
@@ -1337,6 +1340,21 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
 
         fetchProducts();
     }, [user?.condoId]);
+
+    React.useEffect(() => {
+        const fetchDailyDeals = async () => {
+            try {
+                const response = await fetch(`${API_URL}/api/public/promotions/daily`);
+                if (!response.ok) return;
+                const data = await response.json();
+                const list = Array.isArray(data) ? data : (Array.isArray(data?.promotions) ? data.promotions : []);
+                setDailyDeals(list);
+            } catch (error) {
+                console.warn('Promoções do dia ainda não disponíveis no backend:', error?.message);
+            }
+        };
+        fetchDailyDeals();
+    }, []);
 
     React.useEffect(() => {
         const fetchUnreadTickets = async () => {
@@ -1409,6 +1427,24 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
         return (saleItems.length ? saleItems : items).slice(0, 6);
     }, [allProducts]);
 
+    const promotionProducts = React.useMemo(() => {
+        const remoteDeals = Array.isArray(dailyDeals) ? dailyDeals.filter(Boolean) : [];
+        const localDeals = allProducts.filter(p => p.is_on_sale || p.promotional_price || (p.original_price && Number(p.original_price) > Number(p.sale_price))).slice(0, 7);
+        return (remoteDeals.length ? remoteDeals : localDeals).slice(0, 7);
+    }, [dailyDeals, allProducts]);
+
+    const handleDailyDealClick = (product) => {
+        const dealCondoId = product.condo_id || product.condoId || product.condominium_id;
+        const targetMachine = condos.find(c => Number(c.id) === Number(dealCondoId));
+        if (targetMachine && Number(targetMachine.id) !== Number(user?.condoId)) {
+            onCondoSelected(targetMachine, true);
+            setSelectedCategory('Todos');
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 80);
+            return;
+        }
+        handleBuyNow(product);
+    };
+
     const handleAddToCart = (product) => addToCart(product);
     const handleBuyNow = (product) => {
         addToCart(product);
@@ -1434,9 +1470,9 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,189,70,0.12),transparent_35%)] pointer-events-none"></div>
             <div className="relative p-6 h-full flex flex-col">
                 <div className="flex justify-between items-start mb-8">
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.35em] text-[#f2bd46] font-black">Daniel Marques</p>
-                        <h2 className="text-2xl font-black text-white tracking-tight">Market 24h</h2>
+                    <div className="min-w-0">
+                        <img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="h-12 w-auto object-contain mb-3" />
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-[#f2bd46] font-black">Market 24h</p>
                     </div>
                     <button onClick={() => setShowMenu(false)} className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
                         <X className="text-white" size={22} />
@@ -1580,23 +1616,23 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                         </div>
                     )}
                 </div>
-                <div className="p-4 sm:p-5">
-                    <h3 className="font-black text-white text-base sm:text-lg leading-tight line-clamp-2 min-h-[2.6rem]">{product.name}</h3>
+                <div className="p-3.5 sm:p-5">
+                    <h3 className="font-black text-white text-sm sm:text-lg leading-tight line-clamp-2 min-h-[2.6rem]">{product.name}</h3>
                     <div className="mt-3 flex items-end justify-between gap-3">
                         <div>
                             {isOnSale && product.original_price && (
                                 <p className="text-xs text-gray-500 line-through font-bold">{money(product.original_price)}</p>
                             )}
-                            <p className="text-2xl sm:text-3xl font-black text-[#f2bd46] tracking-tight">{money(product.sale_price)}</p>
+                            <p className="text-xl sm:text-3xl font-black text-[#f2bd46] tracking-tight">{money(product.sale_price)}</p>
                         </div>
                         {!isOutOfStock && <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">{stock} disp.</p>}
                     </div>
 
-                    <div className="grid grid-cols-[auto_1fr] gap-2 mt-5">
+                    <div className="grid grid-cols-[auto_1fr] gap-2 mt-4 sm:mt-5">
                         <button
                             onClick={() => handleAddToCart(product)}
                             disabled={isOutOfStock}
-                            className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 text-white hover:border-[#f2bd46]/50 hover:text-[#f2bd46] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                            className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-white/5 border border-white/10 text-white hover:border-[#f2bd46]/50 hover:text-[#f2bd46] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
                             title="Adicionar ao carrinho"
                         >
                             <Plus size={20}/>
@@ -1604,13 +1640,57 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                         <button
                             onClick={() => handleBuyNow(product)}
                             disabled={isOutOfStock}
-                            className="h-12 rounded-2xl bg-[#f2bd46] text-black font-black hover:bg-[#e3ae35] transition-all disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="h-11 sm:h-12 rounded-2xl bg-[#f2bd46] text-black font-black hover:bg-[#e3ae35] transition-all disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             <ShoppingCart size={18}/> Comprar
                         </button>
                     </div>
                 </div>
             </article>
+        );
+    };
+
+    const DailyPromotionsApp = () => {
+        if (!promotionProducts.length) return null;
+        const getMachineName = (product) => {
+            const dealCondoId = product.condo_id || product.condoId || product.condominium_id;
+            return condos.find(c => Number(c.id) === Number(dealCondoId))?.name || currentCondo?.name || 'Ponto disponível';
+        };
+
+        return (
+            <section className="premium-in bg-gradient-to-br from-[#f2bd46]/12 via-white/[0.035] to-black border border-[#f2bd46]/20 rounded-[1.6rem] sm:rounded-[2rem] p-4 sm:p-5 shadow-2xl relative overflow-hidden">
+                <div className="absolute -right-16 -top-16 w-48 h-48 bg-[#f2bd46]/15 blur-[70px] rounded-full"></div>
+                <div className="relative flex items-start justify-between gap-3 mb-4">
+                    <div>
+                        <p className="text-[10px] uppercase tracking-[0.28em] text-[#f2bd46] font-black">Promoções do dia</p>
+                        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">Ofertas ativas agora</h2>
+                        <p className="text-xs sm:text-sm text-gray-400 mt-1">Valem no ponto onde o produto está cadastrado. Toque para ir direto à máquina.</p>
+                    </div>
+                    <div className="h-11 w-11 rounded-2xl bg-[#f2bd46] text-black flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(242,189,70,.25)]"><Flame size={21}/></div>
+                </div>
+                <div className="relative flex gap-3 overflow-x-auto custom-scrollbar pb-1">
+                    {promotionProducts.map((product, index) => {
+                        const promoPrice = Number(product.promotional_price || product.promo_price || product.sale_price || 0);
+                        const originalPrice = Number(product.original_price || product.sale_price || product.regular_price || 0);
+                        return (
+                            <button key={`${product.id || product.product_id}-${index}`} onClick={() => handleDailyDealClick(product)} className="min-w-[165px] sm:min-w-[210px] text-left bg-black/55 border border-white/10 hover:border-[#f2bd46]/50 rounded-3xl p-3 transition-all group">
+                                <ProductImage product={product} className="w-full h-28 sm:h-32 object-cover rounded-2xl bg-black border border-white/10 group-hover:scale-[1.02] transition-transform" />
+                                <div className="mt-3">
+                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest truncate">{getMachineName(product)}</p>
+                                    <p className="font-black text-white text-sm sm:text-base line-clamp-2 min-h-[2.4rem] mt-1">{product.name}</p>
+                                    <div className="flex items-end justify-between gap-2 mt-2">
+                                        <div>
+                                            {originalPrice > promoPrice && <p className="text-[11px] text-gray-500 line-through font-bold">{money(originalPrice)}</p>}
+                                            <p className="text-lg sm:text-xl text-[#f2bd46] font-black">{money(promoPrice)}</p>
+                                        </div>
+                                        <span className="text-[10px] bg-[#f2bd46] text-black font-black rounded-full px-2 py-1">Ver</span>
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </section>
         );
     };
 
@@ -1669,17 +1749,19 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             {showMenu && <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40" onClick={() => setShowMenu(false)}></div>}
 
             <header className="sticky top-0 bg-black/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_15px_50px_rgba(0,0,0,.55)] z-30">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+                <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
                     <div className="flex items-center gap-3 md:gap-5 min-w-0">
-                        <button onClick={() => setShowMenu(true)} className="p-3 bg-white/[0.04] border border-white/10 rounded-2xl hover:border-[#f2bd46]/40 transition-colors relative">
+                        <button onClick={() => setShowMenu(true)} className="p-2.5 sm:p-3 bg-white/[0.04] border border-white/10 rounded-2xl hover:border-[#f2bd46]/40 transition-colors relative">
                             <Menu size={22} />
                             {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-4 min-w-4 rounded-full text-[9px] font-black flex items-center justify-center px-1">{unreadTickets}</span>}
                         </button>
-                        <button onClick={() => setPage('home')} className="hidden sm:flex items-center gap-3 min-w-0">
-                            <div className="h-11 w-11 rounded-2xl bg-[#f2bd46] text-black flex items-center justify-center font-black shadow-[0_0_30px_rgba(242,189,70,.25)]">DM</div>
-                            <div className="text-left leading-tight">
-                                <p className="text-white font-black tracking-tight">Market 24h</p>
-                                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest truncate max-w-[220px]">{currentCondo?.name || 'Escolha sua máquina'}</p>
+                        <button onClick={() => setPage('home')} className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className="h-10 w-20 sm:h-11 sm:w-28 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center px-2 shadow-[0_0_30px_rgba(242,189,70,.12)]">
+                                <img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="max-h-8 sm:max-h-9 w-auto object-contain" />
+                            </div>
+                            <div className="hidden min-[380px]:block text-left leading-tight min-w-0">
+                                <p className="text-white font-black tracking-tight text-sm sm:text-base">Market 24h</p>
+                                <p className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-widest truncate max-w-[120px] sm:max-w-[220px]">{currentCondo?.name || 'Escolha sua máquina'}</p>
                             </div>
                         </button>
                     </div>
@@ -1698,33 +1780,33 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                             <MessageSquare size={20} />
                             {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-5 min-w-5 rounded-full text-[10px] font-black flex items-center justify-center px-1">{unreadTickets}</span>}
                         </button>
-                        <button onClick={() => setPage('cart')} className="relative h-12 w-12 md:w-auto md:px-5 rounded-2xl bg-[#f2bd46] text-black font-black flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(242,189,70,.25)] hover:bg-[#e4ae35] transition-colors">
+                        <button onClick={() => setPage('cart')} className="relative h-11 w-11 sm:h-12 sm:w-12 md:w-auto md:px-5 rounded-2xl bg-[#f2bd46] text-black font-black flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(242,189,70,.25)] hover:bg-[#e4ae35] transition-colors">
                             <ShoppingCart size={21}/>
                             <span className="hidden md:inline">Carrinho</span>
                             {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white font-black rounded-full h-6 min-w-6 px-2 flex items-center justify-center text-xs border-2 border-black">{totalItemsInCart}</span>}
                         </button>
                     </div>
                 </div>
-                <div className="container mx-auto px-4 pb-4 md:hidden"><SearchBox mobile /></div>
+                <div className="container mx-auto px-3 sm:px-4 pb-3 md:hidden"><SearchBox mobile /></div>
             </header>
 
-            <main className="container mx-auto px-4 py-6 md:py-9 relative z-10 space-y-8 pb-32">
+            <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-9 relative z-10 space-y-5 sm:space-y-8 pb-32">
                 <section className="premium-in grid grid-cols-1 lg:grid-cols-[1.25fr_.75fr] gap-6 items-stretch">
-                    <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.025] border border-white/10 rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden relative min-h-[310px] flex flex-col justify-between">
+                    <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.025] border border-white/10 rounded-[1.6rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl overflow-hidden relative min-h-[230px] sm:min-h-[310px] flex flex-col justify-between">
                         <div className="absolute -right-20 -top-20 w-80 h-80 bg-[#f2bd46]/10 blur-[85px] rounded-full"></div>
                         <div className="relative z-10">
                             <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-full px-3 py-2">
                                 <Shield size={14}/> Compra rápida e monitorada
                             </p>
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mt-5 leading-tight">
+                            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white tracking-tight mt-4 sm:mt-5 leading-tight">
                                 Olá, <span className="text-[#f2bd46]">{(user?.name || 'cliente').split(' ')[0]}</span>. Escolha, pague e retire.
                             </h1>
                             <p className="text-gray-400 mt-4 max-w-xl leading-relaxed">Você está comprando em <span className="text-white font-black">{currentCondo?.name || 'uma máquina Daniel Marques Market'}</span>. Após o pagamento, a porta será liberada automaticamente.</p>
                         </div>
-                        <div className="relative z-10 grid grid-cols-3 gap-3 mt-8">
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-4"><p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">Saldo</p><p className="text-lg md:text-2xl font-black text-[#f2bd46] mt-1">{money(userBalance)}</p></div>
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-4"><p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">Carrinho</p><p className="text-lg md:text-2xl font-black text-white mt-1">{totalItemsInCart} itens</p></div>
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-4"><p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">Total</p><p className="text-lg md:text-2xl font-black text-white mt-1">{money(cartTotal)}</p></div>
+                        <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 mt-5 sm:mt-8">
+                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Saldo</p><p className="text-base sm:text-lg md:text-2xl font-black text-[#f2bd46] mt-1">{money(userBalance)}</p></div>
+                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Carrinho</p><p className="text-base sm:text-lg md:text-2xl font-black text-white mt-1">{totalItemsInCart} itens</p></div>
+                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Total</p><p className="text-base sm:text-lg md:text-2xl font-black text-white mt-1">{money(cartTotal)}</p></div>
                         </div>
                     </div>
 
@@ -1737,6 +1819,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     </div>
                 </section>
 
+                <DailyPromotionsApp />
                 <MachineSwitcher />
                 <FeaturedStrip />
 
@@ -1802,7 +1885,7 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                                     <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">{category}</h3>
                                     <div className="h-px bg-gradient-to-r from-white/15 to-transparent flex-grow"></div>
                                 </div>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                                     {items.map(product => <ProductCard key={product.id} product={product} />)}
                                 </div>
                             </section>
@@ -2089,9 +2172,9 @@ const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSucce
             <ConfirmModal />
 
             <header className="sticky top-0 z-30 bg-black/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_15px_55px_rgba(0,0,0,.55)]">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+                <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="h-12 w-12 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-[#f2bd46]/40 flex items-center justify-center transition-colors"><ArrowLeft size={22}/></button>
+                        <button onClick={() => setPage('home')} className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-[#f2bd46]/40 flex items-center justify-center transition-colors"><ArrowLeft size={22}/></button>
                         <div>
                             <p className="text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black">Checkout</p>
                             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Meu carrinho</h1>
@@ -7309,520 +7392,594 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
 // App.js -> SUBSTITUA o seu componente AdminDashboard por este
 
 const AdminDashboard = ({ onLogout }) => {
-    const [activeTab, setActiveTab] = React.useState('dashboard');
+    const token = localStorage.getItem('adminToken');
+    const [activeTab, setActiveTab] = React.useState('overview');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
     const [condominiums, setCondominiums] = React.useState([]);
-    const [products, setProducts] = React.useState([]); 
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [products, setProducts] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
     const [isCondoModalOpen, setIsCondoModalOpen] = React.useState(false);
     const [currentCondo, setCurrentCondo] = React.useState(null);
     const [isProductModalOpen, setIsProductModalOpen] = React.useState(false);
     const [currentProduct, setCurrentProduct] = React.useState(null);
-    
-    // NOVO: Estado para controlar o menu no telemóvel
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-    
-    const token = localStorage.getItem('adminToken');
 
-    const fetchData = React.useCallback(async (dataType, setData, params = '') => {
+    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
+    const number = (value) => Number(value || 0).toLocaleString('pt-BR');
+    const adminFetch = React.useCallback(async (path, options = {}) => {
+        const response = await fetch(`${API_URL}${path}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...(options.headers || {})
+            }
+        });
+        const text = await response.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+        if (!response.ok) throw new Error(data?.message || data?.error || `Falha na rota ${path}`);
+        return data;
+    }, [token]);
+
+    const refreshBaseData = React.useCallback(async () => {
         setIsLoading(true); setError('');
         try {
-            const response = await fetch(`${API_URL}/api/admin/${dataType}${params}`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error(`Falha ao buscar ${dataType}.`);
-            const data = await response.json();
-            setData(data);
+            const [condosData, productsData] = await Promise.all([
+                adminFetch('/api/admin/condominiums').catch(() => []),
+                adminFetch('/api/admin/products').catch(() => [])
+            ]);
+            setCondominiums(Array.isArray(condosData) ? condosData : []);
+            setProducts(Array.isArray(productsData) ? productsData : []);
         } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, [token]);
+    }, [adminFetch]);
 
-    React.useEffect(() => {
-        if (condominiums.length === 0) fetchData('condominiums', setCondominiums);
-        if (products.length === 0) fetchData('products', setProducts);
-    }, [condominiums.length, products.length, fetchData]);
+    React.useEffect(() => { refreshBaseData(); }, [refreshBaseData]);
 
-    // --- FUNÇÕES DE CONDOMÍNIO ---
     const handleOpenCondoModal = (condo = null) => { setCurrentCondo(condo); setIsCondoModalOpen(true); };
-    const handleCloseCondoModal = () => { setIsCondoModalOpen(false); setCurrentCondo(null); };
+    const handleCloseCondoModal = () => { setCurrentCondo(null); setIsCondoModalOpen(false); };
     const handleSaveCondo = async (condoData) => {
         const method = condoData.id ? 'PUT' : 'POST';
-        const url = condoData.id ? `${API_URL}/api/admin/condominiums/${condoData.id}` : `${API_URL}/api/admin/condominiums`;
+        const url = condoData.id ? `/api/admin/condominiums/${condoData.id}` : '/api/admin/condominiums';
         try {
-            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(condoData) });
-            if (!response.ok) throw new Error('Falha ao salvar condomínio.');
-            fetchData('condominiums', setCondominiums);
+            await adminFetch(url, { method, body: JSON.stringify(condoData) });
             handleCloseCondoModal();
+            refreshBaseData();
         } catch (err) { alert(err.message); }
     };
     const handleDeleteCondo = async (id) => {
-        if (window.confirm('Tem a certeza que quer apagar este condomínio?')) {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/condominiums/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Falha ao apagar condomínio.');
-                fetchData('condominiums', setCondominiums);
-                alert(data.message);
-            } catch (err) { alert(err.message); }
-        }
-    };
-    
-    // --- FUNÇÕES DE PRODUTO ---
-    const handleOpenProductModal = (product = null) => { setCurrentProduct(product); setIsProductModalOpen(true); }; 
-    const handleCloseProductModal = () => { setIsProductModalOpen(false); setCurrentProduct(null); };
-    
-    const handleSaveProduct = async (productData) => {
-        const method = productData.id ? 'PUT' : 'POST';
-        const url = productData.id ? `${API_URL}/api/admin/products/${productData.id}` : `${API_URL}/api/admin/products`;
+        if (!window.confirm('Tem certeza que deseja apagar este ponto de venda?')) return;
         try {
-            const response = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(productData) 
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Falha ao salvar produto.');
-            }
-            fetchData('products', setProducts);
-            handleCloseProductModal();
+            await adminFetch(`/api/admin/condominiums/${id}`, { method: 'DELETE' });
+            refreshBaseData();
         } catch (err) { alert(err.message); }
     };
 
-    const handleDeleteProduct = async (id) => { 
-        if (window.confirm('Tem a certeza que quer apagar este produto?')) {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                if (!response.ok) throw new Error('Falha ao apagar produto.');
-                fetchData('products', setProducts);
-            } catch (err) { alert(err.message); }
-        }
+    const handleOpenProductModal = (product = null) => { setCurrentProduct(product); setIsProductModalOpen(true); };
+    const handleCloseProductModal = () => { setCurrentProduct(null); setIsProductModalOpen(false); };
+    const handleSaveProduct = async (productData) => {
+        const method = productData.id ? 'PUT' : 'POST';
+        const url = productData.id ? `/api/admin/products/${productData.id}` : '/api/admin/products';
+        try {
+            await adminFetch(url, { method, body: JSON.stringify(productData) });
+            handleCloseProductModal();
+            refreshBaseData();
+        } catch (err) { alert(err.message); }
+    };
+    const handleDeleteProduct = async (id) => {
+        if (!window.confirm('Tem certeza que deseja apagar este produto do catálogo?')) return;
+        try {
+            await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+            refreshBaseData();
+        } catch (err) { alert(err.message); }
     };
 
-    const ProductManager = () => {
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [filterCategory, setFilterCategory] = React.useState('all');
-    const [currentPage, setCurrentPage] = React.useState(1);
-    const itemsPerPage = 10; // 10 produtos por página
-    
-    // 1. Filtragem (Lógica 100% Intocada)
-    const filteredProducts = products.filter(product => {
-        const matchesSearch = (product.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = filterCategory === 'all' || !filterCategory || product.category === filterCategory;
-        return matchesSearch && matchesCategory;
-    });
-    
-    // 2. Paginação (Lógica 100% Intocada)
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+    const tabs = [
+        { id: 'overview', label: 'Central', short: 'Central', icon: <LayoutDashboard size={20} /> },
+        { id: 'dre', label: 'Financeiro IA', short: 'DRE', icon: <PieChart size={20} /> },
+        { id: 'promotions', label: 'Promoções automáticas', short: 'Promo', icon: <Flame size={20} /> },
+        { id: 'audit', label: 'Abastecimento e auditoria', short: 'Auditoria', icon: <Shield size={20} /> },
+        { id: 'losses', label: 'Perdas e furtos', short: 'Perdas', icon: <AlertTriangle size={20} /> },
+        { id: 'purchases', label: 'Compras e fornecedores', short: 'Compras', icon: <ShoppingCart size={20} /> },
+        { id: 'clients-intel', label: 'Clientes e advertências', short: 'Clientes', icon: <UsersIcon size={20} /> },
+        { id: 'products', label: 'Produtos', short: 'Produtos', icon: <Package size={20} /> },
+        { id: 'stock', label: 'Estoque', short: 'Estoque', icon: <Refrigerator size={20} /> },
+        { id: 'points', label: 'Pontos de venda', short: 'Pontos', icon: <Building2 size={20} /> },
+        { id: 'sales', label: 'Vendas', short: 'Vendas', icon: <DollarSign size={20} /> },
+        { id: 'cashier', label: 'Caixa central', short: 'Caixa', icon: <PiggyBank size={20} /> },
+        { id: 'critical', label: 'Validade e críticos', short: 'Críticos', icon: <Bell size={20} /> }
+    ];
 
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+    const activeMeta = tabs.find(t => t.id === activeTab) || tabs[0];
+    const closeAndGo = (tab) => { setActiveTab(tab); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-    // Resetar página quando filtrar
-    React.useEffect(() => { setCurrentPage(1); }, [searchQuery, filterCategory]);
-
-    const nextPage = () => { if (currentPage < totalPages) setCurrentPage(prev => prev + 1); };
-    const prevPage = () => { if (currentPage > 1) setCurrentPage(prev => prev - 1); };
-
-    // ==============================================
-    // --- ANIMAÇÕES E CLASSES PREMIUM ---
-    // ==============================================
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-surgir {
-            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
-    `;
-
-    return (
-        <div className="flex flex-col gap-6 md:gap-8 pb-12 relative z-10">
-            <style>{keyframes}</style>
-
-            {/* --- HEADER --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
-                <div>
-                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
-                        Catálogo de Produtos
-                    </h2>
-                    <p className="text-gray-400 font-medium text-sm">Gerencie seu estoque, preços e disponibilidade</p>
+    const AdminPageHeader = ({ eyebrow, title, description, action }) => (
+        <div className="mb-5 sm:mb-7">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.24em] text-[#f2bd46] font-black">{eyebrow}</p>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mt-1 leading-tight">{title}</h1>
+                    {description && <p className="text-sm sm:text-base text-gray-400 mt-2 leading-relaxed max-w-3xl">{description}</p>}
                 </div>
-                <button 
-                    onClick={() => handleOpenProductModal()} 
-                    className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 md:py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 hover:-translate-y-0.5"
-                >
-                    <PlusCircle size={20} /> Novo Produto
-                </button>
+                {action && <div className="shrink-0">{action}</div>}
             </div>
-            
-            {/* --- FILTROS RESPONSIVOS (Glassmorphism) --- */}
-            <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 relative overflow-hidden animate-surgir" style={{ animationDelay: '50ms' }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
-                
-                <div className="flex flex-col md:flex-row gap-5 items-end relative z-10">
-                    <div className="w-full md:flex-grow">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Pesquisar Produto</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Search className="text-gray-500" size={18} />
-                            </div>
-                            <input 
-                                type="text" 
-                                placeholder="Nome, marca..." 
-                                value={searchQuery} 
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 pl-11 pr-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all placeholder-gray-600"
-                            />
-                        </div>
-                    </div>
-                    <div className="w-full md:w-auto md:min-w-[280px]">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Filtrar por Categoria</label>
-                        <select 
-                            value={filterCategory} 
-                            onChange={(e) => setFilterCategory(e.target.value)} 
-                            className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer appearance-none"
-                        >
-                            <option value="all">Todas as Categorias</option>
-                            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {isLoading && activeTab === 'products' ? (
-                <div className="flex flex-col justify-center items-center h-64 gap-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl animate-surgir">
-                    <Loader2 className="animate-spin text-[#f2bd46]" size={48} />
-                    <span className="text-gray-400 font-bold tracking-widest text-sm animate-pulse">CARREGANDO CATÁLOGO...</span>
-                </div>
-            ) : (
-                <div className="animate-surgir" style={{ animationDelay: '100ms' }}>
-                    
-                    {/* --- VISÃO PC (Tabela Premium Glassmorphism) --- */}
-                    <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
-                        <div className="overflow-x-auto custom-scrollbar">
-                            <table className="w-full text-left whitespace-nowrap">
-                                <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
-                                    <tr>
-                                        <th className="p-5">Produto</th>
-                                        <th className="p-5">Categoria</th>
-                                        <th className="p-5">Preço Venda</th>
-                                        <th className="p-5 text-center">Promoção</th>
-                                        <th className="p-5 text-center">Estoque Total</th>
-                                        <th className="p-5 text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-800/80">
-                                    {currentItems.length > 0 ? currentItems.map(product => (
-                                        <tr key={product.id} className="hover:bg-white/5 transition-colors duration-300">
-                                            <td className="p-5 flex items-center gap-4">
-                                                <img src={product.image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Img'} className="h-12 w-12 rounded-xl object-cover border border-gray-700/50 shadow-sm" alt={product.name}/>
-                                                <span className="font-extrabold text-white text-base truncate max-w-[200px]">{product.name}</span>
-                                            </td>
-                                            <td className="p-5 text-gray-400 font-medium">
-                                                <span className="bg-gray-800/50 px-3 py-1 rounded-full text-xs border border-gray-700/50">{product.category || 'Sem Categoria'}</span>
-                                            </td>
-                                            <td className="p-5">
-                                                {product.promotional_price ? (
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs text-gray-500 line-through mb-0.5">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
-                                                        <span className="text-green-400 font-black tracking-tight text-lg shadow-green-400/20 drop-shadow-md">R$ {parseFloat(product.promotional_price).toFixed(2)}</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-white font-black tracking-tight text-lg">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
-                                                )}
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                {product.promotional_price ? (
-                                                    <span className="bg-green-500/10 text-green-400 border border-green-500/30 text-[10px] px-3 py-1.5 rounded-full font-black tracking-widest">ATIVA</span>
-                                                ) : (
-                                                    <span className="text-gray-600">-</span>
-                                                )}
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <span className={`px-3 py-1.5 rounded-full text-xs font-black border ${product.global_stock <= 5 ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-gray-800/50 text-white border-gray-700/50'}`}>
-                                                    {product.global_stock} un.
-                                                </span>
-                                            </td>
-                                            <td className="p-5 flex justify-center gap-2">
-                                                <button onClick={() => handleOpenProductModal(product)} className="text-blue-400 bg-blue-400/10 hover:bg-blue-400/20 border border-blue-400/20 p-2.5 rounded-xl transition-all"><Edit size={18}/></button>
-                                                <button onClick={() => handleDeleteProduct(product.id)} className="text-red-400 bg-red-400/10 hover:bg-red-400/20 border border-red-400/20 p-2.5 rounded-xl transition-all"><Trash2 size={18}/></button>
-                                            </td>
-                                        </tr>
-                                    )) : (
-                                        <tr><td colSpan="6" className="text-center p-12 text-gray-500 font-medium">Nenhum produto encontrado.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* --- VISÃO MOBILE (Cards Premium Reestilizados) --- */}
-                    <div className="md:hidden flex flex-col gap-4">
-                        {currentItems.length > 0 ? currentItems.map(product => (
-                            <div key={product.id} className="bg-black/40 backdrop-blur-xl p-5 rounded-2xl border border-gray-700/50 shadow-lg relative overflow-hidden flex flex-col">
-                                
-                                {/* Etiqueta de Promoção Absoluta */}
-                                {product.promotional_price && (
-                                    <div className="absolute top-0 right-0 bg-green-500/20 backdrop-blur-md border-b border-l border-green-500/30 text-green-400 text-[10px] font-black tracking-widest px-3 py-1.5 rounded-bl-xl z-10 shadow-sm">
-                                        OFERTA
-                                    </div>
-                                )}
-
-                                <div className="flex gap-4 items-start">
-                                    <img 
-                                        src={product.image_url || 'https://placehold.co/120x120/1a1a1a/4B5563?text=Foto'} 
-                                        className="h-24 w-24 rounded-xl object-cover border border-gray-700/50 shrink-0 shadow-md" 
-                                        alt={product.name}
-                                    />
-                                    <div className="flex-1 min-w-0 flex flex-col pt-1">
-                                        <h3 className="font-extrabold text-white text-lg tracking-tight leading-tight mb-1">{product.name}</h3>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{product.category || 'Sem Categoria'}</p>
-                                        
-                                        <div className="flex items-end justify-between mt-auto">
-                                            <div className="flex flex-col">
-                                                {product.promotional_price ? (
-                                                    <>
-                                                        <span className="text-[10px] text-gray-500 line-through mb-0.5">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
-                                                        <span className="text-xl font-black text-green-400 tracking-tight leading-none drop-shadow-md">R$ {parseFloat(product.promotional_price).toFixed(2)}</span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-xl font-black text-white tracking-tight leading-none">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Indicadores e Ações na parte inferior do Card */}
-                                <div className="mt-4 pt-4 border-t border-gray-800/80 flex flex-col gap-3">
-                                    <div className="flex justify-between items-center bg-black/60 border border-gray-800 p-3 rounded-xl shadow-inner">
-                                        <span className="text-xs font-bold text-gray-400 uppercase">Estoque:</span>
-                                        <span className={`px-2 py-1 rounded-md text-xs font-black ${product.global_stock <= 5 ? 'bg-red-500/20 text-red-400' : 'bg-gray-800 text-white'}`}>
-                                            {product.global_stock} unidades
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="flex gap-3">
-                                        <button 
-                                            onClick={() => handleOpenProductModal(product)} 
-                                            className="flex-1 bg-transparent border border-blue-500/40 text-blue-400 hover:bg-blue-500/10 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all"
-                                        >
-                                            <Edit size={16} /> Editar
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteProduct(product.id)} 
-                                            className="flex-1 bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all"
-                                        >
-                                            <Trash2 size={16} /> Apagar
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        )) : (
-                            <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium">
-                                Nenhum produto encontrado.
-                            </div>
-                        )}
-                    </div>
-
-                    {/* --- PAGINAÇÃO (Visível em Mobile e Desktop) --- */}
-                    {filteredProducts.length > itemsPerPage && (
-                        <div className="mt-6 bg-black/60 backdrop-blur-2xl p-4 sm:px-6 rounded-2xl border border-gray-700/80 shadow-xl flex justify-between items-center">
-                            <span className="text-xs sm:text-sm text-gray-400 font-medium">
-                                Página <span className="text-white font-black bg-gray-800 px-2 py-1 rounded">{currentPage}</span> de {totalPages}
-                            </span>
-                            <div className="flex gap-2 sm:gap-3">
-                                <button 
-                                    onClick={prevPage} 
-                                    disabled={currentPage === 1}
-                                    className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === 1 ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600 shadow-md'}`}
-                                >
-                                    Anterior
-                                </button>
-                                <button 
-                                    onClick={nextPage} 
-                                    disabled={currentPage === totalPages}
-                                    className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-[#f2bd46] text-black hover:bg-[#e0af40] border border-[#f2bd46]/50 shadow-[0_0_10px_rgba(242,189,70,0.2)]'}`}
-                                >
-                                    Próxima
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
-};
-    
-    const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
-        const handleRemoteUnlock = async (fridgeId) => {
-            if (!fridgeId) {
-                alert('Este condomínio não tem um ID de geladeira definido.');
-                return;
-            }
-            if (window.confirm(`Tem a certeza que quer destravar remotamente a geladeira ${fridgeId}?`)) {
-                try {
-                    const response = await fetch(`${API_URL}/api/admin/fridges/${fridgeId}/unlock`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!response.ok) throw new Error('Falha ao enviar comando.');
-                    alert('Comando de desbloqueio enviado com sucesso!');
-                } catch (err) {
-                    alert(err.message);
-                }
-            }
-        };
 
+    const AdminCard = ({ children, className = '' }) => (
+        <div className={`bg-white/[0.035] border border-white/10 rounded-[1.4rem] sm:rounded-[1.8rem] shadow-[0_18px_70px_rgba(0,0,0,.35)] backdrop-blur-2xl overflow-hidden ${className}`}>{children}</div>
+    );
+
+    const KpiCard = ({ icon, label, value, hint, tone = 'gold' }) => {
+        const toneMap = {
+            gold: 'text-[#f2bd46] bg-[#f2bd46]/10 border-[#f2bd46]/20',
+            green: 'text-green-400 bg-green-500/10 border-green-500/20',
+            red: 'text-red-400 bg-red-500/10 border-red-500/20',
+            blue: 'text-blue-300 bg-blue-500/10 border-blue-500/20',
+            white: 'text-white bg-white/5 border-white/10'
+        };
+        return (
+            <AdminCard className="p-4 sm:p-5 relative">
+                <div className="absolute -right-8 -top-8 w-28 h-28 bg-[#f2bd46]/5 blur-[45px] rounded-full"></div>
+                <div className="relative flex items-start gap-3">
+                    <div className={`h-11 w-11 rounded-2xl border flex items-center justify-center shrink-0 ${toneMap[tone] || toneMap.gold}`}>{icon}</div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-black">{label}</p>
+                        <p className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1 truncate">{value}</p>
+                        {hint && <p className="text-xs text-gray-500 mt-1 leading-relaxed">{hint}</p>}
+                    </div>
+                </div>
+            </AdminCard>
+        );
+    };
+
+    const Field = ({ label, children }) => (
+        <label className="block">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-black mb-2 block">{label}</span>
+            {children}
+        </label>
+    );
+    const inputClass = 'w-full bg-black/45 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-[#f2bd46]/70 focus:ring-2 focus:ring-[#f2bd46]/10 transition-all text-sm';
+    const goldButton = 'bg-[#f2bd46] text-black font-black rounded-2xl px-4 py-3 flex items-center justify-center gap-2 hover:bg-[#e2ae36] transition-all disabled:opacity-50 disabled:cursor-not-allowed';
+    const darkButton = 'bg-white/[0.045] border border-white/10 text-white font-black rounded-2xl px-4 py-3 flex items-center justify-center gap-2 hover:border-[#f2bd46]/40 transition-all';
+
+    const OverviewPage = () => {
+        const [stats, setStats] = React.useState(null);
+        const [ops, setOps] = React.useState(null);
+        React.useEffect(() => {
+            let alive = true;
+            adminFetch('/api/admin/dashboard-stats').then(data => alive && setStats(data)).catch(() => {});
+            adminFetch('/api/admin/operations/summary').then(data => alive && setOps(data)).catch(() => {});
+            return () => { alive = false; };
+        }, []);
+        const inventoryValue = products.reduce((sum, p) => sum + (Number(p.stock || p.quantity || 0) * Number(p.cost_price || p.purchase_price || p.cost || 0)), 0);
+        const criticalProducts = products.filter(p => Number(p.stock || p.quantity || 0) <= Number(p.critical_stock_level || p.min_stock || 2));
+        const activeProducts = products.filter(p => p.is_active !== false).length;
+        const revenue = stats?.total_revenue || stats?.revenue_month || stats?.month_revenue || 0;
+        const orders = stats?.total_orders || stats?.orders_month || 0;
+        const netProfit = stats?.total_net_profit || stats?.net_profit || 0;
+        const inconsistencies = ops?.open_inconsistencies || ops?.inconsistencies || 0;
         return (
             <div>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold">Gestão de Pontos de Venda</h2>
-                    <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                        <PlusCircle size={20} /> Novo Ponto de Venda
-                    </button>
+                <AdminPageHeader eyebrow="Centro de controle" title="Operação do franqueado" description="Uma visão executiva, mobile-first e pronta para vender valor: vendas, estoque, DRE, auditoria, perdas, abastecimento e promoções automáticas." />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+                    <KpiCard icon={<DollarSign size={21}/>} label="Faturamento" value={money(revenue)} hint="mês atual" tone="green" />
+                    <KpiCard icon={<PiggyBank size={21}/>} label="Lucro estimado" value={money(netProfit)} hint="DRE inteligente" tone="gold" />
+                    <KpiCard icon={<ShoppingCart size={21}/>} label="Vendas" value={number(orders)} hint="pedidos pagos" tone="blue" />
+                    <KpiCard icon={<AlertTriangle size={21}/>} label="Alertas" value={number(criticalProducts.length + Number(inconsistencies || 0))} hint="estoque + auditoria" tone={(criticalProducts.length || inconsistencies) ? 'red' : 'white'} />
                 </div>
-                {isLoading && activeTab === 'condominiums' ? <Loader2 className="animate-spin" /> : (
-                    <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#1a1a1a]">
-                                <tr>
-                                    <th className="p-4">Nome</th>
-                                    <th className="p-4">ID da Geladeira</th>
-                                    <th className="p-4">Nº de Usuários</th>
-                                    <th className="p-4">Itens em Estoque</th>
-                                    <th className="p-4">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {condominiums.map(condo => (
-                                    <tr key={condo.id} className="border-b border-gray-700">
-                                        <td className="p-4">{condo.name}</td>
-                                        <td className="p-4 font-mono">{condo.fridge_id}</td>
-                                        <td className="p-4 text-center">{condo.user_count}</td>
-                                        <td className="p-4 text-center">{condo.item_count}</td>
-                                        <td className="p-4 flex gap-2">
-                                            <button onClick={() => handleRemoteUnlock(condo.fridge_id)} className="text-green-400 hover:text-green-300 p-2" title="Destravar Remotamente">
-                                                <KeyRound size={18} />
-                                            </button>
-                                            <button onClick={() => onEdit(condo)} className="text-blue-400 hover:text-blue-300 p-2" title="Editar">
-                                                <Edit size={18} />
-                                            </button>
-                                            <button onClick={() => onDelete(condo.id)} className="text-red-400 hover:text-red-300 p-2" title="Apagar">
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4 sm:gap-5">
+                    <AdminCard className="p-4 sm:p-6">
+                        <div className="flex items-center justify-between gap-3 mb-5">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Inteligência operacional</p>
+                                <h2 className="text-xl sm:text-2xl font-black text-white">Próximas decisões recomendadas</h2>
+                            </div>
+                            <Shield className="text-[#f2bd46]" />
+                        </div>
+                        <div className="space-y-3">
+                            <button onClick={() => closeAndGo('audit')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 flex items-center justify-center"><AlertTriangle size={19}/></div>
+                                <div><p className="font-black text-white">Auditar inconsistências após abastecimento</p><p className="text-sm text-gray-400 mt-1">Quando der diferença de produto, o painel cruza com vendas desde o último abastecimento e deixa tudo documentado.</p></div>
+                            </button>
+                            <button onClick={() => closeAndGo('dre')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-[#f2bd46]/10 border border-[#f2bd46]/20 text-[#f2bd46] flex items-center justify-center"><PieChart size={19}/></div>
+                                <div><p className="font-black text-white">Atualizar investimento e payback</p><p className="text-sm text-gray-400 mt-1">O franqueado informa o investimento e o painel calcula retorno com base no faturamento e custos da operação.</p></div>
+                            </button>
+                            <button onClick={() => closeAndGo('promotions')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-300 flex items-center justify-center"><Flame size={19}/></div>
+                                <div><p className="font-black text-white">Ativar promoções automáticas com trava de margem</p><p className="text-sm text-gray-400 mt-1">Desconto calculado apenas sobre o lucro, nunca sobre o custo do produto.</p></div>
+                            </button>
+                        </div>
+                    </AdminCard>
+
+                    <div className="space-y-4">
+                        <AdminCard className="p-4 sm:p-5">
+                            <p className="text-[10px] uppercase tracking-[0.22em] text-gray-500 font-black">Resumo de estrutura</p>
+                            <div className="grid grid-cols-2 gap-3 mt-4">
+                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Pontos</p><p className="text-2xl font-black text-white">{condominiums.length}</p></div>
+                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Produtos</p><p className="text-2xl font-black text-white">{activeProducts}</p></div>
+                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Valor estoque</p><p className="text-lg font-black text-[#f2bd46]">{money(inventoryValue)}</p></div>
+                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Críticos</p><p className="text-lg font-black text-red-300">{criticalProducts.length}</p></div>
+                            </div>
+                        </AdminCard>
+                        <AdminCard className="p-4 sm:p-5">
+                            <p className="text-[10px] uppercase tracking-[0.22em] text-gray-500 font-black">Acesso rápido</p>
+                            <div className="grid grid-cols-2 gap-2 mt-4">
+                                <button onClick={() => closeAndGo('products')} className={darkButton}><Package size={17}/> Produtos</button>
+                                <button onClick={() => closeAndGo('points')} className={darkButton}><Building2 size={17}/> Pontos</button>
+                                <button onClick={() => closeAndGo('losses')} className={darkButton}><AlertTriangle size={17}/> Perdas</button>
+                                <button onClick={() => closeAndGo('purchases')} className={darkButton}><ShoppingCart size={17}/> Compras</button>
+                            </div>
+                        </AdminCard>
                     </div>
-                )}
+                </div>
             </div>
         );
     };
 
-    // --- FUNÇÃO RENDERCONTENT ---
+    const SmartFinancePage = () => {
+        const saved = (() => { try { return JSON.parse(localStorage.getItem('dmm_smart_finance') || '{}'); } catch { return {}; } })();
+        const [investment, setInvestment] = React.useState(saved.investment ?? 10549);
+        const [revenue, setRevenue] = React.useState(saved.revenue ?? 0);
+        const [cogsRate, setCogsRate] = React.useState(saved.cogsRate ?? 62);
+        const [fixedCosts, setFixedCosts] = React.useState(saved.fixedCosts ?? 349.90);
+        const [feesRate, setFeesRate] = React.useState(saved.feesRate ?? 4.99);
+        const [commissionRate, setCommissionRate] = React.useState(saved.commissionRate ?? 0);
+        const [losses, setLosses] = React.useState(saved.losses ?? 0);
+        React.useEffect(() => {
+            adminFetch('/api/admin/finance/smart-dre').then(data => {
+                if (data?.revenue) setRevenue(Number(data.revenue));
+                if (data?.investment) setInvestment(Number(data.investment));
+            }).catch(() => {});
+        }, []);
+        const cogs = Number(revenue) * Number(cogsRate) / 100;
+        const grossProfit = Number(revenue) - cogs;
+        const fees = Number(revenue) * Number(feesRate) / 100;
+        const commission = Number(revenue) * Number(commissionRate) / 100;
+        const netProfit = grossProfit - Number(fixedCosts) - fees - commission - Number(losses);
+        const margin = Number(revenue) > 0 ? (netProfit / Number(revenue)) * 100 : 0;
+        const payback = netProfit > 0 ? Number(investment) / netProfit : 0;
+        const saveConfig = async () => {
+            const payload = { investment, revenue, cogsRate, fixedCosts, feesRate, commissionRate, losses };
+            localStorage.setItem('dmm_smart_finance', JSON.stringify(payload));
+            try { await adminFetch('/api/admin/finance/smart-config', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
+            alert('Configuração financeira salva. Quando o backend estiver ativo, ela ficará sincronizada no banco.');
+        };
+        return (
+            <div>
+                <AdminPageHeader eyebrow="Financeiro inteligente" title="DRE, margem e payback" description="O franqueado coloca o investimento e o painel calcula retorno, margem líquida, prejuízos, taxas e projeção de payback com base na operação." action={<button onClick={saveConfig} className={goldButton}><Save size={18}/> Salvar</button>} />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+                    <KpiCard icon={<DollarSign size={21}/>} label="Faturamento" value={money(revenue)} tone="green" />
+                    <KpiCard icon={<PiggyBank size={21}/>} label="Lucro líquido" value={money(netProfit)} tone={netProfit >= 0 ? 'gold' : 'red'} />
+                    <KpiCard icon={<PieChart size={21}/>} label="Margem" value={`${margin.toFixed(1)}%`} tone={margin >= 15 ? 'green' : 'red'} />
+                    <KpiCard icon={<Clock size={21}/>} label="Payback" value={payback > 0 ? `${payback.toFixed(1)} meses` : 'Sem lucro'} tone={payback > 0 && payback <= 12 ? 'green' : 'gold'} />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-4 sm:gap-5">
+                    <AdminCard className="p-4 sm:p-6">
+                        <h2 className="text-xl font-black text-white mb-4">Variáveis da operação</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Field label="Investimento inicial"><input className={inputClass} type="number" value={investment} onChange={e => setInvestment(e.target.value)} /></Field>
+                            <Field label="Faturamento mensal"><input className={inputClass} type="number" value={revenue} onChange={e => setRevenue(e.target.value)} /></Field>
+                            <Field label="Custo dos produtos (%)"><input className={inputClass} type="number" value={cogsRate} onChange={e => setCogsRate(e.target.value)} /></Field>
+                            <Field label="Taxas pagamento (%)"><input className={inputClass} type="number" value={feesRate} onChange={e => setFeesRate(e.target.value)} /></Field>
+                            <Field label="Comissão do local (%)"><input className={inputClass} type="number" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} /></Field>
+                            <Field label="Custos fixos mensais"><input className={inputClass} type="number" value={fixedCosts} onChange={e => setFixedCosts(e.target.value)} /></Field>
+                            <Field label="Perdas/furtos do mês"><input className={inputClass} type="number" value={losses} onChange={e => setLosses(e.target.value)} /></Field>
+                        </div>
+                    </AdminCard>
+                    <AdminCard className="p-4 sm:p-6">
+                        <h2 className="text-xl font-black text-white mb-4">DRE resumido</h2>
+                        <div className="space-y-3">
+                            {[
+                                ['Faturamento bruto', revenue], ['Custo dos produtos vendidos', -cogs], ['Lucro bruto', grossProfit], ['Taxas de pagamento', -fees], ['Comissão do ponto', -commission], ['Custos fixos', -Number(fixedCosts)], ['Perdas e furtos', -Number(losses)], ['Lucro líquido final', netProfit]
+                            ].map(([label, value], i) => (
+                                <div key={label} className={`flex justify-between items-center rounded-2xl px-4 py-3 border ${i === 7 ? 'bg-[#f2bd46]/10 border-[#f2bd46]/25' : 'bg-black/35 border-white/10'}`}>
+                                    <span className="text-sm text-gray-300 font-bold">{label}</span>
+                                    <span className={`font-black ${Number(value) >= 0 ? 'text-white' : 'text-red-300'}`}>{money(value)}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-5 bg-blue-500/10 border border-blue-500/20 rounded-3xl p-4">
+                            <p className="font-black text-blue-100 flex items-center gap-2"><Info size={18}/> Leitura inteligente</p>
+                            <p className="text-sm text-blue-100/75 mt-2 leading-relaxed">{netProfit <= 0 ? 'A operação ainda não está pagando os custos. Revise margem, perdas e mix de produtos antes de projetar payback.' : margin < 12 ? 'Existe lucro, mas a margem está apertada. Priorize produtos de maior giro e margem, reduza perdas e renegocie compras.' : 'A operação está saudável. O próximo passo é aumentar recorrência, combos e promoções com trava de custo.'}</p>
+                        </div>
+                    </AdminCard>
+                </div>
+            </div>
+        );
+    };
+
+    const AutoPromotionsPage = () => {
+        const saved = (() => { try { return JSON.parse(localStorage.getItem('dmm_auto_promos') || '{}'); } catch { return {}; } })();
+        const [enabled, setEnabled] = React.useState(saved.enabled ?? false);
+        const [maxProducts, setMaxProducts] = React.useState(saved.maxProducts ?? 4);
+        const [defaultDiscount, setDefaultDiscount] = React.useState(saved.defaultDiscount ?? 35);
+        const [excludedIds, setExcludedIds] = React.useState(saved.excludedIds ?? []);
+        const [discounts, setDiscounts] = React.useState(saved.discounts ?? {});
+        React.useEffect(() => {
+            adminFetch('/api/admin/promotions/automation').then(data => {
+                if (typeof data?.enabled === 'boolean') setEnabled(data.enabled);
+                if (data?.max_products) setMaxProducts(Number(data.max_products));
+                if (data?.default_discount_profit_percent) setDefaultDiscount(Number(data.default_discount_profit_percent));
+                if (Array.isArray(data?.excluded_product_ids)) setExcludedIds(data.excluded_product_ids.map(String));
+                if (data?.product_discounts) setDiscounts(data.product_discounts);
+            }).catch(() => {});
+        }, []);
+        const calcPromo = (product) => {
+            const sale = Number(product.sale_price || 0);
+            const cost = Number(product.cost_price || product.purchase_price || product.cost || 0);
+            const profit = Math.max(0, sale - cost);
+            const pct = Number(discounts[String(product.id)] ?? defaultDiscount);
+            const promo = Math.max(cost, sale - (profit * pct / 100));
+            return { sale, cost, profit, pct, promo, safe: promo >= cost && profit > 0 };
+        };
+        const eligibleProducts = products.filter(p => !excludedIds.includes(String(p.id)) && calcPromo(p).profit > 0);
+        const toggleExcluded = (id) => setExcludedIds(prev => prev.includes(String(id)) ? prev.filter(x => x !== String(id)) : [...prev, String(id)]);
+        const save = async () => {
+            const payload = { enabled, maxProducts: Math.min(7, Math.max(1, Number(maxProducts))), defaultDiscount, excludedIds, discounts };
+            localStorage.setItem('dmm_auto_promos', JSON.stringify(payload));
+            try { await adminFetch('/api/admin/promotions/automation', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
+            alert('Configuração de promoções salva. O backend vai usar essa regra para escolher produtos aleatórios todos os dias.');
+        };
+        return (
+            <div>
+                <AdminPageHeader eyebrow="Motor de promoções" title="Promoções automáticas com trava de margem" description="O franqueado ativa/desativa, escolhe até 7 produtos por dia, exclui itens proibidos e define desconto calculado apenas em cima do lucro do produto." action={<button onClick={save} className={goldButton}><Save size={18}/> Salvar regras</button>} />
+                <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4 sm:gap-5">
+                    <AdminCard className="p-4 sm:p-6 space-y-4">
+                        <button onClick={() => setEnabled(!enabled)} className={`w-full rounded-3xl p-5 border text-left transition-all ${enabled ? 'bg-green-500/10 border-green-500/25' : 'bg-white/[0.035] border-white/10'}`}>
+                            <p className="text-sm text-gray-400 font-bold">Status</p>
+                            <div className="flex items-center justify-between mt-2"><span className="text-2xl font-black text-white">{enabled ? 'Ativado' : 'Desativado'}</span><span className={`h-8 w-14 rounded-full p-1 ${enabled ? 'bg-green-500' : 'bg-gray-700'}`}><span className={`block h-6 w-6 rounded-full bg-white transition-transform ${enabled ? 'translate-x-6' : ''}`}></span></span></div>
+                        </button>
+                        <Field label="Máximo de produtos por dia"><input className={inputClass} type="number" min="1" max="7" value={maxProducts} onChange={e => setMaxProducts(Math.min(7, Math.max(1, Number(e.target.value || 1))))} /></Field>
+                        <Field label="Desconto padrão sobre o lucro (%)"><input className={inputClass} type="number" min="0" max="100" value={defaultDiscount} onChange={e => setDefaultDiscount(e.target.value)} /></Field>
+                        <div className="bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-3xl p-4">
+                            <p className="font-black text-[#f2bd46] flex items-center gap-2"><Shield size={18}/> Regra anti-prejuízo</p>
+                            <p className="text-sm text-gray-300 mt-2">Preço promocional = preço de venda - desconto sobre o lucro. O sistema nunca deixa o valor ficar abaixo do custo.</p>
+                        </div>
+                    </AdminCard>
+                    <AdminCard className="p-4 sm:p-6">
+                        <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-xl font-black text-white">Produtos elegíveis</h2><span className="text-xs font-black text-[#f2bd46] bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-full px-3 py-1">{eligibleProducts.length} liberados</span></div>
+                        <div className="space-y-3 max-h-[620px] overflow-y-auto custom-scrollbar pr-1">
+                            {products.map(product => {
+                                const calc = calcPromo(product);
+                                const excluded = excludedIds.includes(String(product.id));
+                                return (
+                                    <div key={product.id} className={`rounded-3xl p-3 border ${excluded ? 'bg-red-500/5 border-red-500/15 opacity-70' : 'bg-black/35 border-white/10'}`}>
+                                        <div className="flex gap-3">
+                                            <img src={product.image_url || `https://placehold.co/160x160/111111/f2bd46?text=${encodeURIComponent(product.name || 'Produto')}`} alt={product.name} className="h-16 w-16 rounded-2xl object-cover bg-black border border-white/10" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-2"><p className="font-black text-white truncate">{product.name}</p><button onClick={() => toggleExcluded(product.id)} className={`text-[10px] font-black rounded-full px-3 py-1 ${excluded ? 'bg-red-500 text-white' : 'bg-white/10 text-gray-300'}`}>{excluded ? 'Excluído' : 'Permitir'}</button></div>
+                                                <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+                                                    <div><p className="text-gray-500 font-bold">Custo</p><p className="text-white font-black">{money(calc.cost)}</p></div>
+                                                    <div><p className="text-gray-500 font-bold">Venda</p><p className="text-white font-black">{money(calc.sale)}</p></div>
+                                                    <div><p className="text-gray-500 font-bold">Promo</p><p className="text-[#f2bd46] font-black">{money(calc.promo)}</p></div>
+                                                </div>
+                                                <div className="grid grid-cols-[1fr_auto] gap-2 mt-3 items-end">
+                                                    <Field label="% sobre lucro"><input className={inputClass} type="number" value={discounts[String(product.id)] ?? defaultDiscount} onChange={e => setDiscounts(prev => ({ ...prev, [String(product.id)]: e.target.value }))} /></Field>
+                                                    <span className={`text-[10px] font-black rounded-2xl px-3 py-3 ${calc.safe ? 'bg-green-500/10 text-green-300 border border-green-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'}`}>{calc.safe ? 'Seguro' : 'Sem margem'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </AdminCard>
+                </div>
+            </div>
+        );
+    };
+
+    const AuditCenterPage = () => {
+        const [selectedCondo, setSelectedCondo] = React.useState('');
+        const [selectedProduct, setSelectedProduct] = React.useState('');
+        const [expected, setExpected] = React.useState('');
+        const [counted, setCounted] = React.useState('');
+        const [lastRestockAt, setLastRestockAt] = React.useState('');
+        const [suspectSales, setSuspectSales] = React.useState([]);
+        const [supply, setSupply] = React.useState({ product_id: '', condo_id: '', quantity: '', supplier: '', unit_cost: '', expires_at: '', invoice: '' });
+        const selectedProductData = products.find(p => String(p.id) === String(selectedProduct));
+        const diff = Number(expected || 0) - Number(counted || 0);
+        const unitValue = Number(selectedProductData?.sale_price || 0);
+        React.useEffect(() => {
+            if (!selectedCondo || !selectedProduct || !lastRestockAt) return;
+            adminFetch(`/api/admin/audit/suspect-sales?condoId=${selectedCondo}&productId=${selectedProduct}&since=${encodeURIComponent(lastRestockAt)}`).then(data => setSuspectSales(Array.isArray(data) ? data : (data?.sales || []))).catch(() => setSuspectSales([]));
+        }, [selectedCondo, selectedProduct, lastRestockAt]);
+        const registerSupply = async () => {
+            try { await adminFetch('/api/admin/supply-records', { method: 'POST', body: JSON.stringify(supply) }); alert('Abastecimento registrado.'); }
+            catch (err) { alert(`Registro ficará disponível quando o backend for atualizado: ${err.message}`); }
+        };
+        const documentInconsistency = async () => {
+            const payload = { condo_id: selectedCondo, product_id: selectedProduct, expected_quantity: Number(expected), counted_quantity: Number(counted), difference: diff, estimated_loss: diff > 0 ? diff * unitValue : 0, last_restock_at: lastRestockAt, suspect_sales: suspectSales };
+            try { await adminFetch('/api/admin/audit/inconsistencies', { method: 'POST', body: JSON.stringify(payload) }); alert('Inconsistência documentada.'); }
+            catch (err) { alert(`A tela está pronta. O backend ainda precisa receber a rota: ${err.message}`); }
+        };
+        return (
+            <div>
+                <AdminPageHeader eyebrow="Segurança operacional" title="Abastecimento, auditoria e inconsistências" description="Registre abastecimentos, compare estoque esperado vs. contado e documente possíveis furtos mostrando vendas do produto desde o último abastecimento." />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                    <AdminCard className="p-4 sm:p-6">
+                        <h2 className="text-xl font-black text-white mb-4">Registrar abastecimento</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Field label="Ponto"><select className={inputClass} value={supply.condo_id} onChange={e => setSupply({...supply, condo_id: e.target.value})}><option value="">Selecione</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+                            <Field label="Produto"><select className={inputClass} value={supply.product_id} onChange={e => setSupply({...supply, product_id: e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
+                            <Field label="Quantidade"><input className={inputClass} type="number" value={supply.quantity} onChange={e => setSupply({...supply, quantity: e.target.value})} /></Field>
+                            <Field label="Custo unitário"><input className={inputClass} type="number" value={supply.unit_cost} onChange={e => setSupply({...supply, unit_cost: e.target.value})} /></Field>
+                            <Field label="Fornecedor"><input className={inputClass} value={supply.supplier} onChange={e => setSupply({...supply, supplier: e.target.value})} placeholder="Ex: Atacadão" /></Field>
+                            <Field label="Validade"><input className={inputClass} type="date" value={supply.expires_at} onChange={e => setSupply({...supply, expires_at: e.target.value})} /></Field>
+                            <Field label="Nota/observação"><input className={inputClass} value={supply.invoice} onChange={e => setSupply({...supply, invoice: e.target.value})} placeholder="NF, lote ou observação" /></Field>
+                        </div>
+                        <button onClick={registerSupply} className={`${goldButton} w-full mt-4`}><Save size={18}/> Salvar abastecimento</button>
+                    </AdminCard>
+                    <AdminCard className="p-4 sm:p-6">
+                        <h2 className="text-xl font-black text-white mb-4">Auditoria de inconsistência</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Field label="Ponto"><select className={inputClass} value={selectedCondo} onChange={e => setSelectedCondo(e.target.value)}><option value="">Selecione</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+                            <Field label="Produto"><select className={inputClass} value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
+                            <Field label="Último abastecimento"><input className={inputClass} type="datetime-local" value={lastRestockAt} onChange={e => setLastRestockAt(e.target.value)} /></Field>
+                            <Field label="Estoque esperado"><input className={inputClass} type="number" value={expected} onChange={e => setExpected(e.target.value)} /></Field>
+                            <Field label="Estoque contado"><input className={inputClass} type="number" value={counted} onChange={e => setCounted(e.target.value)} /></Field>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <KpiCard icon={<AlertTriangle size={20}/>} label="Diferença" value={diff > 0 ? `${diff} faltando` : diff < 0 ? `${Math.abs(diff)} sobrando` : 'Sem diferença'} tone={diff > 0 ? 'red' : 'green'} />
+                            <KpiCard icon={<DollarSign size={20}/>} label="Prejuízo estimado" value={money(diff > 0 ? diff * unitValue : 0)} tone={diff > 0 ? 'red' : 'white'} />
+                        </div>
+                        <button onClick={documentInconsistency} disabled={!selectedCondo || !selectedProduct || !expected || !counted} className={`${goldButton} w-full mt-4`}><FileText size={18}/> Documentar inconsistência</button>
+                    </AdminCard>
+                </div>
+                <AdminCard className="p-4 sm:p-6 mt-4 sm:mt-5">
+                    <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-xl font-black text-white">Vendas do produto desde o último abastecimento</h2><span className="text-xs text-gray-500 font-bold">Base para investigação</span></div>
+                    {suspectSales.length ? suspectSales.map((sale, index) => <div key={sale.id || index} className="p-4 rounded-2xl bg-black/35 border border-white/10 mb-2 flex items-center justify-between gap-3"><div><p className="font-black text-white">{sale.customer_name || sale.user_name || 'Cliente'}</p><p className="text-xs text-gray-500">{sale.created_at || sale.date || sale.time}</p></div><div className="text-right"><p className="font-black text-[#f2bd46]">{sale.quantity || 1} un.</p><p className="text-xs text-gray-500">{money(sale.total || sale.amount || 0)}</p></div></div>) : <div className="text-center p-8 text-gray-500 bg-black/25 rounded-3xl border border-white/10">Selecione ponto, produto e horário do último abastecimento. Quando o backend estiver ativo, as vendas suspeitas aparecerão aqui.</div>}
+                </AdminCard>
+            </div>
+        );
+    };
+
+    const LossesPage = () => {
+        const [entries, setEntries] = React.useState([]);
+        const [form, setForm] = React.useState({ type: 'furto', product_id: '', quantity: 1, value: '', reason: '', customer_note: '', status: 'em_analise' });
+        React.useEffect(() => { adminFetch('/api/admin/losses').then(data => setEntries(Array.isArray(data) ? data : (data?.losses || []))).catch(() => {}); }, []);
+        const totalLoss = entries.reduce((sum, item) => sum + Number(item.value || item.amount || 0), 0);
+        const save = async () => {
+            const product = products.find(p => String(p.id) === String(form.product_id));
+            const payload = { ...form, product_name: product?.name, value: Number(form.value || 0) || (Number(form.quantity || 0) * Number(product?.sale_price || 0)) };
+            setEntries(prev => [{ ...payload, id: Date.now(), created_at: new Date().toISOString() }, ...prev]);
+            try { await adminFetch('/api/admin/losses', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
+            setForm({ type: 'furto', product_id: '', quantity: 1, value: '', reason: '', customer_note: '', status: 'em_analise' });
+        };
+        return (
+            <div>
+                <AdminPageHeader eyebrow="Controle de prejuízo" title="Registro de perdas e furtos" description="Tudo que virar prejuízo fica registrado e entra no DRE para o franqueado enxergar o impacto real da operação." />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5"><KpiCard icon={<AlertTriangle size={20}/>} label="Prejuízo registrado" value={money(totalLoss)} tone="red"/><KpiCard icon={<FileText size={20}/>} label="Ocorrências" value={entries.length} tone="gold"/><KpiCard icon={<Shield size={20}/>} label="Em análise" value={entries.filter(e => (e.status || '').includes('analise')).length} tone="blue"/><KpiCard icon={<CheckCircle2 size={20}/>} label="Resolvidos" value={entries.filter(e => (e.status || '').includes('resol')).length} tone="green"/></div>
+                <div className="grid grid-cols-1 lg:grid-cols-[.85fr_1.15fr] gap-4 sm:gap-5">
+                    <AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova ocorrência</h2><div className="space-y-3"><Field label="Tipo"><select className={inputClass} value={form.type} onChange={e => setForm({...form, type:e.target.value})}><option value="furto">Furto</option><option value="perda">Perda</option><option value="vencimento">Vencimento</option><option value="quebra">Quebra/avaria</option></select></Field><Field label="Produto"><select className={inputClass} value={form.product_id} onChange={e => setForm({...form, product_id:e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Quantidade"><input className={inputClass} type="number" value={form.quantity} onChange={e => setForm({...form, quantity:e.target.value})}/></Field><Field label="Valor do prejuízo"><input className={inputClass} type="number" value={form.value} onChange={e => setForm({...form, value:e.target.value})} placeholder="Calcula pelo produto se vazio"/></Field><Field label="Motivo/documentação"><textarea className={inputClass} rows="3" value={form.reason} onChange={e => setForm({...form, reason:e.target.value})} placeholder="Descreva a ocorrência, horário, câmera, cliente envolvido..."/></Field><button onClick={save} className={`${goldButton} w-full`}><Save size={18}/> Registrar prejuízo</button></div></AdminCard>
+                    <AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Histórico documentado</h2><div className="space-y-3 max-h-[620px] overflow-y-auto custom-scrollbar pr-1">{entries.length ? entries.map(entry => <div key={entry.id || entry.created_at} className="rounded-3xl p-4 bg-black/35 border border-white/10"><div className="flex justify-between gap-3"><div><p className="font-black text-white capitalize">{entry.type} {entry.product_name ? `• ${entry.product_name}` : ''}</p><p className="text-xs text-gray-500 mt-1">{entry.created_at ? new Date(entry.created_at).toLocaleString('pt-BR') : 'Agora'}</p></div><p className="font-black text-red-300">{money(entry.value || entry.amount)}</p></div><p className="text-sm text-gray-400 mt-3">{entry.reason || entry.description || 'Sem observação.'}</p></div>) : <div className="p-8 text-center text-gray-500 bg-black/25 border border-white/10 rounded-3xl">Nenhuma perda registrada ainda.</div>}</div></AdminCard>
+                </div>
+            </div>
+        );
+    };
+
+    const PurchasesPage = () => {
+        const [records, setRecords] = React.useState([]);
+        const [form, setForm] = React.useState({ product_id: '', supplier: '', unit_cost: '', quantity: '', invoice: '', bought_at: new Date().toISOString().slice(0,10) });
+        React.useEffect(() => { adminFetch('/api/admin/purchases').then(data => setRecords(Array.isArray(data) ? data : (data?.purchases || []))).catch(() => {}); }, []);
+        const save = async () => {
+            const product = products.find(p => String(p.id) === String(form.product_id));
+            const payload = { ...form, product_name: product?.name, total: Number(form.unit_cost || 0) * Number(form.quantity || 0) };
+            setRecords(prev => [{...payload, id: Date.now()}, ...prev]);
+            try { await adminFetch('/api/admin/purchases', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
+            setForm({ product_id: '', supplier: '', unit_cost: '', quantity: '', invoice: '', bought_at: new Date().toISOString().slice(0,10) });
+        };
+        const cheapestByProduct = Object.values(records.reduce((acc, r) => { const key = r.product_name || r.product_id; if (!key) return acc; if (!acc[key] || Number(r.unit_cost) < Number(acc[key].unit_cost)) acc[key] = r; return acc; }, {}));
+        return (
+            <div><AdminPageHeader eyebrow="Compras inteligentes" title="Fornecedores, custo e melhor preço" description="Registre onde compra mais barato, acompanhe custo por produto e alimente o DRE e as promoções com margem real." />
+            <div className="grid grid-cols-1 lg:grid-cols-[.85fr_1.15fr] gap-4 sm:gap-5"><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova compra</h2><div className="space-y-3"><Field label="Produto"><select className={inputClass} value={form.product_id} onChange={e => setForm({...form, product_id:e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Fornecedor/local"><input className={inputClass} value={form.supplier} onChange={e => setForm({...form, supplier:e.target.value})} placeholder="Atacadão, Assaí, distribuidora..." /></Field><div className="grid grid-cols-2 gap-3"><Field label="Custo unitário"><input className={inputClass} type="number" value={form.unit_cost} onChange={e => setForm({...form, unit_cost:e.target.value})}/></Field><Field label="Quantidade"><input className={inputClass} type="number" value={form.quantity} onChange={e => setForm({...form, quantity:e.target.value})}/></Field></div><Field label="Data"><input className={inputClass} type="date" value={form.bought_at} onChange={e => setForm({...form, bought_at:e.target.value})}/></Field><Field label="Nota/observação"><input className={inputClass} value={form.invoice} onChange={e => setForm({...form, invoice:e.target.value})}/></Field><button onClick={save} className={`${goldButton} w-full`}><Save size={18}/> Registrar compra</button></div></AdminCard><div className="space-y-4"><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Onde está mais barato</h2><div className="space-y-2">{cheapestByProduct.length ? cheapestByProduct.slice(0,8).map((r,i) => <div key={`${r.product_name}-${i}`} className="flex justify-between gap-3 p-3 rounded-2xl bg-black/35 border border-white/10"><div><p className="font-black text-white">{r.product_name}</p><p className="text-xs text-gray-500">{r.supplier}</p></div><p className="font-black text-[#f2bd46]">{money(r.unit_cost)}</p></div>) : <p className="text-center text-gray-500 p-6">Registre compras para o ranking aparecer.</p>}</div></AdminCard><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Últimas compras</h2><div className="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">{records.map(r => <div key={r.id} className="p-3 rounded-2xl bg-black/35 border border-white/10"><div className="flex justify-between"><p className="font-black text-white">{r.product_name || 'Produto'}</p><p className="text-[#f2bd46] font-black">{money(r.total || (Number(r.unit_cost)*Number(r.quantity)))}</p></div><p className="text-xs text-gray-500 mt-1">{r.supplier} • {r.quantity} un. • {money(r.unit_cost)} cada</p></div>)}</div></AdminCard></div></div></div>
+        );
+    };
+
+    const ClientsIntelligencePage = () => {
+        const [users, setUsers] = React.useState([]);
+        const [search, setSearch] = React.useState('');
+        const [selectedUser, setSelectedUser] = React.useState(null);
+        const [note, setNote] = React.useState('');
+        const [severity, setSeverity] = React.useState('observacao');
+        React.useEffect(() => { adminFetch('/api/admin/users-paginated?page=1&limit=80').then(data => setUsers(data?.users || data || [])).catch(() => {}); }, []);
+        const filtered = users.filter(u => `${u.name || ''} ${u.cpf || ''} ${u.apartment || ''}`.toLowerCase().includes(search.toLowerCase()));
+        const saveWarning = async () => {
+            if (!selectedUser || !note.trim()) return;
+            const payload = { note, severity, created_at: new Date().toISOString() };
+            setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, warnings: [payload, ...(u.warnings || [])], warning_count: Number(u.warning_count || 0) + 1 } : u));
+            try { await adminFetch(`/api/admin/users/${selectedUser.id}/warnings`, { method: 'POST', body: JSON.stringify(payload) }); } catch {}
+            setNote(''); setSelectedUser(null);
+        };
+        return (<div><AdminPageHeader eyebrow="Relacionamento e segurança" title="Clientes, advertências e anotações" description="Cada cliente pode receber observações internas para o franqueado identificar consumidores problemáticos, reincidentes ou que precisam de atenção no suporte." /><div className="mb-4"><div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18}/><input className={`${inputClass} pl-11`} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente por nome, CPF ou apartamento"/></div></div><div className="grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-4 sm:gap-5"><AdminCard className="p-3 sm:p-5"><div className="space-y-3 max-h-[720px] overflow-y-auto custom-scrollbar pr-1">{filtered.map(user => <button key={user.id} onClick={() => setSelectedUser(user)} className={`w-full text-left rounded-3xl p-4 border transition-all ${selectedUser?.id === user.id ? 'bg-[#f2bd46]/10 border-[#f2bd46]/30' : 'bg-black/35 border-white/10 hover:border-[#f2bd46]/30'}`}><div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3 min-w-0"><div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-white shrink-0">{(user.name || 'C').charAt(0)}</div><div className="min-w-0"><p className="font-black text-white truncate">{user.name}</p><p className="text-xs text-gray-500 truncate">{user.condo_name || 'Sem ponto'} • Ap. {user.apartment || '-'}</p></div></div><div className="text-right"><p className={`text-xs font-black rounded-full px-2 py-1 ${Number(user.warning_count || user.warnings?.length || 0) > 0 ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-green-500/10 text-green-300 border border-green-500/20'}`}>{Number(user.warning_count || user.warnings?.length || 0)} avisos</p><p className="text-xs text-[#f2bd46] font-black mt-1">{money(user.wallet_balance)}</p></div></div></button>)}</div></AdminCard><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova anotação interna</h2>{selectedUser ? <div className="space-y-3"><div className="p-4 bg-black/35 border border-white/10 rounded-3xl"><p className="font-black text-white">{selectedUser.name}</p><p className="text-sm text-gray-500">{selectedUser.cpf} • {selectedUser.condo_name || 'Sem ponto'}</p></div><Field label="Tipo"><select className={inputClass} value={severity} onChange={e => setSeverity(e.target.value)}><option value="observacao">Observação</option><option value="advertencia">Advertência</option><option value="grave">Grave / problemático</option></select></Field><Field label="Anotação"><textarea rows="5" className={inputClass} value={note} onChange={e => setNote(e.target.value)} placeholder="Ex: cliente retirou produto errado, abriu chamado, reincidente em divergência..."/></Field><button onClick={saveWarning} className={`${goldButton} w-full`}><Save size={18}/> Salvar anotação</button></div> : <div className="text-center p-8 text-gray-500 bg-black/25 rounded-3xl border border-white/10">Selecione um cliente para criar uma advertência ou observação interna.</div>}</AdminCard></div></div>);
+    };
+
+    const ProductOperationsPage = () => {
+        const [search, setSearch] = React.useState('');
+        const filtered = products.filter(p => `${p.name || ''} ${p.category || ''}`.toLowerCase().includes(search.toLowerCase()));
+        return (<div><AdminPageHeader eyebrow="Catálogo operacional" title="Produtos" description="Cadastro central de produtos com custo, preço, margem, promoção e status para todas as máquinas." action={<button onClick={() => handleOpenProductModal()} className={goldButton}><PlusCircle size={18}/> Novo</button>} /><div className="mb-4"><div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18}/><input className={`${inputClass} pl-11`} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar produto"/></div></div><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">{filtered.map(product => { const cost = Number(product.cost_price || product.purchase_price || product.cost || 0); const sale = Number(product.sale_price || 0); const margin = sale > 0 ? ((sale - cost) / sale) * 100 : 0; return <AdminCard key={product.id} className="p-3"><div className="flex gap-3"><img src={product.image_url || `https://placehold.co/180x180/111111/f2bd46?text=${encodeURIComponent(product.name || 'Produto')}`} alt={product.name} className="h-20 w-20 rounded-2xl object-cover bg-black border border-white/10"/><div className="flex-1 min-w-0"><p className="font-black text-white line-clamp-2">{product.name}</p><p className="text-xs text-gray-500 mt-1">{product.category || 'Sem categoria'}</p><div className="grid grid-cols-3 gap-2 mt-3 text-xs"><div><p className="text-gray-500">Custo</p><p className="font-black text-white">{money(cost)}</p></div><div><p className="text-gray-500">Venda</p><p className="font-black text-[#f2bd46]">{money(sale)}</p></div><div><p className="text-gray-500">Margem</p><p className={`font-black ${margin > 25 ? 'text-green-300' : 'text-red-300'}`}>{margin.toFixed(0)}%</p></div></div><div className="grid grid-cols-2 gap-2 mt-3"><button onClick={() => handleOpenProductModal(product)} className={darkButton}><Edit size={16}/> Editar</button><button onClick={() => handleDeleteProduct(product.id)} className="bg-red-500/10 border border-red-500/20 text-red-300 font-black rounded-2xl px-3 py-3 flex items-center justify-center gap-2"><Trash2 size={16}/> Apagar</button></div></div></div></AdminCard>; })}</div></div>);
+    };
+
+    const PointsPage = () => {
+        const unlock = async (condo) => { const reason = window.prompt('Motivo do destravamento remoto:'); if (!reason) return; try { await adminFetch(`/api/admin/fridges/${condo.fridge_id}/unlock`, { method: 'POST', body: JSON.stringify({ reason, condo_id: condo.id }) }); alert('Comando enviado.'); } catch (err) { alert(err.message); } };
+        return (<div><AdminPageHeader eyebrow="Estrutura física" title="Pontos de venda e máquinas" description="Gerencie máquinas, IDs de geladeira, síndico/responsável e destravamentos documentados." action={<button onClick={() => handleOpenCondoModal()} className={goldButton}><PlusCircle size={18}/> Novo ponto</button>} /><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">{condominiums.map(condo => <AdminCard key={condo.id} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Ponto de venda</p><h3 className="text-xl font-black text-white mt-1">{condo.name}</h3><p className="text-sm text-gray-500 mt-1">ID geladeira: <span className="font-mono text-gray-300">{condo.fridge_id || 'Não definido'}</span></p></div><Refrigerator className="text-[#f2bd46]"/></div><div className="grid grid-cols-2 gap-2 mt-4"><button onClick={() => unlock(condo)} className={darkButton}><KeyRound size={16}/> Destravar</button><button onClick={() => handleOpenCondoModal(condo)} className={darkButton}><Edit size={16}/> Editar</button><button onClick={() => handleDeleteCondo(condo.id)} className="col-span-2 bg-red-500/10 border border-red-500/20 text-red-300 font-black rounded-2xl px-3 py-3 flex items-center justify-center gap-2"><Trash2 size={16}/> Apagar ponto</button></div></AdminCard>)}</div></div>);
+    };
+
     const renderContent = () => {
-        const isMainLoading = (isLoading && (products.length === 0 || condominiums.length === 0));
-        if (isMainLoading) return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin" /></div>;
-        if (error) return <div className="text-red-400 bg-red-900/20 p-4 rounded-lg">Erro: {error}</div>;
-        
+        if (isLoading && ['overview','products','points'].includes(activeTab)) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="animate-spin text-[#f2bd46]" size={44}/></div>;
+        if (error) return <AdminCard className="p-6 text-red-300 border-red-500/20 bg-red-500/10">{error}</AdminCard>;
         switch (activeTab) {
-            case 'dashboard': return <AdminDashboardPage token={token} setActiveTab={setActiveTab} />;
+            case 'overview': return <OverviewPage />;
+            case 'dre': return <SmartFinancePage />;
+            case 'promotions': return <AutoPromotionsPage />;
+            case 'audit': return <AuditCenterPage />;
+            case 'losses': return <LossesPage />;
+            case 'purchases': return <PurchasesPage />;
+            case 'clients-intel': return <ClientsIntelligencePage />;
+            case 'products': return <ProductOperationsPage />;
+            case 'points': return <PointsPage />;
             case 'sales': return <EntradasVendasPage condominiums={condominiums} token={token} />;
-            case 'central-cashier': return <CentralCashierPage token={token} />;
-            case 'critical-stock': return <CriticalStockPage condominiums={condominiums} token={token} />;
-            case 'users': return <UserManagementPage condominiums={condominiums} token={token} />;
+            case 'cashier': return <CentralCashierPage token={token} />;
+            case 'critical': return <CriticalStockPage condominiums={condominiums} token={token} />;
             case 'stock': return <StockManagement condominiums={condominiums} products={products} token={token} />;
-            case 'condominiums': return <CondoManager condominiums={condominiums} onAddNew={handleOpenCondoModal} onEdit={handleOpenCondoModal} onDelete={handleDeleteCondo} token={token} />;
-            case 'products': return <ProductManager />; 
-            case 'finance': return <FinanceReport condominiums={condominiums} token={token} />;
-            default: return <div>Selecione uma opção</div>;
+            default: return <OverviewPage />;
         }
     };
 
-    // Função para fechar o menu ao clicar num link (mobile)
-    const handleNavClick = (tab) => {
-        setActiveTab(tab);
-        setIsMobileMenuOpen(false);
-    };
+    const SidebarContent = () => (
+        <>
+            <div className="p-4 sm:p-5 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                    <div className="h-14 w-24 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center px-2"><img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="max-h-11 w-auto object-contain"/></div>
+                    <div className="min-w-0"><p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Franqueado</p><p className="text-white font-black truncate">Centro de Controle</p></div>
+                </div>
+            </div>
+            <nav className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1">
+                {tabs.map(tab => <button key={tab.id} onClick={() => closeAndGo(tab.id)} className={`w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all ${activeTab === tab.id ? 'bg-[#f2bd46] text-black shadow-[0_0_30px_rgba(242,189,70,.18)]' : 'text-gray-300 hover:bg-white/[0.045] hover:text-white'}`}><span className="shrink-0">{tab.icon}</span><span className="font-black text-sm leading-tight">{tab.label}</span></button>)}
+            </nav>
+            <div className="p-3 border-t border-white/10"><button onClick={onLogout} className="w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 bg-red-500/10 border border-red-500/20 text-red-300 font-black"><LogOut size={18}/> Sair</button></div>
+        </>
+    );
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-[#050505] text-white relative overflow-x-hidden">
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,.04); border-radius: 999px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242,189,70,.35); border-radius: 999px; }
+                .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            `}</style>
             <CondoModal isOpen={isCondoModalOpen} onClose={handleCloseCondoModal} onSave={handleSaveCondo} condo={currentCondo} />
             <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
-            
-            {/* --- HEADER MOBILE (Novo) --- */}
-            <div className="md:hidden bg-[#1a1a1a] p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
-                <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-[#f2bd46]">DM</span>
-                    <span className="text-xl font-light">Admin</span>
-                </div>
-                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">
-                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                </button>
+            <div className="fixed -top-40 -left-40 h-96 w-96 rounded-full bg-[#f2bd46]/10 blur-[140px] pointer-events-none"></div>
+            <div className="fixed -bottom-44 -right-44 h-[30rem] w-[30rem] rounded-full bg-[#f2bd46]/6 blur-[160px] pointer-events-none"></div>
+            <div className="lg:hidden sticky top-0 z-40 bg-black/80 backdrop-blur-2xl border-b border-white/10 px-3 py-3 flex items-center justify-between gap-3">
+                <button onClick={() => setIsMobileMenuOpen(true)} className="h-11 w-11 rounded-2xl bg-white/[0.045] border border-white/10 flex items-center justify-center"><Menu size={22}/></button>
+                <div className="flex items-center gap-2 min-w-0"><img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="h-9 w-auto object-contain"/><div className="min-w-0"><p className="text-[10px] text-[#f2bd46] font-black uppercase tracking-widest">{activeMeta.short}</p><p className="text-sm font-black text-white truncate">Painel do franqueado</p></div></div>
+                <button onClick={onLogout} className="h-11 w-11 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 flex items-center justify-center"><LogOut size={19}/></button>
             </div>
-
-            {/* --- OVERLAY PARA MOBILE --- */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
-            )}
-            
-            {/* --- SIDEBAR RESPONSIVA --- */}
-            <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-[#1a1a1a] p-4 flex flex-col shrink-0 border-r border-gray-700
-                transform transition-transform duration-300 ease-in-out
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-                md:translate-x-0 md:static md:block
-            `}>
-                <div className="text-center mb-8 hidden md:block">
-                    <span className="text-2xl font-bold text-[#f2bd46]">DM</span><span className="text-2xl font-light text-white">24h</span>
-                    <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Centro de Controle</p>
+            {isMobileMenuOpen && <div className="fixed inset-0 z-50 lg:hidden"><div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div><aside className="absolute inset-y-0 left-0 w-[86vw] max-w-sm bg-[#080808] border-r border-white/10 flex flex-col shadow-[30px_0_90px_rgba(0,0,0,.8)]"><button onClick={() => setIsMobileMenuOpen(false)} className="absolute right-3 top-3 h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center"><X size={20}/></button><SidebarContent /></aside></div>}
+            <div className="lg:flex min-h-screen">
+                <aside className="hidden lg:flex lg:w-80 xl:w-86 bg-black/65 border-r border-white/10 flex-col sticky top-0 h-screen"><SidebarContent /></aside>
+                <main className="flex-1 w-full px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8">
+                    {renderContent()}
+                </main>
+            </div>
+            <div className="fixed bottom-0 left-0 right-0 z-30 bg-black/88 backdrop-blur-2xl border-t border-white/10 p-2 lg:hidden">
+                <div className="grid grid-cols-5 gap-1">
+                    {tabs.slice(0,5).map(tab => <button key={tab.id} onClick={() => closeAndGo(tab.id)} className={`rounded-2xl py-2 flex flex-col items-center justify-center gap-1 ${activeTab === tab.id ? 'bg-[#f2bd46] text-black' : 'text-gray-400'}`}><span>{tab.icon}</span><span className="text-[9px] font-black leading-none">{tab.short}</span></button>)}
                 </div>
-                
-                <nav className="flex flex-col gap-1 flex-grow overflow-y-auto">
-                    <NavButton active={activeTab === 'dashboard'} onClick={() => handleNavClick('dashboard')} icon={<LayoutDashboard size={20} />} label="Visão Geral" />
-                    <NavButton active={activeTab === 'sales'} onClick={() => handleNavClick('sales')} icon={<DollarSign size={20} />} label="Vendas" />
-                    <NavButton active={activeTab === 'central-cashier'} onClick={() => handleNavClick('central-cashier')} icon={<PiggyBank size={20} />} label="Financeiro" />
-                    
-                    <div className="my-2 border-t border-gray-700/50"></div>
-                    
-                    <NavButton active={activeTab === 'products'} onClick={() => handleNavClick('products')} icon={<Package size={20} />} label="Produtos" />
-                    <NavButton active={activeTab === 'stock'} onClick={() => handleNavClick('stock')} icon={<ShoppingCart size={20} />} label="Estoque Inteligente" />
-                    <NavButton active={activeTab === 'critical-stock'} onClick={() => handleNavClick('critical-stock')} icon={<AlertTriangle size={20} />} label="Alertas de Estoque" />
-                    
-                    <div className="my-2 border-t border-gray-700/50"></div>
-
-                    <NavButton active={activeTab === 'condominiums'} onClick={() => handleNavClick('condominiums')} icon={<Building2 size={20} />} label="Pontos de Venda" />
-                    <NavButton active={activeTab === 'users'} onClick={() => handleNavClick('users')} icon={<UsersIcon size={20} />} label="Clientes" />
-                    <NavButton active={activeTab === 'finance'} onClick={() => handleNavClick('finance')} icon={<BarChart size={20} />} label="Resultado da Operação" />
-                </nav>
-                
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                    <button onClick={onLogout} className="flex items-center w-full gap-3 p-3 rounded-md text-red-400 hover:bg-red-500/10 transition">
-                        <LogOut size={20} /> Sair
-                    </button>
-                </div>
-            </aside>
-            
-            {/* --- MAIN CONTENT --- */}
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
-                {renderContent()}
-            </main>
+            </div>
         </div>
-    )
-};
+    );
+}
+;
 
 // Componente auxiliar para os botões do menu ficarem mais limpos
 const NavButton = ({ active, onClick, icon, label }) => (
