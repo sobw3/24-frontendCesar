@@ -8,10 +8,8 @@ import Slider from "react-slick"; // E adicione esta também
 
 
 // --- CONFIGURAÇÃO DA API ---
-const API_URL = process.env.REACT_APP_API_URL || 'https://two4hprontobackendcesar.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'https://smartfridge-api.onrender.com';
 const MERCADOPAGO_PUBLIC_KEY = process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY;
-const BRAND_LOGO_URL = 'https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png';
-
 
 
 // --- FUNÇÕES HELPER ---
@@ -45,12 +43,54 @@ const validateCPF = (cpf) => {
     return true;
 };
 
+
+const onlyDigits = (value) => String(value || '').replace(/\D/g, '');
+
+const formatCardNumber = (value) => {
+    return onlyDigits(value).slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
+};
+
+const formatCardExpiry = (value) => {
+    const digits = onlyDigits(value).slice(0, 6);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+};
+
+const normalizeCieloExpiration = (expiry) => {
+    const digits = onlyDigits(expiry);
+    if (digits.length === 6) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    if (digits.length === 4) return `${digits.slice(0, 2)}/20${digits.slice(2)}`;
+    return expiry;
+};
+
+const detectCardBrand = (cardNumber) => {
+    const n = onlyDigits(cardNumber);
+    if (/^4/.test(n)) return 'Visa';
+    if (/^(5[1-5]|2[2-7])/.test(n)) return 'Master';
+    if (/^3[47]/.test(n)) return 'Amex';
+    if (/^(4011|4312|4389|4514|4576|5041|5067|509|6277|6362|6363|650|6516|6550)/.test(n)) return 'Elo';
+    if (/^(606282|3841)/.test(n)) return 'Hipercard';
+    if (/^35/.test(n)) return 'JCB';
+    if (/^(36|38|30[0-5])/.test(n)) return 'Diners';
+    return '';
+};
+
+const buildGuestUser = (condo) => ({
+    id: null,
+    name: 'Cliente',
+    email: '',
+    condoId: condo?.id || null,
+    isGuest: true,
+});
+
 const getTransactionIcon = (type) => {
         switch (type) {
             case 'deposit': return <ArrowDownToLine className="text-green-400" />;
             case 'transfer_in': return <ArrowRightLeft className="text-green-400" />;
             case 'transfer_out': return <ArrowRightLeft className="text-red-400" />;
             case 'purchase': return <ShoppingCart className="text-red-400" />;
+            case 'credit_purchase': return <CreditCard className="text-red-400" />;
+            case 'invoice_payment': return <FileText className="text-blue-400" />;
             default: return <DollarSign />;
         }
     };
@@ -1267,14 +1307,14 @@ const BannerCarousel = () => {
     ];
 
     return (
-        <div className="mb-4">
+        <div className="mb-8">
             <Slider {...settings}>
                 {banners.map(banner => (
                     <div key={banner.id}>
                         <img 
                             src={banner.imageUrl} 
                             alt={`Banner ${banner.id}`} 
-                            className="w-full h-36 sm:h-44 md:h-64 object-cover rounded-3xl"
+                            className="w-full h-auto object-cover rounded-lg"
                         />
                     </div>
                 ))}
@@ -1285,621 +1325,408 @@ const BannerCarousel = () => {
 
 // App.js -> SUBSTITUA o seu componente HomePage por este
 
-
 const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId, onCondoSelected }) => {
+    // --- (Estados do HomePage MANTIDOS) ---
     const [showMenu, setShowMenu] = React.useState(false);
     const [products, setProducts] = React.useState({});
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
-    const [condos, setCondos] = React.useState([]);
+    const [condos, setCondos] = React.useState([]); 
     const [searchQuery, setSearchQuery] = React.useState('');
     const [searchResults, setSearchResults] = React.useState([]);
     const [isSearchLoading, setIsSearchLoading] = React.useState(false);
     const [isSearchFocused, setIsSearchFocused] = React.useState(false);
     const [unreadTickets, setUnreadTickets] = React.useState(0);
-    const [selectedCategory, setSelectedCategory] = React.useState('Todos');
-    const [dailyDeals, setDailyDeals] = React.useState([]);
 
-    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
-
+    // --- (useEffect de busca de Condos/Máquinas MANTIDO) ---
     React.useEffect(() => {
         const fetchCondos = async () => {
             try {
                 const response = await fetch(`${API_URL}/api/public/condominiums`);
                 const data = await response.json();
-                setCondos(Array.isArray(data) ? data : []);
-            } catch (err) {
-                console.error('Erro ao buscar máquinas:', err);
-            }
+                setCondos(data);
+            } catch (err) { console.error(err) }
         };
         fetchCondos();
     }, []);
 
+    const currentCondo = condos.find(c => c.id === user?.condoId);
+
+    // --- (useEffect de Produtos MANTIDO) ---
     React.useEffect(() => {
         const fetchProducts = async () => {
-            setIsLoading(true);
+            setIsLoading(true); 
             setError('');
-
+            
             if (!user?.condoId) {
-                setProducts({});
-                setIsLoading(false);
-                return;
+                setIsLoading(false); 
+                setProducts({});   
+                return;            
             }
 
             try {
-                const response = await fetch(`${API_URL}/api/products?condoId=${user.condoId}`);
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Falha ao buscar produtos.');
-                setProducts(data || {});
+                const response = await fetch(`${API_URL}/api/products?condoId=${user.condoId}`); 
+                if (!response.ok) { const errData = await response.json(); throw new Error(errData.message || 'Falha ao buscar produtos.'); }
+                const data = await response.json(); 
+                setProducts(data);
             } catch (err) {
                 setError(err.message);
             } finally {
                 setIsLoading(false);
             }
         };
-
         fetchProducts();
-    }, [user?.condoId]);
+    }, [user?.condoId]); 
 
+    // --- (useEffect de Pesquisa MANTIDO) ---
     React.useEffect(() => {
-        const fetchDailyDeals = async () => {
-            try {
-                const response = await fetch(`${API_URL}/api/public/promotions/daily`);
-                if (!response.ok) return;
-                const data = await response.json();
-                const list = Array.isArray(data) ? data : (Array.isArray(data?.promotions) ? data.promotions : []);
-                setDailyDeals(list);
-            } catch (error) {
-                console.warn('Promoções do dia ainda não disponíveis no backend:', error?.message);
-            }
-        };
-        fetchDailyDeals();
-    }, []);
+        if (searchQuery.trim() === '') {
+            setSearchResults([]);
+            return;
+        }
+        setIsSearchLoading(true);
+        const delayDebounceFn = setTimeout(() => {
+            const fetchResults = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/products/search?q=${searchQuery}&condoId=${user.condoId}`);
+                    const data = await response.json();
+                    setSearchResults(data);
+                } catch (err) {
+                    console.error("Erro na pesquisa:", err);
+                } finally {
+                    setIsSearchLoading(false);
+                }
+            };
+            fetchResults();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery, user?.condoId]);
 
+    // --- (Tickets MANTIDO) ---
     React.useEffect(() => {
         const fetchUnreadTickets = async () => {
             const token = localStorage.getItem('token');
             if (!token) return;
             try {
-                const response = await fetch(`${API_URL}/api/user/tickets/unread-count`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setUnreadTickets(data.count || 0);
-                }
-            } catch (error) {
-                console.error('Erro tickets:', error);
-            }
+                const response = await fetch(`${API_URL}/api/user/tickets/unread-count`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.ok) { const data = await response.json(); setUnreadTickets(data.count); }
+            } catch (error) { console.error("Erro tickets:", error); }
         };
-
         fetchUnreadTickets();
         const interval = setInterval(fetchUnreadTickets, 60000);
         return () => clearInterval(interval);
     }, []);
 
-    React.useEffect(() => {
-        if (!searchQuery.trim() || !user?.condoId) {
-            setSearchResults([]);
-            return;
-        }
-
-        setIsSearchLoading(true);
-        const delayDebounceFn = setTimeout(async () => {
-            try {
-                const response = await fetch(`${API_URL}/api/products/search?q=${encodeURIComponent(searchQuery)}&condoId=${user.condoId}`);
-                const data = await response.json();
-                setSearchResults(Array.isArray(data) ? data : []);
-            } catch (err) {
-                console.error('Erro na pesquisa:', err);
-            } finally {
-                setIsSearchLoading(false);
-            }
-        }, 300);
-
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchQuery, user?.condoId]);
-
-    const currentCondo = condos.find(c => c.id === user?.condoId);
     const totalItemsInCart = cart.reduce((total, item) => total + item.quantity, 0);
-    const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.sale_price || 0) * item.quantity), 0);
-    const userBalance = parseFloat(user?.wallet_balance || 0);
+    const handleBuyNow = (e, product) => { e.stopPropagation(); addToCart(product); setPage('cart'); };
+    const handleAddToCart = (e, product) => { e.stopPropagation(); addToCart(product); };
 
+    // --- SideMenu (VISUAL ATUALIZADO COM GLASSMORPHISM) ---
+    const SideMenu = () => (
+        <div className={`fixed top-0 left-0 h-full w-72 bg-black/90 backdrop-blur-2xl border-r border-gray-800 shadow-[20px_0_50px_rgba(0,0,0,0.7)] z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-500 ease-in-out`}>
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-10">
+                    <span className="text-xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-[#f2bd46]">MENU</span>
+                    <button onClick={() => setShowMenu(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                        <X className="text-white" />
+                    </button>
+                </div>
+                <nav className="flex flex-col gap-3">
+                    <button onClick={() => setPage('wallet')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Wallet size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Carteira</span>
+                    </button>
+                    <button onClick={() => setPage('history')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><History size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meu Histórico</span>
+                    </button>
+                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Ticket size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                            <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meus Tiquetes</span>
+                        </div>
+                        {unreadTickets > 0 && <span className="bg-red-500 text-xs font-bold text-white rounded-full h-6 w-6 flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.5)]">{unreadTickets}</span>}
+                    </button>
+                    <button onClick={() => setPage('my-account')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><User size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Conta</span>
+                    </button>
+                </nav>
+            </div>
+            <button onClick={onLogout} className="absolute bottom-6 left-6 right-6 flex items-center justify-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hover:bg-red-500/20 hover:border-red-500/40 transition-all">
+                <LogOut size={20} /> Sair do Aplicativo
+            </button>
+        </div>
+    );
+    
+    // --- Lógica de Categorias MANTIDA ---
     const categories = React.useMemo(() => {
-        const normalized = Object.entries(products || {}).reduce((acc, [category, items]) => {
-            if (Array.isArray(items) && items.length > 0) acc[category] = items;
+        return Object.keys(products).reduce((acc, category) => {
+            const items = products[category];
+            if (items.length > 0) acc[category] = items;
             return acc;
         }, {});
-        return normalized;
     }, [products]);
+    
+    // --- Card de Produto da Lista Principal (VISUAL ATUALIZADO) ---
+    const ProductListCard = ({ product, onAddToCart, onBuyNow }) => {
+        const isOutOfStock = product.stock === 0;
+        const isOnSale = product.is_on_sale;
+        const keyframes = `
+            @keyframes surgir { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes neon-pulse-text-[#f2bd46] { 0%, 100% { text-shadow: 0 0 5px rgba(242, 189, 70, 0.5), 0 0 10px rgba(242, 189, 70, 0.5); } 50% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.8), 0 0 20px rgba(242, 189, 70, 0.8); } }
+            @keyframes neon-pulse-text-red { 0%, 100% { text-shadow: 0 0 5px rgba(239, 68, 68, 0.5), 0 0 10px rgba(239, 68, 68, 0.5); } 50% { text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.8); } }
+            .animate-surgir { animation: surgir 0.5s ease-out forwards; }
+            .neon-text-[#f2bd46] { animation: neon-pulse-text-[#f2bd46] 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            .neon-text-red { animation: neon-pulse-text-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        `;
+        
+        let cardClasses = ` animate-surgir flex flex-col md:flex-row items-center gap-5 bg-black/40 backdrop-blur-xl border rounded-2xl overflow-hidden transition-all duration-300 p-5 relative `;
+        if (isOnSale) { cardClasses += ` border-[#f2bd46]/40`; } else { cardClasses += ` border-gray-700/50`; }
+        if (!isOutOfStock) { cardClasses += ` hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-gray-500/80 group`; }
+        
+        // Estilos de botões idênticos à tela de Auth
+        const btnBuyClass = `bg-[#f2bd46] text-black font-bold py-3 px-5 text-sm flex items-center justify-center gap-2 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 w-full md:w-auto`;
+        const btnAddClass = `bg-black/50 hover:bg-black/80 border border-gray-700/80 text-white font-semibold py-3 px-5 text-sm flex items-center justify-center gap-2 rounded-xl transition-all duration-300 hover:border-[#f2bd46]/50 hover:text-[#f2bd46] w-full md:w-auto`;
 
-    const categoryNames = React.useMemo(() => ['Todos', ...Object.keys(categories)], [categories]);
-
-    const visibleCategories = React.useMemo(() => {
-        if (selectedCategory === 'Todos') return categories;
-        return categories[selectedCategory] ? { [selectedCategory]: categories[selectedCategory] } : {};
-    }, [categories, selectedCategory]);
-
-    const allProducts = React.useMemo(() => Object.values(categories).flat(), [categories]);
-    const featuredProducts = React.useMemo(() => {
-        const items = allProducts.filter(p => Number(p.stock || 0) > 0);
-        const saleItems = items.filter(p => p.is_on_sale || p.promotional_price);
-        return (saleItems.length ? saleItems : items).slice(0, 6);
-    }, [allProducts]);
-
-    const promotionProducts = React.useMemo(() => {
-        const remoteDeals = Array.isArray(dailyDeals) ? dailyDeals.filter(Boolean) : [];
-        const localDeals = allProducts.filter(p => p.is_on_sale || p.promotional_price || (p.original_price && Number(p.original_price) > Number(p.sale_price))).slice(0, 7);
-        return (remoteDeals.length ? remoteDeals : localDeals).slice(0, 7);
-    }, [dailyDeals, allProducts]);
-
-    const handleDailyDealClick = (product) => {
-        const dealCondoId = product.condo_id || product.condoId || product.condominium_id;
-        const targetMachine = condos.find(c => Number(c.id) === Number(dealCondoId));
-        if (targetMachine && Number(targetMachine.id) !== Number(user?.condoId)) {
-            onCondoSelected(targetMachine, true);
-            setSelectedCategory('Todos');
-            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 80);
-            return;
-        }
-        handleBuyNow(product);
-    };
-
-    const handleAddToCart = (product) => addToCart(product);
-    const handleBuyNow = (product) => {
-        addToCart(product);
-        setPage('cart');
-    };
-
-    const closeMenuAndGo = (nextPage) => {
-        setShowMenu(false);
-        setPage(nextPage);
-    };
-
-    const ProductImage = ({ product, className }) => (
-        <img
-            src={product.image_url || `https://placehold.co/500x500/111111/f2bd46?text=${encodeURIComponent(product.name || 'Produto')}`}
-            alt={product.name}
-            className={className}
-            loading="lazy"
-        />
-    );
-
-    const SideMenu = () => (
-        <div className={`fixed top-0 left-0 h-full w-[86vw] max-w-sm bg-black/95 backdrop-blur-3xl border-r border-[#f2bd46]/20 shadow-[30px_0_80px_rgba(0,0,0,0.85)] z-50 transform ${showMenu ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-500 ease-out`}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,189,70,0.12),transparent_35%)] pointer-events-none"></div>
-            <div className="relative p-6 h-full flex flex-col">
-                <div className="flex justify-between items-start mb-8">
-                    <div className="min-w-0">
-                        <img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="h-12 w-auto object-contain mb-3" />
-                        <p className="text-[11px] uppercase tracking-[0.28em] text-[#f2bd46] font-black">Market 24h</p>
+        const StockIndicator = () => {
+            if (isOutOfStock) return null;
+            if (product.stock <= product.critical_stock_level) {
+                return (
+                    <div className="mt-3 inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-1.5">
+                        <AlertTriangle size={14} className="text-red-400" />
+                        <p className="text-xs font-bold text-red-400 neon-text-red uppercase tracking-wider"> Restam apenas {product.stock}! </p>
                     </div>
-                    <button onClick={() => setShowMenu(false)} className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
-                        <X className="text-white" size={22} />
-                    </button>
+                );
+            }
+            return (
+                <div className="mt-3 inline-flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-1.5">
+                    <Package size={14} className="text-green-400" />
+                    <p className="text-xs font-medium text-green-400"> {product.stock} disponíveis </p>
                 </div>
-
-                <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-4 mb-6">
-                    <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Seu saldo</p>
-                    <p className="text-3xl font-black text-[#f2bd46] mt-1">{money(userBalance)}</p>
-                    <button onClick={() => closeMenuAndGo('wallet')} className="mt-4 w-full bg-[#f2bd46] text-black font-black rounded-2xl py-3 flex items-center justify-center gap-2">
-                        <PlusCircle size={18} /> Adicionar saldo
-                    </button>
-                </div>
-
-                <nav className="flex flex-col gap-2">
-                    <button onClick={() => closeMenuAndGo('home')} className="premium-menu-link"><Home size={20}/> Loja</button>
-                    <button onClick={() => closeMenuAndGo('wallet')} className="premium-menu-link"><Wallet size={20}/> Minha carteira</button>
-                    <button onClick={() => closeMenuAndGo('history')} className="premium-menu-link"><History size={20}/> Histórico e comprovantes</button>
-                    <button onClick={() => closeMenuAndGo('my-tickets')} className="premium-menu-link justify-between">
-                        <span className="flex items-center gap-3"><MessageSquare size={20}/> Ajuda e suporte</span>
-                        {unreadTickets > 0 && <span className="bg-red-500 text-white text-[11px] font-black rounded-full h-6 min-w-6 px-2 flex items-center justify-center">{unreadTickets}</span>}
-                    </button>
-                    <button onClick={() => closeMenuAndGo('my-account')} className="premium-menu-link"><User size={20}/> Minha conta</button>
-                </nav>
-
-                <div className="mt-auto">
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mb-4 flex items-start gap-3">
-                        <Shield size={20} className="text-blue-300 mt-0.5" />
-                        <p className="text-xs text-blue-100/80 leading-relaxed">Ambiente monitorado 24h. Compre com segurança e retire somente os itens pagos.</p>
-                    </div>
-                    <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 font-black hover:bg-red-500/20 transition-all">
-                        <LogOut size={20} /> Sair
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-
-    const MachineSwitcher = () => {
-        const otherMachines = condos.filter(c => c.id !== user?.condoId);
-        if (!otherMachines.length) return null;
-
-        return (
-            <section className="bg-white/[0.03] border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl overflow-hidden relative">
-                <div className="absolute -right-10 -top-10 w-48 h-48 bg-[#f2bd46]/5 blur-[60px] rounded-full"></div>
-                <div className="relative flex items-center justify-between gap-3 mb-4">
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.28em] text-gray-500 font-black">Trocar máquina</p>
-                        <h3 className="text-xl font-black text-white">Pontos disponíveis</h3>
-                    </div>
-                    <Refrigerator className="text-[#f2bd46]" />
-                </div>
-                <div className="relative flex gap-3 overflow-x-auto pb-1 custom-scrollbar">
-                    {otherMachines.map(machine => (
-                        <button
-                            key={machine.id}
-                            onClick={() => onCondoSelected(machine, true)}
-                            className="min-w-[220px] text-left bg-black/50 border border-white/10 hover:border-[#f2bd46]/50 rounded-2xl p-4 transition-all group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-[#f2bd46]/10 rounded-2xl border border-[#f2bd46]/20 group-hover:bg-[#f2bd46] transition-colors">
-                                    <MapPin size={18} className="text-[#f2bd46] group-hover:text-black" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="font-black text-white truncate">{machine.name}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Selecionar ponto</p>
-                                </div>
-                            </div>
-                        </button>
-                    ))}
-                </div>
-            </section>
-        );
-    };
-
-    const SearchResultItem = ({ product }) => (
-        <button
-            className="w-full p-3 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors border-b border-white/10 last:border-0 text-left group"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => { handleAddToCart(product); setSearchQuery(''); setIsSearchFocused(false); }}
-        >
-            <div className="flex items-center gap-4 min-w-0">
-                <ProductImage product={product} className="w-14 h-14 rounded-2xl object-cover bg-black flex-shrink-0 border border-white/10 group-hover:border-[#f2bd46]/40 transition-colors" />
-                <div className="min-w-0">
-                    <p className="font-black text-white truncate">{product.name}</p>
-                    <p className="text-sm font-black text-[#f2bd46] mt-0.5">{money(product.sale_price)}</p>
-                </div>
-            </div>
-            <div className="h-10 w-10 rounded-2xl bg-[#f2bd46] text-black flex items-center justify-center flex-shrink-0"><Plus size={18}/></div>
-        </button>
-    );
-
-    const SearchBox = ({ mobile = false }) => (
-        <div className="relative w-full group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#f2bd46] transition-colors" size={18} />
-            <input
-                type="text"
-                placeholder="Buscar produto, bebida, doce..."
-                className="w-full bg-black/60 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-2 focus:ring-[#f2bd46]/10 transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-            />
-            {isSearchFocused && searchQuery && (
-                <div className={`absolute top-full mt-3 w-full bg-black/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.8)] z-50 overflow-hidden ${mobile ? 'max-h-72' : 'max-h-96'} overflow-y-auto custom-scrollbar`}>
-                    {isSearchLoading ? (
-                        <div className="p-8 text-center text-gray-400 flex flex-col items-center justify-center gap-3">
-                            <Loader2 className="animate-spin text-[#f2bd46]" size={24}/>
-                            <span className="text-sm font-bold">Buscando produtos...</span>
-                        </div>
-                    ) : searchResults.length > 0 ? (
-                        <div className="py-2">{searchResults.map(product => <SearchResultItem key={product.id} product={product} />)}</div>
-                    ) : (
-                        <div className="p-8 text-center text-gray-400 flex flex-col items-center gap-2">
-                            <Search size={24} className="opacity-50"/>
-                            <span className="text-sm font-bold">Nenhum produto encontrado.</span>
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-
-    const ProductCard = ({ product }) => {
-        const stock = Number(product.stock || 0);
-        const isOutOfStock = stock <= 0;
-        const isCritical = !isOutOfStock && product.critical_stock_level !== undefined && stock <= Number(product.critical_stock_level || 0);
-        const isOnSale = Boolean(product.is_on_sale || product.promotional_price || (product.original_price && Number(product.original_price) > Number(product.sale_price)));
-
-        return (
-            <article className={`group relative bg-white/[0.035] border ${isOnSale ? 'border-[#f2bd46]/35' : 'border-white/10'} rounded-[1.7rem] overflow-hidden shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-[#f2bd46]/50 ${isOutOfStock ? 'opacity-60' : ''}`}>
-                {isOnSale && <div className="absolute top-3 left-3 z-10 bg-[#f2bd46] text-black text-[10px] font-black uppercase tracking-widest rounded-full px-3 py-1 flex items-center gap-1"><Flame size={12}/> Promo</div>}
-                {isCritical && <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full px-3 py-1">Últimas {stock}</div>}
-                <div className="relative aspect-square bg-black overflow-hidden">
-                    <ProductImage product={product} className={`w-full h-full object-cover transition-transform duration-700 ${isOutOfStock ? 'grayscale opacity-50' : 'group-hover:scale-105'}`} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-80"></div>
-                    {isOutOfStock && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="bg-black/80 border border-white/15 text-gray-300 rounded-full px-5 py-2 text-xs font-black uppercase tracking-[0.25em]">Esgotado</span>
-                        </div>
-                    )}
-                </div>
-                <div className="p-3.5 sm:p-5">
-                    <h3 className="font-black text-white text-sm sm:text-lg leading-tight line-clamp-2 min-h-[2.6rem]">{product.name}</h3>
-                    <div className="mt-3 flex items-end justify-between gap-3">
-                        <div>
-                            {isOnSale && product.original_price && (
-                                <p className="text-xs text-gray-500 line-through font-bold">{money(product.original_price)}</p>
-                            )}
-                            <p className="text-xl sm:text-3xl font-black text-[#f2bd46] tracking-tight">{money(product.sale_price)}</p>
-                        </div>
-                        {!isOutOfStock && <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">{stock} disp.</p>}
-                    </div>
-
-                    <div className="grid grid-cols-[auto_1fr] gap-2 mt-4 sm:mt-5">
-                        <button
-                            onClick={() => handleAddToCart(product)}
-                            disabled={isOutOfStock}
-                            className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-white/5 border border-white/10 text-white hover:border-[#f2bd46]/50 hover:text-[#f2bd46] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
-                            title="Adicionar ao carrinho"
-                        >
-                            <Plus size={20}/>
-                        </button>
-                        <button
-                            onClick={() => handleBuyNow(product)}
-                            disabled={isOutOfStock}
-                            className="h-11 sm:h-12 rounded-2xl bg-[#f2bd46] text-black font-black hover:bg-[#e3ae35] transition-all disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            <ShoppingCart size={18}/> Comprar
-                        </button>
-                    </div>
-                </div>
-            </article>
-        );
-    };
-
-    const DailyPromotionsApp = () => {
-        if (!promotionProducts.length) return null;
-        const getMachineName = (product) => {
-            const dealCondoId = product.condo_id || product.condoId || product.condominium_id;
-            return condos.find(c => Number(c.id) === Number(dealCondoId))?.name || currentCondo?.name || 'Ponto disponível';
+            );
         };
 
         return (
-            <section className="premium-in bg-gradient-to-br from-[#f2bd46]/12 via-white/[0.035] to-black border border-[#f2bd46]/20 rounded-[1.6rem] sm:rounded-[2rem] p-4 sm:p-5 shadow-2xl relative overflow-hidden">
-                <div className="absolute -right-16 -top-16 w-48 h-48 bg-[#f2bd46]/15 blur-[70px] rounded-full"></div>
-                <div className="relative flex items-start justify-between gap-3 mb-4">
-                    <div>
-                        <p className="text-[10px] uppercase tracking-[0.28em] text-[#f2bd46] font-black">Promoções do dia</p>
-                        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">Ofertas ativas agora</h2>
-                        <p className="text-xs sm:text-sm text-gray-400 mt-1">Valem no ponto onde o produto está cadastrado. Toque para ir direto à máquina.</p>
-                    </div>
-                    <div className="h-11 w-11 rounded-2xl bg-[#f2bd46] text-black flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(242,189,70,.25)]"><Flame size={21}/></div>
+            <div className={cardClasses}>
+                <style>{keyframes}</style>
+                {/* Glow de fundo no card para itens em promoção */}
+                {isOnSale && <div className="absolute inset-0 bg-gradient-to-r from-[#f2bd46]/5 to-transparent pointer-events-none rounded-2xl"></div>}
+                
+                <img src={product.image_url || `https://placehold.co/200x200/1a1a1a/4B5563?text=Sem+Foto`} alt={product.name} className={`w-full aspect-square md:w-36 md:h-36 rounded-xl object-cover flex-shrink-0 shadow-lg ${isOutOfStock ? 'opacity-40 grayscale' : 'group-hover:scale-[1.02] transition-transform duration-500'}`} />
+                
+                <div className="flex-grow min-w-0 w-full z-10">
+                    {isOnSale && ( <div className="flex items-center gap-1.5 text-[#f2bd46] mb-2 bg-[#f2bd46]/10 inline-block px-2 py-0.5 rounded uppercase tracking-wider"> <Flame size={14} className="inline pb-0.5"/> <span className="font-bold text-[11px]">PROMOÇÃO IMPERDÍVEL</span> </div> )}
+                    <h3 className="font-extrabold text-white text-xl md:text-2xl truncate mb-1">{product.name}</h3>
+                    
+                    {isOnSale ? (
+                        <div className="flex items-baseline gap-3 mt-1">
+                            <p className="text-3xl font-black text-[#f2bd46] neon-text-[#f2bd46] tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p>
+                            <p className="text-lg text-gray-500 line-through font-medium">R$ {parseFloat(product.original_price).toFixed(2).replace('.', ',')}</p>
+                        </div>
+                    ) : ( <p className="text-3xl font-black text-white mt-1 tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.', ',')}</p> )}
+                    <StockIndicator />
                 </div>
-                <div className="relative flex gap-3 overflow-x-auto custom-scrollbar pb-1">
-                    {promotionProducts.map((product, index) => {
-                        const promoPrice = Number(product.promotional_price || product.promo_price || product.sale_price || 0);
-                        const originalPrice = Number(product.original_price || product.sale_price || product.regular_price || 0);
-                        return (
-                            <button key={`${product.id || product.product_id}-${index}`} onClick={() => handleDailyDealClick(product)} className="min-w-[165px] sm:min-w-[210px] text-left bg-black/55 border border-white/10 hover:border-[#f2bd46]/50 rounded-3xl p-3 transition-all group">
-                                <ProductImage product={product} className="w-full h-28 sm:h-32 object-cover rounded-2xl bg-black border border-white/10 group-hover:scale-[1.02] transition-transform" />
-                                <div className="mt-3">
-                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest truncate">{getMachineName(product)}</p>
-                                    <p className="font-black text-white text-sm sm:text-base line-clamp-2 min-h-[2.4rem] mt-1">{product.name}</p>
-                                    <div className="flex items-end justify-between gap-2 mt-2">
-                                        <div>
-                                            {originalPrice > promoPrice && <p className="text-[11px] text-gray-500 line-through font-bold">{money(originalPrice)}</p>}
-                                            <p className="text-lg sm:text-xl text-[#f2bd46] font-black">{money(promoPrice)}</p>
-                                        </div>
-                                        <span className="text-[10px] bg-[#f2bd46] text-black font-black rounded-full px-2 py-1">Ver</span>
-                                    </div>
-                                </div>
-                            </button>
-                        );
-                    })}
+                
+                <div className="flex-shrink-0 w-full md:w-auto z-10 mt-2 md:mt-0">
+                    {isOutOfStock ? ( <span className="w-full flex items-center justify-center gap-2 text-sm bg-black/60 border border-gray-800 text-gray-500 font-bold p-3.5 text-center rounded-xl uppercase tracking-widest"><Ban size={18}/> ESGOTADO</span> ) : (
+                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-3 w-full">
+                            <button onClick={(e) => onAddToCart(e, product)} className={btnAddClass}> <Plus size={18} /> Carrinho </button>
+                            <button onClick={(e) => onBuyNow(e, product)} className={btnBuyClass}> <ShoppingCart size={18} /> Comprar </button>
+                        </div>
+                    )}
                 </div>
-            </section>
+            </div>
         );
     };
 
-    const FeaturedStrip = () => {
-        if (!featuredProducts.length) return null;
+    // --- Switcher de Máquina (VISUAL ATUALIZADO) ---
+    const MachineSwitcher = ({ condos, userCondoId, onCondoSelected }) => {
+        const otherMachines = condos.filter(c => c.id !== userCondoId);
+        if (otherMachines.length === 0) return null;
         return (
-            <section className="space-y-4">
-                <div className="flex items-end justify-between gap-3">
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-[#f2bd46] font-black">Destaques</p>
-                        <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Mais pedidos agora</h2>
-                    </div>
-                    <button onClick={() => setSelectedCategory('Todos')} className="text-sm font-bold text-gray-400 hover:text-[#f2bd46] transition-colors">Ver tudo</button>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-                    {featuredProducts.map(product => (
-                        <button
-                            key={product.id}
-                            onClick={() => handleBuyNow(product)}
-                            className="min-w-[230px] bg-white/[0.035] border border-white/10 hover:border-[#f2bd46]/50 rounded-3xl p-3 text-left transition-all group"
-                        >
-                            <div className="flex gap-3 items-center">
-                                <ProductImage product={product} className="w-20 h-20 rounded-2xl object-cover bg-black border border-white/10 group-hover:scale-105 transition-transform" />
-                                <div className="min-w-0">
-                                    <p className="font-black text-white line-clamp-2 leading-tight">{product.name}</p>
-                                    <p className="text-[#f2bd46] font-black mt-1">{money(product.sale_price)}</p>
-                                    <p className="text-[11px] text-gray-500 mt-1">Comprar rápido</p>
-                                </div>
-                            </div>
+            <div className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-5 rounded-2xl mb-8 shadow-lg" style={{ animationDelay: '100ms' }}>
+                <h3 className="text-sm uppercase tracking-wider font-bold text-gray-400 mb-4 flex items-center gap-2"><MapPin size={16}/> Explorar outras máquinas</h3>
+                <div className="flex flex-wrap gap-3">
+                    {otherMachines.map(machine => (
+                        <button key={machine.id} onClick={() => onCondoSelected(machine, true)} className="bg-black/60 border border-gray-700/80 rounded-xl py-2.5 px-5 flex items-center gap-2.5 hover:bg-[#f2bd46]/10 hover:border-[#f2bd46]/50 transition-all duration-300 text-gray-300 hover:text-white group">
+                            <Refrigerator size={18} className="text-gray-500 group-hover:text-[#f2bd46] transition-colors" /> 
+                            <span className="font-medium">{machine.name}</span>
                         </button>
                     ))}
                 </div>
-            </section>
+            </div>
         );
     };
 
+    // --- Componente para Resultados da Pesquisa (VISUAL ATUALIZADO) ---
+    const SearchResultItem = ({ product }) => (
+        <div 
+            className="p-3 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors border-b border-gray-700/50 last:border-0 cursor-pointer group" 
+            onClick={() => { addToCart(product); setSearchQuery(''); }}
+        >
+            <div className="flex items-center gap-4 overflow-hidden">
+                <img src={product.image_url || `https://placehold.co/100x100/1a1a1a/4B5563?text=Foto`} alt={product.name} className="w-14 h-14 rounded-lg object-cover bg-black flex-shrink-0 border border-gray-700/50 group-hover:border-[#f2bd46]/30 transition-colors" />
+                <div className="flex flex-col min-w-0">
+                    <span className="font-bold text-gray-200 group-hover:text-white truncate text-sm">{product.name}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        {product.promotional_price ? (
+                            <>
+                                <span className="text-[#f2bd46] font-black tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
+                                <span className="text-gray-500 line-through text-xs font-medium">R$ {parseFloat(product.original_price).toFixed(2).replace('.',',')}</span>
+                            </>
+                        ) : (
+                            <span className="text-gray-300 font-bold tracking-tight">R$ {parseFloat(product.sale_price).toFixed(2).replace('.',',')}</span>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <button className="bg-black/50 border border-gray-600 p-2.5 rounded-lg text-gray-400 group-hover:bg-[#f2bd46] group-hover:border-[#f2bd46] group-hover:text-black transition-all duration-300 flex-shrink-0 shadow-md">
+                <Plus size={18} />
+            </button>
+        </div>
+    );
+
+    const authInputClass = "w-full bg-black/60 border border-gray-700/80 rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300";
+
     return (
         <div className="min-h-screen bg-black text-white relative overflow-hidden">
-            <style>{`
-                @keyframes premium-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-                @keyframes premium-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-                .premium-menu-link { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.95rem 1rem; border-radius: 1rem; color: rgb(209 213 219); font-weight: 800; transition: all .25s ease; }
-                .premium-menu-link:hover { background: rgba(255,255,255,.06); color: white; }
-                .premium-in { animation: premium-in .55s cubic-bezier(.16,1,.3,1) both; }
-                .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,.04); border-radius: 999px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242,189,70,.35); border-radius: 999px; }
-            `}</style>
-
-            <div className="fixed top-[-18rem] left-[-12rem] w-[42rem] h-[42rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none"></div>
-            <div className="fixed bottom-[-20rem] right-[-16rem] w-[46rem] h-[46rem] bg-[#f2bd46]/5 rounded-full blur-[170px] pointer-events-none"></div>
-            <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.025)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40 pointer-events-none"></div>
-
+            {/* Ambient Glows Universais de Fundo */}
+            <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/5 rounded-full blur-[150px] pointer-events-none z-0"></div>
+            
             <SideMenu />
-            {showMenu && <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40" onClick={() => setShowMenu(false)}></div>}
-
-            <header className="sticky top-0 bg-black/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_15px_50px_rgba(0,0,0,.55)] z-30">
-                <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
-                    <div className="flex items-center gap-3 md:gap-5 min-w-0">
-                        <button onClick={() => setShowMenu(true)} className="p-2.5 sm:p-3 bg-white/[0.04] border border-white/10 rounded-2xl hover:border-[#f2bd46]/40 transition-colors relative">
+            {showMenu && <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowMenu(false)}></div>}
+            
+            <header className="sticky top-0 bg-black/70 backdrop-blur-xl border-b border-gray-800/60 shadow-lg z-30">
+                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-5">
+                        <button onClick={() => setShowMenu(true)} className="md:hidden relative p-2 bg-black/40 border border-gray-700/50 rounded-xl hover:bg-white/10 transition-colors">
                             <Menu size={22} />
-                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-4 min-w-4 rounded-full text-[9px] font-black flex items-center justify-center px-1">{unreadTickets}</span>}
+                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-3 w-3 rounded-full border-2 border-black"></span>}
                         </button>
-                        <button onClick={() => setPage('home')} className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div className="h-10 w-20 sm:h-11 sm:w-28 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center px-2 shadow-[0_0_30px_rgba(242,189,70,.12)]">
-                                <img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="max-h-8 sm:max-h-9 w-auto object-contain" />
-                            </div>
-                            <div className="hidden min-[380px]:block text-left leading-tight min-w-0">
-                                <p className="text-white font-black tracking-tight text-sm sm:text-base">Market 24h</p>
-                                <p className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-widest truncate max-w-[120px] sm:max-w-[220px]">{currentCondo?.name || 'Escolha sua máquina'}</p>
-                            </div>
-                        </button>
+                        <div className="cursor-pointer transition-transform hover:scale-105" onClick={() => setPage('home')}>
+                            <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-16 w-auto drop-shadow-[0_0_10px_rgba(242,189,70,0.2)]" />
+                        </div>
                     </div>
-
-                    <div className="hidden md:block flex-1 max-w-xl"><SearchBox /></div>
-
-                    <div className="flex items-center gap-2 md:gap-3">
-                        <button onClick={() => setPage('wallet')} className="hidden md:flex bg-white/[0.04] border border-white/10 hover:border-[#f2bd46]/40 rounded-2xl px-4 py-3 items-center gap-3 transition-colors">
-                            <Wallet size={18} className="text-[#f2bd46]" />
-                            <div className="text-left leading-tight">
-                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Saldo</p>
-                                <p className="text-sm font-black text-white">{money(userBalance)}</p>
+                    
+                    {/* BARRA DE PESQUISA (DESKTOP) */}
+                    <div className="flex-1 mx-8 max-w-lg relative hidden md:block group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar um produto..." 
+                            className={authInputClass} 
+                            value={searchQuery} 
+                            onChange={(e) => setSearchQuery(e.target.value)} 
+                            onFocus={() => setIsSearchFocused(true)} 
+                            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} 
+                        />
+                        {isSearchFocused && searchQuery && (
+                            <div className="absolute top-full mt-3 w-full bg-black/90 backdrop-blur-2xl border border-gray-700/50 rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.8)] z-40 max-h-80 overflow-y-auto overflow-hidden">
+                                {isSearchLoading ? <div className="p-6 text-center text-gray-400 flex flex-col items-center justify-center gap-3"><Loader2 className="animate-spin text-[#f2bd46]" size={24}/> <span className="text-sm font-medium">Buscando produtos...</span></div> : searchResults.length > 0 ? (
+                                    <div className="py-2">{searchResults.map(product => <SearchResultItem key={product.id} product={product} />)}</div>
+                                ) : ( <div className="p-6 text-center text-gray-400 flex flex-col items-center gap-2"><Search size={24} className="opacity-50"/> <span className="text-sm">Nenhum resultado encontrado.</span></div> )}
                             </div>
-                        </button>
-                        <button onClick={() => setPage('my-tickets')} className="hidden md:flex h-12 w-12 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-[#f2bd46]/40 items-center justify-center relative transition-colors" title="Ajuda">
-                            <MessageSquare size={20} />
-                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-5 min-w-5 rounded-full text-[10px] font-black flex items-center justify-center px-1">{unreadTickets}</span>}
-                        </button>
-                        <button onClick={() => setPage('cart')} className="relative h-11 w-11 sm:h-12 sm:w-12 md:w-auto md:px-5 rounded-2xl bg-[#f2bd46] text-black font-black flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(242,189,70,.25)] hover:bg-[#e4ae35] transition-colors">
-                            <ShoppingCart size={21}/>
-                            <span className="hidden md:inline">Carrinho</span>
-                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white font-black rounded-full h-6 min-w-6 px-2 flex items-center justify-center text-xs border-2 border-black">{totalItemsInCart}</span>}
+                        )}
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                        {!user?.isGuest && (
+                            <>
+                                <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
+                                    <button onClick={() => setPage('history')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2"><History size={16}/> Histórico</button>
+                                    <button onClick={() => setPage('my-tickets')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2 relative"><Ticket size={16}/> Tiquetes</button>
+                                    <button onClick={() => setPage('my-account')} className="hover:text-[#f2bd46] transition-colors flex items-center gap-2"><User size={16}/> Conta</button>
+                                </nav>
+                                <div className="h-8 w-px bg-gray-800 hidden md:block"></div>
+                            </>
+                        )}
+                        <button className="relative p-2.5 bg-[#f2bd46]/10 border border-[#f2bd46]/30 text-[#f2bd46] hover:bg-[#f2bd46] hover:text-black transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.15)] group" onClick={() => setPage('cart')}>
+                            <ShoppingCart size={22} className="group-hover:scale-110 transition-transform"/>
+                            {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center text-xs shadow-[0_0_10px_rgba(239,68,68,0.8)] border-2 border-black">{totalItemsInCart}</span>}
                         </button>
                     </div>
                 </div>
-                <div className="container mx-auto px-3 sm:px-4 pb-3 md:hidden"><SearchBox mobile /></div>
-            </header>
-
-            <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-9 relative z-10 space-y-5 sm:space-y-8 pb-32">
-                <section className="premium-in grid grid-cols-1 lg:grid-cols-[1.25fr_.75fr] gap-6 items-stretch">
-                    <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.025] border border-white/10 rounded-[1.6rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl overflow-hidden relative min-h-[230px] sm:min-h-[310px] flex flex-col justify-between">
-                        <div className="absolute -right-20 -top-20 w-80 h-80 bg-[#f2bd46]/10 blur-[85px] rounded-full"></div>
-                        <div className="relative z-10">
-                            <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-full px-3 py-2">
-                                <Shield size={14}/> Compra rápida e monitorada
-                            </p>
-                            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white tracking-tight mt-4 sm:mt-5 leading-tight">
-                                Olá, <span className="text-[#f2bd46]">{(user?.name || 'cliente').split(' ')[0]}</span>. Escolha, pague e retire.
-                            </h1>
-                            <p className="text-gray-400 mt-4 max-w-xl leading-relaxed">Você está comprando em <span className="text-white font-black">{currentCondo?.name || 'uma máquina Daniel Marques Market'}</span>. Após o pagamento, a porta será liberada automaticamente.</p>
-                        </div>
-                        <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 mt-5 sm:mt-8">
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Saldo</p><p className="text-base sm:text-lg md:text-2xl font-black text-[#f2bd46] mt-1">{money(userBalance)}</p></div>
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Carrinho</p><p className="text-base sm:text-lg md:text-2xl font-black text-white mt-1">{totalItemsInCart} itens</p></div>
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-3 sm:p-4"><p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 font-black">Total</p><p className="text-base sm:text-lg md:text-2xl font-black text-white mt-1">{money(cartTotal)}</p></div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white/[0.035] border border-white/10 rounded-[2rem] p-4 shadow-2xl overflow-hidden">
-                        <BannerCarousel />
-                        <div className="px-2 pb-2 grid grid-cols-2 gap-3">
-                            <button onClick={() => setPage('wallet')} className="rounded-2xl bg-[#f2bd46] text-black font-black py-4 flex items-center justify-center gap-2"><PlusCircle size={18}/> Saldo</button>
-                            <button onClick={() => setPage('my-tickets')} className="rounded-2xl bg-white/[0.05] border border-white/10 text-white font-black py-4 flex items-center justify-center gap-2"><Phone size={18}/> Ajuda</button>
-                        </div>
-                    </div>
-                </section>
-
-                <DailyPromotionsApp />
-                <MachineSwitcher />
-                <FeaturedStrip />
-
-                {currentCondo && Object.keys(categories).length > 0 && (
-                    <section className="premium-in space-y-5">
-                        <div className="flex items-end justify-between gap-3">
-                            <div>
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-[#f2bd46] font-black">Vitrine</p>
-                                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Produtos disponíveis</h2>
+                
+                {/* BARRA DE PESQUISA (MOBILE) */}
+                <div className="container mx-auto px-4 pb-4 md:hidden">
+                    <div className="relative w-full group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar um produto..." 
+                            className={authInputClass} 
+                            value={searchQuery} 
+                            onChange={(e) => setSearchQuery(e.target.value)} 
+                            onFocus={() => setIsSearchFocused(true)} 
+                            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} 
+                        />
+                        {isSearchFocused && searchQuery && (
+                            <div className="absolute top-full mt-2 w-full bg-black/95 backdrop-blur-3xl border border-gray-700/80 rounded-xl shadow-2xl z-40 max-h-60 overflow-y-auto">
+                                {isSearchLoading ? <div className="p-6 text-center text-gray-400 flex flex-col items-center justify-center gap-2"><Loader2 className="animate-spin text-[#f2bd46]" size={20}/> <span className="text-sm">Procurando...</span></div> : searchResults.length > 0 ? (
+                                    <div className="py-1">{searchResults.map(product => <SearchResultItem key={product.id} product={product} />)}</div>
+                                ) : ( <div className="p-6 text-center text-gray-400 text-sm">Nenhum resultado encontrado.</div> )}
                             </div>
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                            {categoryNames.map(category => (
-                                <button
-                                    key={category}
-                                    onClick={() => setSelectedCategory(category)}
-                                    className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-black border transition-all ${selectedCategory === category ? 'bg-[#f2bd46] border-[#f2bd46] text-black' : 'bg-white/[0.035] border-white/10 text-gray-300 hover:border-[#f2bd46]/40 hover:text-white'}`}
-                                >
-                                    {category}
-                                </button>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {isLoading && (
-                    <div className="flex flex-col justify-center items-center h-72 gap-4">
-                        <Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin drop-shadow-[0_0_20px_rgba(242,189,70,.4)]" />
-                        <span className="text-gray-400 font-black tracking-[0.25em] text-xs uppercase">Carregando vitrine</span>
+                        )}
                     </div>
-                )}
-
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/25 text-red-300 rounded-3xl p-8 text-center max-w-2xl mx-auto">
-                        <AlertTriangle size={36} className="mx-auto mb-3"/>
-                        <h3 className="font-black text-xl text-white">Não foi possível carregar os produtos</h3>
-                        <p className="text-sm mt-2 opacity-80">{error}</p>
+                </div>
+            </header>
+            
+            <main className="container mx-auto p-4 md:p-8 z-10 relative">
+                {/* Banner de Boas Vindas Glassmorphism */}
+                <div className="animate-surgir bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-xl border border-gray-700/50 p-6 md:p-8 rounded-3xl mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl overflow-hidden relative">
+                    <div className="absolute right-0 top-0 w-64 h-64 bg-[#f2bd46]/5 blur-[60px] pointer-events-none rounded-full"></div>
+                    <div className="z-10">
+                        <h1 className="text-2xl md:text-3xl font-light mb-1">Compre rápido, <span className="font-extrabold text-[#f2bd46] tracking-tight">sem cadastro</span></h1>
+                        <p className="text-gray-400 text-sm md:text-base flex items-center gap-2">
+                            <MapPin size={16} className="text-[#f2bd46]"/> Comprando agora na máquina: <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded-md ml-1">{currentCondo?.name || '...'}</span>
+                        </p>
                     </div>
-                )}
-
-                {!isLoading && !error && !currentCondo && (
-                    <div className="text-center p-10 md:p-14 bg-white/[0.035] border border-white/10 rounded-[2rem] shadow-2xl max-w-3xl mx-auto">
-                        <Refrigerator size={58} className="text-[#f2bd46] mx-auto mb-5" />
-                        <h2 className="text-3xl font-black text-white">Escolha uma máquina</h2>
-                        <p className="text-gray-400 mt-3 max-w-md mx-auto">Selecione um ponto disponível acima para começar sua compra.</p>
-                    </div>
-                )}
-
-                {!isLoading && !error && currentCondo && Object.keys(categories).length === 0 && (
-                    <div className="text-center p-10 md:p-14 bg-white/[0.035] border border-white/10 rounded-[2rem] shadow-2xl max-w-3xl mx-auto">
-                        <Package size={58} className="text-[#f2bd46] mx-auto mb-5" />
-                        <h2 className="text-3xl font-black text-white">Máquina sem produtos disponíveis</h2>
-                        <p className="text-gray-400 mt-3 max-w-md mx-auto">Nossa equipe já pode estar preparando a reposição. Tente outra máquina ou fale com o suporte.</p>
-                    </div>
-                )}
-
-                {!isLoading && !error && currentCondo && Object.keys(visibleCategories).length > 0 && (
-                    <div className="space-y-12">
-                        {Object.entries(visibleCategories).map(([category, items], catIndex) => (
-                            <section key={category} className="premium-in" style={{ animationDelay: `${catIndex * 80}ms` }}>
+                </div>
+                
+                <MachineSwitcher condos={condos} userCondoId={user?.condoId} onCondoSelected={onCondoSelected} />
+                
+                {isLoading && (<div className="flex flex-col justify-center items-center h-64 gap-4"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" /><span className="text-gray-400 font-medium tracking-widest animate-pulse">CARREGANDO PRODUTOS...</span></div>)}
+                {error && (<div className="text-center p-8 bg-red-900/10 border border-red-500/20 text-red-400 rounded-2xl backdrop-blur-md shadow-lg flex flex-col items-center gap-3"><AlertTriangle size={32}/><p className="font-bold text-lg">Oops! Algo deu errado.</p><p className="text-sm opacity-80">{error}</p></div>)}
+                
+                {!isLoading && !error && (
+                    <div className="flex flex-col gap-12 pb-24">
+                        {!currentCondo && (
+                            <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                                    <Refrigerator size={56} className="text-gray-500" />
+                                </div>
+                                <p className="text-2xl font-bold text-white mb-2 tracking-tight">Nenhuma máquina selecionada</p>
+                                <p className="max-w-md mx-auto text-sm">Por favor, selecione uma máquina na seção "Explorar outras máquinas" acima para começar a encher o seu carrinho.</p>
+                            </div>
+                        )}
+                        {currentCondo && Object.keys(categories).length === 0 && (
+                            <div className="animate-surgir text-center p-12 bg-black/40 backdrop-blur-xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-xl flex flex-col items-center">
+                                <div className="bg-[#f2bd46]/10 p-6 rounded-full mb-6 border border-[#f2bd46]/20">
+                                    <Package size={56} className="text-[#f2bd46]" />
+                                </div>
+                                <p className="text-2xl font-bold text-white mb-2 tracking-tight">Máquina Vazia!</p>
+                                <p className="max-w-md mx-auto text-sm">Parece que não há produtos disponíveis nesta máquina no momento. Que tal verificar outra geladeira próxima?</p>
+                            </div>
+                        )}
+                        {currentCondo && Object.keys(categories).length > 0 && Object.keys(categories).map((category, catIndex) => (
+                            <div key={category} className="animate-surgir" style={{ animationDelay: `${200 + catIndex * 100}ms` }}>
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="h-9 w-1.5 bg-[#f2bd46] rounded-full shadow-[0_0_18px_rgba(242,189,70,.55)]"></div>
-                                    <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase">{category}</h3>
-                                    <div className="h-px bg-gradient-to-r from-white/15 to-transparent flex-grow"></div>
+                                    <div className="h-8 w-1.5 bg-[#f2bd46] rounded-full shadow-[0_0_10px_rgba(242,189,70,0.8)]"></div>
+                                    <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight uppercase">{category}</h2>
+                                    <div className="h-px bg-gradient-to-r from-gray-700 to-transparent flex-grow ml-4"></div>
                                 </div>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                                    {items.map(product => <ProductCard key={product.id} product={product} />)}
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                    {categories[category].map(product => (
+                                        <ProductListCard key={product.id} product={product} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
+                                    ))}
                                 </div>
-                            </section>
+                            </div>
                         ))}
                     </div>
                 )}
             </main>
-
-            {totalItemsInCart > 0 && (
-                <button onClick={() => setPage('cart')} className="fixed left-4 right-4 bottom-5 z-40 md:hidden bg-[#f2bd46] text-black rounded-3xl py-4 px-5 shadow-[0_18px_50px_rgba(0,0,0,.65)] border border-black/20 flex items-center justify-between font-black">
-                    <span className="flex items-center gap-2"><ShoppingCart size={20}/> {totalItemsInCart} item(ns)</span>
-                    <span>{money(cartTotal)}</span>
-                </button>
-            )}
         </div>
     );
 };
@@ -2039,468 +1866,380 @@ const PaymentConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading, cartT
 
 // App.js -> SUBSTITUA o seu componente CartPage por este
 
-const CartPage = ({ cart, setCart, setPage, user, setPaymentData, onPaymentSuccess, fridgeId }) => {
-    const [isLoading, setIsLoading] = React.useState(false);
+const CartPage = ({ cart, setCart, setPage, user, setPaymentData, setPaymentMethod, fridgeId }) => {
+    const [isLoadingPix, setIsLoadingPix] = React.useState(false);
     const [error, setError] = React.useState('');
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
-    const [isClearModalOpen, setIsClearModalOpen] = React.useState(false);
 
-    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
-    const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.sale_price || 0) * item.quantity), 0);
-    const userBalance = parseFloat(user?.wallet_balance || 0);
-    const canAfford = userBalance >= cartTotal;
-    const difference = Math.max(0, cartTotal - userBalance);
-    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.4), 0 0 20px rgba(242, 189, 70, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(242, 189, 70, 0.8), 0 0 30px rgba(242, 189, 70, 0.8); }
+        }
+        .animate-surgir { animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .neon-text-gold { animation: pulse-glow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    `;
+
+    const primaryButtonClass = `
+        w-full bg-[#f2bd46] text-black font-extrabold py-4 px-6 text-base sm:text-lg
+        flex items-center justify-center gap-2 rounded-2xl
+        shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)]
+        transition-all duration-300 disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none disabled:transform-none
+        transform hover:-translate-y-1
+    `;
+
+    const secondaryButtonClass = `
+        w-full bg-black/60 border border-gray-700/80 text-white font-extrabold py-4 px-6 text-base sm:text-lg
+        flex items-center justify-center gap-2 rounded-2xl
+        hover:border-[#f2bd46]/60 hover:text-[#f2bd46] hover:bg-black/80 transition-all duration-300 disabled:opacity-50
+    `;
 
     const updateQuantity = (productId, amount) => {
-        const newCart = cart
-            .map(item => item.id === productId ? { ...item, quantity: Math.max(0, item.quantity + amount) } : item)
-            .filter(item => item.quantity > 0);
+        const newCart = cart.map(item => {
+            if (item.id === productId) return { ...item, quantity: Math.max(0, item.quantity + amount) };
+            return item;
+        }).filter(item => item.quantity > 0);
         setCart(newCart);
     };
 
     const removeFromCart = (productId) => setCart(cart.filter(item => item.id !== productId));
 
     const clearCart = () => {
-        setCart([]);
-        setIsClearModalOpen(false);
+        if (window.confirm('Tem certeza que deseja remover todos os itens do carrinho?')) setCart([]);
     };
 
-    const handleConfirmPayment = async () => {
-        setIsLoading(true);
+    const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.sale_price) * item.quantity), 0);
+    const selectedCondoId = user?.condoId;
+
+    const handlePixCheckout = async () => {
+        setIsLoadingPix(true);
         setError('');
-        const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_URL}/api/orders/pay-with-wallet`, {
+            if (!selectedCondoId || !fridgeId) throw new Error('Selecione uma máquina antes de pagar.');
+            const response = await fetch(`${API_URL}/api/cielo/pix-order`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ items: cart, fridgeId: fridgeId, condoId: user.condoId })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart,
+                    condoId: selectedCondoId,
+                    fridgeId,
+                    customerName: 'Cliente SmartFridge',
+                }),
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha ao pagar com saldo.');
+            if (!response.ok) throw new Error(data.message || 'Falha ao gerar Pix Cielo.');
 
-            const orderSummary = {
+            setPaymentData({
                 orderId: data.orderId,
-                total: cartTotal,
-                items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, sale_price: item.sale_price, image_url: item.image_url })),
-                createdAt: new Date().toISOString()
-            };
-            localStorage.setItem('lastOrderSummary', JSON.stringify(orderSummary));
-            setPaymentData(orderSummary);
-            onPaymentSuccess();
-            setCart([]);
-            setIsConfirmModalOpen(false);
-            setPage('postPayment');
+                paymentId: data.paymentId,
+                amount: data.totalAmount,
+                pix_qr_code_text: data.qrCodeString,
+                pix_qr_code: data.qrCodeBase64Image,
+            });
+            setPaymentMethod('pix');
+            setPage('payment');
         } catch (err) {
             setError(err.message);
-            setIsConfirmModalOpen(false);
+        } finally {
+            setIsLoadingPix(false);
+        }
+    };
+
+    const handleCardCheckout = () => {
+        setError('');
+        if (!selectedCondoId || !fridgeId) {
+            setError('Selecione uma máquina antes de pagar.');
+            return;
+        }
+        setPaymentMethod('card');
+        setPage('payment');
+    };
+
+    return (
+        <>
+            <style>{keyframes}</style>
+            <div className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-no-repeat pb-20" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}>
+                <div className="absolute inset-0 bg-black/85 z-0"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+                <header className="bg-black/60 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] sticky top-0 z-30 border-b border-gray-800/80 relative">
+                    <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+                        <button onClick={() => setPage('home')} className="bg-black/40 hover:bg-white/10 p-2.5 rounded-full border border-gray-700/50 text-gray-300 hover:text-[#f2bd46] transition-all duration-300 backdrop-blur-md"><ArrowLeft size={22} /></button>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meu <span className="text-[#f2bd46]">Carrinho</span></h1>
+                    </div>
+                </header>
+
+                <main className="container mx-auto p-4 md:p-8 relative z-10">
+                    {cart.length === 0 ? (
+                        <div className="animate-surgir max-w-2xl mx-auto mt-10 text-center p-12 bg-black/40 backdrop-blur-2xl border border-gray-700/50 text-gray-400 rounded-3xl shadow-2xl flex flex-col items-center">
+                            <div className="bg-gray-800/50 p-6 rounded-full mb-6 border border-gray-700/50 shadow-inner"><ShoppingCart size={56} className="text-gray-500" /></div>
+                            <h2 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Seu carrinho está vazio</h2>
+                            <p className="max-w-sm mx-auto text-sm md:text-base text-gray-400 leading-relaxed mb-8">Escolha seus produtos e pague direto no carrinho, sem cadastro e sem carteira digital.</p>
+                            <button onClick={() => setPage('home')} className="bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 px-8 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-1">Voltar para a Loja</button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+                            <div className="lg:col-span-2 flex flex-col gap-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-lg font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2"><Package size={18} className="text-[#f2bd46]" /> Produtos Selecionados</h3>
+                                    <span className="text-sm font-bold text-gray-500 bg-gray-800/50 px-3 py-1 rounded-full">{cart.length} item(s)</span>
+                                </div>
+                                {cart.map((item, index) => (
+                                    <div key={item.id} className="bg-black/40 backdrop-blur-xl border border-gray-700/50 hover:border-gray-500/80 hover:bg-black/60 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-6 animate-surgir shadow-lg transition-all duration-300 group" style={{ animationDelay: `${index * 50}ms` }}>
+                                        <img src={item.image_url || `https://placehold.co/120x120/1a1a1a/4B5563?text=Foto`} alt={item.name} className="w-full sm:w-28 sm:h-28 aspect-square rounded-xl object-cover border border-gray-700/50 shadow-md group-hover:scale-105 transition-transform duration-500" />
+                                        <div className="flex-grow min-w-0 flex flex-col justify-center text-center sm:text-left w-full">
+                                            <h3 className="font-extrabold text-white text-lg sm:text-xl truncate">{item.name}</h3>
+                                            <p className="text-2xl font-black text-[#f2bd46] mt-1 tracking-tight">R$ {parseFloat(item.sale_price).toFixed(2).replace('.', ',')}</p>
+                                        </div>
+                                        <div className="flex sm:flex-col items-center justify-between sm:justify-center w-full sm:w-auto gap-4 sm:gap-3 border-t sm:border-t-0 border-gray-800 pt-4 sm:pt-0 sm:pl-4 sm:border-l">
+                                            <div className="flex items-center gap-1 bg-black/60 border border-gray-700 rounded-xl p-1 shadow-inner">
+                                                <button onClick={() => updateQuantity(item.id, -1)} className="p-2 sm:p-2.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"><Minus size={16} /></button>
+                                                <span className="font-bold w-8 text-center text-white text-lg">{item.quantity}</span>
+                                                <button onClick={() => updateQuantity(item.id, 1)} className="p-2 sm:p-2.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"><Plus size={16} /></button>
+                                            </div>
+                                            <button onClick={() => removeFromCart(item.id)} className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-bold"><Trash2 size={18} /> <span className="sm:hidden">Remover</span></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                <div className="bg-black/40 backdrop-blur-2xl border border-gray-700/50 rounded-3xl p-6 sm:p-8 h-fit sticky top-28 animate-surgir shadow-2xl relative overflow-hidden group">
+                                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#f2bd46]/5 blur-[60px] rounded-full pointer-events-none z-0 group-hover:bg-[#f2bd46]/10 transition-colors duration-500"></div>
+                                    <div className="relative z-10">
+                                        <h2 className="text-xl font-extrabold mb-6 border-b border-gray-800 pb-4 text-white uppercase tracking-widest flex items-center gap-2"><FileText size={20} className="text-[#f2bd46]" /> Resumo</h2>
+                                        <div className="flex justify-between mb-3 text-gray-400 font-medium"><span>Subtotal</span><span className="text-white">R$ {cartTotal.toFixed(2).replace('.', ',')}</span></div>
+                                        <div className="flex justify-between mb-6 text-gray-400 font-medium"><span>Taxas de conveniência</span><span className="text-green-400 font-bold">Grátis</span></div>
+                                        <div className="flex justify-between text-white items-end font-black text-4xl mb-6 border-t border-gray-800 pt-6">
+                                            <span className="text-lg text-gray-400 uppercase tracking-widest mb-1">Total</span>
+                                            <span className="text-[#f2bd46] neon-text-gold tracking-tighter">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                        <div className="bg-black/50 border border-gray-800 p-4 rounded-2xl mb-6 shadow-inner flex items-start gap-3">
+                                            <Shield size={20} className="text-[#f2bd46] mt-0.5" />
+                                            <div>
+                                                <p className="font-bold text-white text-sm">Pagamento direto, sem cadastro</p>
+                                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">A compra é confirmada pela Cielo e a trava é liberada automaticamente após aprovação.</p>
+                                            </div>
+                                        </div>
+                                        {error && <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium p-3 rounded-xl mb-6 text-center flex items-center justify-center gap-2"><AlertTriangle size={16} /> {error}</div>}
+                                        <div className="flex flex-col gap-4">
+                                            <button onClick={handleCardCheckout} className={primaryButtonClass} disabled={isLoadingPix}><CreditCard size={22} /> Pagar com Cartão</button>
+                                            <button onClick={handlePixCheckout} className={secondaryButtonClass} disabled={isLoadingPix}>{isLoadingPix ? <Loader2 className="animate-spin" size={22} /> : <QrCode size={22} />} Pagar com Pix</button>
+                                            <button onClick={clearCart} className="w-full text-sm bg-transparent border border-red-500/30 text-red-400 font-bold py-3.5 rounded-2xl hover:bg-red-500/10 hover:border-red-500/50 transition-all flex items-center justify-center gap-2"><Trash2 size={16} /> Limpar Carrinho</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </main>
+            </div>
+        </>
+    );
+};
+
+// App.js -> SUBSTITUA o seu componente PixPaymentPage por este
+
+const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess, setCart }) => {
+    const [copySuccess, setCopySuccess] = React.useState(false);
+    const [statusText, setStatusText] = React.useState('Aguardando confirmação do pagamento...');
+    const [error, setError] = React.useState('');
+
+    React.useEffect(() => {
+        if (!paymentData?.orderId) return;
+        const interval = setInterval(async () => {
+            if (document.visibilityState !== 'visible') return;
+            try {
+                const response = await fetch(`${API_URL}/api/cielo/orders/${paymentData.orderId}/status`);
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.status === 'paid') {
+                    clearInterval(interval);
+                    setStatusText('Pagamento confirmado! Abrindo a trava...');
+                    setCart?.([]);
+                    onPaymentSuccess?.();
+                    setPage('postPayment');
+                }
+                if (['failed', 'cancelled', 'payment_error', 'paid_stock_error'].includes(data.status)) {
+                    clearInterval(interval);
+                    setError('Pagamento não aprovado ou houve erro de estoque. Chame o suporte.');
+                }
+            } catch (err) {
+                console.error('[Cielo Polling] Erro:', err);
+            }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [paymentData?.orderId, setPage, onPaymentSuccess, setCart]);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(paymentData?.pix_qr_code_text || '');
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2500);
+    };
+
+    return (
+        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
+            <div className="w-full max-w-lg bg-[#1a1a1a] p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-800">
+                <div className="text-center mb-6">
+                    <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-10 w-auto mx-auto mb-4" />
+                    <p className="text-lg text-gray-300 mt-1">Pagamento via PIX Cielo</p>
+                </div>
+                <div className="bg-black p-4 rounded-xl text-center mb-6 border border-gray-800">
+                    <p className="text-gray-400">Valor da compra:</p>
+                    <p className="text-3xl font-bold text-[#f2bd46]">R$ {parseFloat(paymentData?.amount || 0).toFixed(2).replace('.', ',')}</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div className="flex flex-col items-center gap-4 p-4 bg-black/40 rounded-lg border border-gray-800">
+                        <h3 className="font-semibold text-white">1. Escanear QR Code</h3>
+                        <div className="p-2 bg-white rounded-lg inline-block">
+                            {paymentData?.pix_qr_code ? <img src={`data:image/jpeg;base64,${paymentData.pix_qr_code}`} alt="PIX QR Code" className="w-44 h-44 mx-auto" /> : <QrCode className="text-black w-44 h-44 p-8" />}
+                        </div>
+                        <p className="text-xs text-gray-400 text-center">Use a opção “Pagar com QR Code” no banco.</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 p-4 bg-black/40 rounded-lg border border-gray-800">
+                        <h3 className="font-semibold text-white">2. Pix Copia e Cola</h3>
+                        <p className="text-xs text-gray-400 text-center mb-2">Cole o código abaixo no app do banco.</p>
+                        <div className="w-full p-3 bg-black rounded-lg border border-gray-800 max-h-32 overflow-y-auto">
+                            <p className="text-xs text-gray-300 break-words select-all">{paymentData?.pix_qr_code_text}</p>
+                        </div>
+                        <button onClick={handleCopy} className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all ${copySuccess ? 'bg-green-600 text-white' : 'bg-[#f2bd46] text-black hover:bg-[#e0af40]'}`}>
+                            {copySuccess ? <> <CheckCircle2 size={18} /> Código Copiado! </> : <> <Copy size={18} /> Copiar Código PIX </>}
+                        </button>
+                    </div>
+                </div>
+                <div className="mt-8 border-t border-gray-700 pt-6">
+                    {error ? (
+                        <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium p-3 rounded-xl mb-4 text-center">{error}</div>
+                    ) : (
+                        <div className="flex justify-center items-center gap-3 text-[#f2bd46]"><Loader2 className="animate-spin" /><span>{statusText}</span></div>
+                    )}
+                    <button onClick={() => setPage('cart')} className="w-full mt-4 bg-black/60 hover:bg-black text-gray-300 font-semibold py-3 px-4 rounded-lg transition-colors border border-gray-800">Voltar ao Carrinho</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CardPaymentPage = ({ user, cart, setCart, setPage, onPaymentSuccess, setPaymentData, fridgeId }) => {
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [form, setForm] = React.useState({
+        holder: '',
+        cardNumber: '',
+        expirationDate: '',
+        securityCode: '',
+        installments: '1',
+    });
+
+    const cartTotal = React.useMemo(() => cart.reduce((total, item) => total + (parseFloat(item.sale_price) * item.quantity), 0), [cart]);
+    const brand = detectCardBrand(form.cardNumber);
+
+    const updateField = (field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        try {
+            if (!user?.condoId || !fridgeId) throw new Error('Selecione uma máquina antes de pagar.');
+            if (!brand) throw new Error('Não conseguimos identificar a bandeira do cartão.');
+
+            const response = await fetch(`${API_URL}/api/cielo/card-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart,
+                    condoId: user.condoId,
+                    fridgeId,
+                    customerName: form.holder || 'Cliente SmartFridge',
+                    installments: Number(form.installments || 1),
+                    card: {
+                        holder: form.holder,
+                        cardNumber: onlyDigits(form.cardNumber),
+                        expirationDate: normalizeCieloExpiration(form.expirationDate),
+                        securityCode: onlyDigits(form.securityCode),
+                        brand,
+                    },
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || data.returnMessage || 'Pagamento recusado.');
+
+            if (data.paid || Number(data.status) === 2) {
+                setPaymentData({ orderId: data.orderId, paymentId: data.paymentId, amount: data.totalAmount });
+                setCart([]);
+                onPaymentSuccess?.();
+                setPage('postPayment');
+                return;
+            }
+
+            throw new Error(data.returnMessage || `Pagamento não confirmado. Status Cielo: ${data.status}`);
+        } catch (err) {
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const ClearCartModal = () => {
-        if (!isClearModalOpen) return null;
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsClearModalOpen(false)}></div>
-                <div className="relative z-10 w-full max-w-md bg-black/90 border border-white/10 rounded-3xl p-7 shadow-[0_25px_90px_rgba(0,0,0,.85)] overflow-hidden">
-                    <div className="absolute -top-20 -right-20 w-56 h-56 bg-red-500/10 blur-[70px] rounded-full"></div>
-                    <div className="relative">
-                        <div className="h-16 w-16 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
-                            <Trash2 className="text-red-300" size={28}/>
-                        </div>
-                        <h2 className="text-2xl font-black text-white">Limpar carrinho?</h2>
-                        <p className="text-gray-400 mt-2 text-sm leading-relaxed">Todos os produtos selecionados serão removidos. Você poderá adicioná-los novamente na vitrine.</p>
-                        <div className="grid grid-cols-2 gap-3 mt-7">
-                            <button onClick={() => setIsClearModalOpen(false)} className="rounded-2xl bg-white/[0.05] border border-white/10 text-white font-black py-3.5">Cancelar</button>
-                            <button onClick={clearCart} className="rounded-2xl bg-red-500 text-white font-black py-3.5">Limpar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const ConfirmModal = () => {
-        if (!isConfirmModalOpen) return null;
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={!isLoading ? () => setIsConfirmModalOpen(false) : undefined}></div>
-                <div className="relative z-10 w-full max-w-md bg-black/90 border border-[#f2bd46]/25 rounded-[2rem] p-7 shadow-[0_25px_90px_rgba(0,0,0,.85)] overflow-hidden">
-                    <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#f2bd46]/10 blur-[80px] rounded-full"></div>
-                    <div className="relative">
-                        <div className="h-18 w-18 mx-auto rounded-[1.6rem] bg-[#f2bd46]/10 border border-[#f2bd46]/25 flex items-center justify-center mb-5 p-4">
-                            <Shield className="text-[#f2bd46]" size={34}/>
-                        </div>
-                        <h2 className="text-2xl font-black text-white text-center">Confirmar compra</h2>
-                        <p className="text-gray-400 mt-2 text-sm text-center leading-relaxed">Ao confirmar, o valor será debitado da carteira e a porta será liberada automaticamente.</p>
-
-                        <div className="bg-white/[0.035] border border-white/10 rounded-3xl p-5 mt-6 space-y-4">
-                            <div className="flex justify-between text-sm"><span className="text-gray-400">Produtos</span><span className="font-black text-white">{totalItems} item(ns)</span></div>
-                            <div className="flex justify-between text-sm"><span className="text-gray-400">Saldo atual</span><span className="font-black text-green-300">{money(userBalance)}</span></div>
-                            <div className="h-px bg-white/10"></div>
-                            <div className="flex justify-between items-end"><span className="text-gray-500 text-xs uppercase tracking-widest font-black">Total</span><span className="font-black text-[#f2bd46] text-3xl">{money(cartTotal)}</span></div>
-                        </div>
-
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mt-4 flex gap-3 text-left">
-                            <Info size={18} className="text-blue-300 flex-shrink-0 mt-0.5"/>
-                            <p className="text-xs text-blue-100/80 leading-relaxed">Retire somente os produtos pagos e feche bem a porta ao finalizar.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-7">
-                            <button disabled={isLoading} onClick={() => setIsConfirmModalOpen(false)} className="rounded-2xl bg-white/[0.05] border border-white/10 text-white font-black py-3.5 disabled:opacity-50">Voltar</button>
-                            <button disabled={isLoading} onClick={handleConfirmPayment} className="rounded-2xl bg-[#f2bd46] text-black font-black py-3.5 flex items-center justify-center gap-2 disabled:opacity-60">
-                                {isLoading ? <Loader2 className="animate-spin" size={20}/> : <><CheckCircle2 size={20}/> Pagar</>}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    return (
-        <div className="min-h-screen bg-black text-white relative overflow-hidden pb-28">
-            <style>{`
-                @keyframes cart-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-                .cart-in { animation: cart-in .55s cubic-bezier(.16,1,.3,1) both; }
-            `}</style>
-            <div className="fixed top-[-16rem] right-[-14rem] w-[42rem] h-[42rem] bg-[#f2bd46]/10 rounded-full blur-[150px] pointer-events-none"></div>
-            <div className="fixed bottom-[-18rem] left-[-16rem] w-[44rem] h-[44rem] bg-[#f2bd46]/5 rounded-full blur-[170px] pointer-events-none"></div>
-            <ClearCartModal />
-            <ConfirmModal />
-
-            <header className="sticky top-0 z-30 bg-black/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_15px_55px_rgba(0,0,0,.55)]">
-                <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setPage('home')} className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-[#f2bd46]/40 flex items-center justify-center transition-colors"><ArrowLeft size={22}/></button>
-                        <div>
-                            <p className="text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black">Checkout</p>
-                            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Meu carrinho</h1>
-                        </div>
-                    </div>
-                    {cart.length > 0 && <button onClick={() => setIsClearModalOpen(true)} className="hidden sm:flex items-center gap-2 text-red-300 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 rounded-2xl px-4 py-3 font-black text-sm"><Trash2 size={16}/> Limpar</button>}
-                </div>
-            </header>
-
-            <main className="container mx-auto px-4 py-6 md:py-10 relative z-10">
-                {cart.length === 0 ? (
-                    <div className="cart-in max-w-2xl mx-auto mt-8 text-center bg-white/[0.035] border border-white/10 rounded-[2rem] p-10 md:p-14 shadow-2xl">
-                        <div className="h-24 w-24 rounded-[2rem] bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-6">
-                            <ShoppingCart size={48} className="text-[#f2bd46]"/>
-                        </div>
-                        <h2 className="text-3xl font-black text-white">Seu carrinho está vazio</h2>
-                        <p className="text-gray-400 mt-3 leading-relaxed">Escolha seus produtos na vitrine e volte aqui para finalizar sua compra.</p>
-                        <button onClick={() => setPage('home')} className="mt-8 bg-[#f2bd46] text-black font-black rounded-2xl py-4 px-8 inline-flex items-center justify-center gap-2"><ArrowLeft size={18}/> Voltar para loja</button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-7 lg:gap-10 items-start">
-                        <section className="space-y-4">
-                            <div className="flex items-end justify-between gap-3 mb-3">
-                                <div>
-                                    <p className="text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black">Produtos</p>
-                                    <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Selecionados para retirada</h2>
-                                </div>
-                                <span className="bg-white/[0.04] border border-white/10 rounded-full px-4 py-2 text-sm text-gray-300 font-black">{totalItems} item(ns)</span>
-                            </div>
-
-                            {cart.map((item, index) => (
-                                <article key={item.id} className="cart-in bg-white/[0.035] border border-white/10 hover:border-[#f2bd46]/35 rounded-[1.7rem] p-4 md:p-5 shadow-2xl transition-all" style={{ animationDelay: `${index * 45}ms` }}>
-                                    <div className="flex gap-4 md:gap-5 items-center">
-                                        <img src={item.image_url || `https://placehold.co/220x220/111111/f2bd46?text=${encodeURIComponent(item.name || 'Produto')}`} alt={item.name} className="w-24 h-24 md:w-28 md:h-28 rounded-3xl object-cover bg-black border border-white/10" />
-                                        <div className="min-w-0 flex-1">
-                                            <h3 className="font-black text-white text-lg md:text-xl truncate">{item.name}</h3>
-                                            <p className="text-[#f2bd46] text-2xl font-black mt-1">{money(item.sale_price)}</p>
-                                            <p className="text-xs text-gray-500 mt-1 font-bold">Subtotal: {money(parseFloat(item.sale_price || 0) * item.quantity)}</p>
-                                        </div>
-                                        <button onClick={() => removeFromCart(item.id)} className="hidden sm:flex h-11 w-11 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 items-center justify-center hover:bg-red-500/20 transition-colors"><Trash2 size={18}/></button>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-1 bg-black/55 border border-white/10 rounded-2xl p-1">
-                                            <button onClick={() => updateQuantity(item.id, -1)} className="h-10 w-10 rounded-xl hover:bg-white/10 flex items-center justify-center"><Minus size={16}/></button>
-                                            <span className="w-10 text-center font-black text-lg">{item.quantity}</span>
-                                            <button onClick={() => updateQuantity(item.id, 1)} className="h-10 w-10 rounded-xl hover:bg-white/10 flex items-center justify-center"><Plus size={16}/></button>
-                                        </div>
-                                        <button onClick={() => removeFromCart(item.id)} className="sm:hidden text-red-300 font-black text-sm flex items-center gap-2"><Trash2 size={16}/> Remover</button>
-                                    </div>
-                                </article>
-                            ))}
-                        </section>
-
-                        <aside className="lg:sticky lg:top-28 bg-white/[0.04] border border-white/10 rounded-[2rem] p-5 md:p-7 shadow-2xl overflow-hidden relative">
-                            <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#f2bd46]/10 blur-[80px] rounded-full"></div>
-                            <div className="relative">
-                                <p className="text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black">Resumo</p>
-                                <h2 className="text-2xl font-black text-white mt-1">Pagamento</h2>
-
-                                <div className="space-y-4 mt-6">
-                                    <div className="flex justify-between text-gray-400"><span>Subtotal</span><span className="font-black text-white">{money(cartTotal)}</span></div>
-                                    <div className="flex justify-between text-gray-400"><span>Taxa de uso</span><span className="font-black text-green-300">Grátis</span></div>
-                                    <div className="flex justify-between text-gray-400"><span>Saldo da carteira</span><span className="font-black text-green-300">{money(userBalance)}</span></div>
-                                    <div className="h-px bg-white/10"></div>
-                                    <div className="flex justify-between items-end"><span className="text-gray-500 text-xs uppercase tracking-widest font-black">Total</span><span className="text-[#f2bd46] text-4xl font-black tracking-tight">{money(cartTotal)}</span></div>
-                                </div>
-
-                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-3xl p-4 mt-6 flex gap-3">
-                                    <Shield size={20} className="text-blue-300 flex-shrink-0 mt-0.5"/>
-                                    <p className="text-xs text-blue-100/80 leading-relaxed">Após confirmar o pagamento, aguarde a liberação da porta e retire apenas os produtos listados.</p>
-                                </div>
-
-                                {error && <div className="bg-red-500/10 border border-red-500/25 text-red-300 rounded-2xl p-4 mt-5 text-sm font-bold flex gap-2"><AlertTriangle size={18} className="flex-shrink-0"/> {error}</div>}
-
-                                {!canAfford && (
-                                    <div className="bg-red-500/10 border border-red-500/25 rounded-3xl p-5 mt-5">
-                                        <div className="flex items-center gap-2 text-red-300 font-black"><AlertTriangle size={20}/> Saldo insuficiente</div>
-                                        <p className="text-sm text-gray-300 mt-2 leading-relaxed">Faltam <span className="font-black text-white">{money(difference)}</span> para finalizar esta compra.</p>
-                                        <button onClick={() => setPage('wallet')} className="mt-4 w-full bg-white text-black rounded-2xl py-3.5 font-black flex items-center justify-center gap-2"><PlusCircle size={18}/> Adicionar saldo</button>
-                                    </div>
-                                )}
-
-                                <button
-                                    onClick={() => setIsConfirmModalOpen(true)}
-                                    disabled={isLoading || !canAfford}
-                                    className="mt-6 w-full bg-[#f2bd46] text-black rounded-2xl py-4 font-black text-base flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(242,189,70,.22)] hover:bg-[#e3ae35] transition-colors disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin" size={22}/> : <><CheckCircle2 size={21}/> Pagar e destravar porta</>}
-                                </button>
-                                <button onClick={() => setPage('home')} className="mt-3 w-full bg-white/[0.04] border border-white/10 text-white rounded-2xl py-4 font-black hover:border-[#f2bd46]/35 transition-colors">Continuar comprando</button>
-                            </div>
-                        </aside>
-                    </div>
-                )}
-            </main>
-        </div>
-    );
-};
-
-// App.js -> SUBSTITUA o seu componente PixPaymentPage por este
-
-// App.js -> SUBSTITUA o seu componente PixPaymentPage por este
-
-const PixPaymentPage = ({ paymentData, setPage, onPaymentSuccess }) => {
-    const [copySuccess, setCopySuccess] = React.useState(false);
-    
-    // ==========================================================
-    // --- CORREÇÃO DO BUG AQUI ---
-    // A verificação 'isDeposit' agora checa se 'amount' existe no paymentData.
-    // (Depósitos têm 'amount', compras de produto não tinham).
-    const isDeposit = paymentData && paymentData.amount > 0;
-    // ==========================================================
-    
-    const cancelTargetPage = isDeposit ? 'wallet' : 'cart';
-
-    // Efeito para a verificação do pagamento (polling)
-    React.useEffect(() => {
-        const interval = setInterval(async () => {
-            if (document.visibilityState !== 'visible') return;
-            const token = localStorage.getItem('token');
-            try {
-                // ==========================================================
-                // --- CORREÇÃO DO BUG APLICADA AQUI TAMBÉM ---
-                // 'isDepositCheck' agora usa a variável 'isDeposit' corrigida.
-                const isDepositCheck = isDeposit;
-                // ==========================================================
-
-                const statusUrl = isDepositCheck
-                    // Esta é a URL CORRETA que estávamos tentando chamar
-                    ? `${API_URL}/api/wallet/deposit-status/${paymentData.orderId}`
-                    // Esta é a URL ANTIGA (legado)
-                    : `${API_URL}/api/orders/${paymentData.orderId}/status`;
-                
-                const response = await fetch(statusUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!response.ok) return;
-                
-                const data = await response.json();
-                
-                if (data.status === 'paid') {
-                    onPaymentSuccess();
-                    clearInterval(interval);
-                    // Agora 'isDepositCheck' será 'true' e irá para 'depositSuccess'
-                    setPage(isDepositCheck ? 'depositSuccess' : 'postPayment');
-                }
-            } catch (error) {
-                console.error("[Polling] Erro ao processar a resposta do status:", error);
-            }
-        }, 4000);
-        return () => clearInterval(interval);
-    // Adicionamos 'isDeposit' ao array de dependências
-    }, [paymentData.orderId, setPage, onPaymentSuccess, isDeposit]);
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(paymentData.pix_qr_code_text);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2500);
-    };
-
-    const handleCancel = () => { setPage(cancelTargetPage); };
-
-    return (
-        <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
-            <div className="w-full max-w-lg bg-[#1a1a1a] p-6 md:p-8 rounded-2xl shadow-2xl">
-                
-                <div className="text-center mb-6">
-                    <img 
-                        src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
-                        alt="SmartFridge Logo" 
-                        className="h-10 w-auto mx-auto mb-4"
-                    />
-                    <p className="text-lg text-gray-300 mt-1">Pagamento via PIX</p>
-                </div>
-
-                {/* Mostra o valor se for um depósito */}
-                {isDeposit &&
-                    <div className="bg-black p-4 rounded-xl text-center mb-6">
-                        <p className="text-gray-400">Valor do depósito:</p>
-                        <p className="text-3xl font-bold text-[#f2bd46]">R$ {parseFloat(paymentData.amount || 0).toFixed(2).replace('.', ',')}</p>
-                    </div>
-                }
-                
-                <div className="text-center mb-6">
-                    <p className="text-gray-300">Pague com o seu banco preferido usando uma das opções abaixo.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    
-                    {/* OPÇÃO 1: QR CODE */}
-                    <div className="flex flex-col items-center gap-4 p-4 bg-[#1a1a1a]/50 rounded-lg">
-                        <h3 className="font-semibold text-white">1. Escanear o QR Code</h3>
-                        <div className='p-2 bg-white rounded-lg inline-block'>
-                            <img src={`data:image/jpeg;base64,${paymentData.pix_qr_code}`} alt="PIX QR Code" className="w-44 h-44 mx-auto" />
-                        </div>
-                        <p className="text-xs text-gray-400 text-center">Use a opção "Pagar com QR Code" no seu banco.</p>
-                    </div>
-
-                    {/* OPÇÃO 2: PIX COPIA E COLA */}
-                    <div className="flex flex-col items-center gap-4 p-4 bg-[#1a1a1a]/50 rounded-lg">
-                        <h3 className="font-semibold text-white">2. PIX Copia e Cola</h3>
-                        <p className="text-xs text-gray-400 text-center mb-2">Use a opção "PIX Copia e Cola" no seu banco.</p>
-                        <div className="w-full p-3 bg-black rounded-lg">
-                            <p className="text-xs text-gray-300 break-words select-all">
-                                {paymentData.pix_qr_code_text}
-                            </p>
-                        </div>
-                        {/* Botão de Copiar (Estilo Neon) */}
-                        <button 
-                            onClick={handleCopy} 
-                            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all duration-300 ease-in-out 
-                                        ${copySuccess 
-                                            ? 'bg-green-600 text-white shadow-lg shadow-green-500/30' 
-                                            : 'bg-[#f2bd46] hover:bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/30 transform hover:scale-105'
-                                        }`}
-                        >
-                            {copySuccess ? (
-                                <> <CheckCircle2 size={18} /> Código Copiado! </>
-                            ) : (
-                                <> <Copy size={18} /> Copiar Código PIX </>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="mt-8 border-t border-gray-700 pt-6">
-                    <div className="flex justify-center items-center gap-3 text-[#f2bd46]">
-                        <Loader2 className="animate-spin" />
-                        <span>A aguardar confirmação do pagamento...</span>
-                    </div>
-                    <button 
-                        onClick={handleCancel} 
-                        className="w-full mt-4 bg-[#1a1a1a] hover:bg-[#1a1a1a] text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors"
-                    >
-                        Cancelar e Voltar
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const CardPaymentPage = ({ user, cart, setPage, onPaymentSuccess, setPaymentData, fridgeId }) => {
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [isMpReady, setIsMpReady] = React.useState(false);
-    const brickIsInitializing = React.useRef(false);
-
-    const cartTotal = React.useMemo(() => 
-        cart.reduce((total, item) => total + (parseFloat(item.sale_price) * item.quantity), 0),
-        [cart]
-    );
-
-    React.useEffect(() => {
-        const scriptId = 'mercadopago-sdk';
-        if (window.MercadoPago) {
-            setIsMpReady(true);
-            return;
-        }
-        const script = document.createElement("script");
-        script.id = scriptId;
-        script.src = "https://sdk.mercadopago.com/js/v2";
-        script.async = true;
-        script.onload = () => setIsMpReady(true);
-        document.body.appendChild(script);
-    }, []);
-
-    React.useEffect(() => {
-        if (isMpReady && cartTotal > 0 && !brickIsInitializing.current) {
-            brickIsInitializing.current = true;
-            const mp = new window.MercadoPago(MERCADOPAGO_PUBLIC_KEY);
-            const bricksBuilder = mp.bricks();
-
-            const renderCardPaymentBrick = async () => {
-                try {
-                    await bricksBuilder.create("cardPayment", "cardPaymentBrick_container", {
-                        initialization: {
-                            amount: cartTotal,
-                            payer: { email: user.email },
-                        },
-                        customization: { visual: { style: { theme: 'dark' } } },
-                        callbacks: {
-                            onSubmit: async (cardFormData) => {
-                                setIsLoading(true); setError('');
-                                const token = localStorage.getItem('token');
-                                try {
-                                    const response = await fetch(`${API_URL}/api/orders/create-card`, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                        // CORREÇÃO: Enviando condoId e fridgeId para o backend
-                                        body: JSON.stringify({ ...cardFormData, items: cart, user: user, condoId: user.condoId, fridgeId: fridgeId })
-                                    });
-                                    const data = await response.json();
-                                    if (!response.ok) throw new Error(data.message || 'Pagamento recusado.');
-                                    setPaymentData({ unlockToken: data.unlockToken });
-                                    onPaymentSuccess(data.unlockToken);
-                                    setPage('awaitingUnlock');
-                                } catch (err) {
-                                    setError(err.message);
-                                    setIsLoading(false);
-                                }
-                            },
-                            onError: (err) => setError('Ocorreu um erro ao processar os dados do cartão.'),
-                        },
-                    });
-                } catch (e) {
-                    setError("Erro ao inicializar o formulário de pagamento.");
-                }
-            };
-            renderCardPaymentBrick();
-        }
-    }, [isMpReady, cartTotal, user, fridgeId, cart, setPage, onPaymentSuccess, setPaymentData]);
-
     return (
         <div className="min-h-screen bg-black text-white">
-            <header className="bg-[#1a1a1a] shadow-md">
+            <header className="bg-[#1a1a1a]/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
+                    <button onClick={() => setPage('cart')} className="text-[#f2bd46] hover:text-[#e0af40]"><ArrowLeft size={24} /></button>
                     <h1 className="text-2xl font-bold">Pagamento com Cartão</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
-                <div className="max-w-md mx-auto bg-[#1a1a1a] p-8 rounded-lg">
-                    <p className="text-center text-lg text-gray-300 mb-4">Valor da compra: <span className="font-bold text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</span></p>
-                    {!isMpReady && !error && <div className="flex justify-center items-center flex-col gap-4"><Loader2 className="animate-spin" /><span>A carregar formulário...</span></div>}
-                    {error && <p className="text-red-400 text-center mt-4">{error}</p>}
-                    <div id="cardPaymentBrick_container"></div>
-                    {isLoading && <div className="flex justify-center mt-4"><Loader2 className="animate-spin" /><span>A processar...</span></div>}
+                <div className="max-w-lg mx-auto bg-[#1a1a1a] p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl">
+                    <div className="text-center mb-6">
+                        <CreditCard size={42} className="text-[#f2bd46] mx-auto mb-3" />
+                        <p className="text-gray-300">Valor da compra</p>
+                        <p className="text-4xl font-black text-[#f2bd46]">R$ {cartTotal.toFixed(2).replace('.', ',')}</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-300 mb-2">Nome impresso no cartão</label>
+                            <input value={form.holder} onChange={(e) => updateField('holder', e.target.value.toUpperCase())} required placeholder="NOME DO TITULAR" className="w-full bg-black/70 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f2bd46]" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-300 mb-2">Número do cartão</label>
+                            <div className="relative">
+                                <input value={form.cardNumber} onChange={(e) => updateField('cardNumber', formatCardNumber(e.target.value))} required inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000" className="w-full bg-black/70 border border-gray-700 rounded-xl px-4 py-3 pr-24 text-white focus:outline-none focus:border-[#f2bd46]" />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-[#f2bd46] uppercase">{brand || 'Bandeira'}</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-300 mb-2">Validade</label>
+                                <input value={form.expirationDate} onChange={(e) => updateField('expirationDate', formatCardExpiry(e.target.value))} required inputMode="numeric" autoComplete="cc-exp" placeholder="MM/AAAA" className="w-full bg-black/70 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f2bd46]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-300 mb-2">CVV</label>
+                                <input value={form.securityCode} onChange={(e) => updateField('securityCode', onlyDigits(e.target.value).slice(0, 4))} required inputMode="numeric" autoComplete="cc-csc" placeholder="123" className="w-full bg-black/70 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f2bd46]" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-300 mb-2">Parcelas</label>
+                            <select value={form.installments} onChange={(e) => updateField('installments', e.target.value)} className="w-full bg-black/70 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f2bd46]">
+                                <option value="1">1x de R$ {cartTotal.toFixed(2).replace('.', ',')}</option>
+                                <option value="2">2x de R$ {(cartTotal / 2).toFixed(2).replace('.', ',')}</option>
+                                <option value="3">3x de R$ {(cartTotal / 3).toFixed(2).replace('.', ',')}</option>
+                            </select>
+                        </div>
+                        <div className="bg-black/50 border border-gray-800 rounded-xl p-4 text-xs text-gray-400 leading-relaxed">
+                            Seus dados são enviados ao backend somente para autorização na Cielo. O sistema não salva número do cartão nem CVV.
+                        </div>
+                        {error && <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium p-3 rounded-xl text-center">{error}</div>}
+                        <button type="submit" disabled={isLoading || cart.length === 0} className="w-full bg-[#f2bd46] text-black font-extrabold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-[#e0af40] transition-all disabled:bg-gray-800 disabled:text-gray-500">
+                            {isLoading ? <Loader2 className="animate-spin" /> : <><Shield size={20} /> Pagar e Abrir a Trava</>}
+                        </button>
+                    </form>
                 </div>
             </main>
         </div>
@@ -2735,71 +2474,131 @@ const CardDepositPage = ({ user, depositData, setPage, onPaymentSuccess }) => {
     );
 };
 
-const PaymentPage = ({ paymentData, setPage, paymentMethod, user, cart, onPaymentSuccess, setPaymentData, fridgeId }) => {
+const PaymentPage = ({ paymentData, setPage, paymentMethod, user, cart, setCart, onPaymentSuccess, setPaymentData, fridgeId }) => {
     switch (paymentMethod) {
         case 'pix':
-            return <PixPaymentPage paymentData={paymentData} setPage={setPage} onPaymentSuccess={(unlockToken) => { onPaymentSuccess(); setPaymentData({ unlockToken }); }} />;
+            return <PixPaymentPage paymentData={paymentData} setPage={setPage} onPaymentSuccess={onPaymentSuccess} setCart={setCart} />;
         case 'card':
-            // Esta chamada está correta, mas o componente CardPaymentPage foi removido ou está com problemas
-            // Vamos assumir que CardPaymentPage existe em outro lugar ou será corrigido
-             return <CardPaymentPage user={user} cart={cart} setPage={setPage} onPaymentSuccess={onPaymentSuccess} setPaymentData={setPaymentData} fridgeId={fridgeId} />;
+            return <CardPaymentPage user={user} cart={cart} setCart={setCart} setPage={setPage} onPaymentSuccess={onPaymentSuccess} setPaymentData={setPaymentData} fridgeId={fridgeId} />;
         default:
-            // Se nenhum método for definido, volta para o carrinho
             setPage('cart');
             return null;
     }
 };
 
 const PostPaymentStatusPage = ({ user, setPage }) => {
-    const UNLOCK_TIME = 11;
-    const RELOCK_TIME = 20;
-    const [stage, setStage] = React.useState('processing');
+    // === CONSTANTES DE TEMPO (Lógica Intocada) ===
+    const UNLOCK_TIME = 11; // 11 segundos para destravar
+    const RELOCK_TIME = 20; // 20 segundos para retravar
+
+    // === ESTADOS (Lógica Intocada) ===
+    const [stage, setStage] = React.useState('processing'); // 'processing' | 'success'
     const [countdown, setCountdown] = React.useState(UNLOCK_TIME);
-    const [summary, setSummary] = React.useState(null);
     const propsRef = React.useRef({ user, setPage });
 
-    React.useEffect(() => {
-        try {
-            const saved = localStorage.getItem('lastOrderSummary');
-            if (saved) setSummary(JSON.parse(saved));
-        } catch (error) {
-            console.error('Não foi possível ler o resumo do pedido:', error);
-        }
-    }, []);
-
+    // === LÓGICA PRINCIPAL DE ESTADO E TEMPO (100% Intocada) ===
     React.useEffect(() => {
         propsRef.current = { user, setPage };
-
+        
+        // --- ESTÁGIO 1: PROCESSANDO ---
         if (stage === 'processing') {
-            setCountdown(UNLOCK_TIME);
-            const interval = setInterval(() => setCountdown(prev => Math.max(0, prev - 1)), 1000);
-            const stageTimeout = setTimeout(() => setStage('success'), UNLOCK_TIME * 1000);
-            return () => { clearInterval(interval); clearTimeout(stageTimeout); };
+            setCountdown(UNLOCK_TIME); 
+
+            const interval = setInterval(() => {
+                setCountdown(prev => Math.max(0, prev - 1));
+            }, 1000);
+
+            const stageTimeout = setTimeout(() => {
+                setStage('success');
+            }, UNLOCK_TIME * 1000);
+
+            return () => {
+                clearInterval(interval);
+                clearTimeout(stageTimeout);
+            };
+            
+        // --- ESTÁGIO 2: SUCESSO ---
+        } else if (stage === 'success') {
+            setCountdown(RELOCK_TIME); 
+
+            const interval = setInterval(() => {
+                setCountdown(prev => Math.max(0, prev - 1));
+            }, 1000);
+
+            const redirectTimeout = setTimeout(() => {
+                propsRef.current.setPage('home');
+            }, RELOCK_TIME * 1000);
+
+            return () => {
+                clearInterval(interval);
+                clearTimeout(redirectTimeout);
+            };
         }
 
-        if (stage === 'success') {
-            setCountdown(RELOCK_TIME);
-            const interval = setInterval(() => setCountdown(prev => Math.max(0, prev - 1)), 1000);
-            const redirectTimeout = setTimeout(() => propsRef.current.setPage('home'), RELOCK_TIME * 1000);
-            return () => { clearInterval(interval); clearTimeout(redirectTimeout); };
+    }, [stage, setPage, user]); 
+
+
+    // ==============================================
+    // --- ANIMAÇÕES (Premium Glassmorphism & Neon) ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
-    }, [stage, setPage, user]);
+        @keyframes pulse-glow-gold {
+            0%, 100% { text-shadow: 0 0 10px rgba(242, 189, 70, 0.4), 0 0 20px rgba(242, 189, 70, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(242, 189, 70, 0.8), 0 0 30px rgba(242, 189, 70, 0.8); }
+        }
+        @keyframes pulse-glow-green {
+            0%, 100% { text-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.4); }
+            50% { text-shadow: 0 0 15px rgba(74, 222, 128, 0.8), 0 0 30px rgba(74, 222, 128, 0.8); }
+        }
 
-    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
+        .animate-surgir {
+            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-neon-text-[#f2bd46] {
+            animation: pulse-glow-gold 1.5s ease-in-out infinite;
+        }
+        .animate-neon-text-green {
+            animation: pulse-glow-green 1.5s ease-in-out infinite;
+        }
+    `;
 
-    const TimerCircle = ({ duration, remaining, mode }) => {
+    // --- COMPONENTE INTERNO: O CRONÔMETRO (Premium Clean com Neon Text) ---
+    const TimerCircle = ({ duration, remaining, colorClass, textAnimationClass, filterId }) => {
         const radius = 90;
         const circumference = 2 * Math.PI * radius;
         const offset = circumference - (remaining / duration) * circumference;
-        const isSuccess = mode === 'success';
-        const colorClass = isSuccess ? 'text-green-400' : 'text-[#f2bd46]';
-        const bgClass = isSuccess ? 'bg-green-400' : 'bg-[#f2bd46]';
 
         return (
-            <div className="relative w-56 h-56 flex items-center justify-center mx-auto">
-                <div className={`absolute inset-0 rounded-full blur-[45px] opacity-20 ${bgClass}`}></div>
+            <div className="relative w-56 h-56 mb-8 flex justify-center items-center mx-auto">
+                {/* Glow de fundo do círculo */}
+                <div className={`absolute inset-0 rounded-full blur-[40px] opacity-20 ${colorClass === 'text-[#f2bd46]' ? 'bg-[#f2bd46]' : 'bg-green-400'}`}></div>
+                
                 <svg className="w-full h-full relative z-10" viewBox="0 0 200 200">
-                    <circle className="text-white/10" strokeWidth="8" stroke="currentColor" fill="transparent" r={radius} cx="100" cy="100" />
+                    <defs>
+                        <filter id={filterId}>
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
+                    {/* Círculo de Fundo (cinza escuro) */}
+                    <circle
+                        className="text-gray-800"
+                        strokeWidth="8"
+                        stroke="currentColor"
+                        fill="transparent"
+                        r={radius}
+                        cx="100"
+                        cy="100"
+                    />
+                    {/* Círculo de Progresso (Laranja ou Verde animado) */}
                     <circle
                         className={`transition-all duration-1000 ease-linear ${colorClass}`}
                         strokeWidth="8"
@@ -2812,92 +2611,100 @@ const PostPaymentStatusPage = ({ user, setPage }) => {
                         cx="100"
                         cy="100"
                         style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
+                        filter={`url(#${filterId})`}
                     />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                    <span className={`text-7xl font-black tracking-tight ${colorClass}`}>{remaining}</span>
-                    <span className="text-[10px] uppercase tracking-[0.28em] text-gray-500 font-black mt-1">segundos</span>
+                {/* Texto do Timer (Dentro do Círculo com Efeito Neon) */}
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <span className={`text-7xl font-black ${colorClass} ${textAnimationClass} tracking-tighter`}>
+                        {countdown}
+                    </span>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 text-center relative overflow-hidden">
-            <style>{`
-                @keyframes payment-in { from { opacity: 0; transform: translateY(20px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-                .payment-in { animation: payment-in .6s cubic-bezier(.16,1,.3,1) both; }
-            `}</style>
-            <div className="fixed top-[-14rem] left-[-10rem] w-[42rem] h-[42rem] bg-[#f2bd46]/10 rounded-full blur-[160px]"></div>
-            <div className="fixed bottom-[-16rem] right-[-12rem] w-[44rem] h-[44rem] bg-green-500/8 rounded-full blur-[170px]"></div>
+        <div 
+            className="min-h-screen text-white flex flex-col justify-center items-center p-4 text-center relative overflow-hidden bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop')` }}
+        >
+            <style>{keyframes}</style>
+            
+            {/* Overlay Escuro */}
+            <div className="absolute inset-0 bg-black/85 z-0"></div>
+            
+            {/* --- CARD PRINCIPAL (Premium Glassmorphism) --- */}
+            <div className="w-full max-w-lg bg-black/60 backdrop-blur-2xl border border-gray-700/60 p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative z-10 animate-surgir flex flex-col items-center overflow-hidden min-h-[600px]">
+                
+                {/* Ambient Glow no Topo do Card */}
+                <div className={`absolute -top-32 -left-32 w-64 h-64 blur-[80px] rounded-full pointer-events-none transition-colors duration-1000 ${stage === 'processing' ? 'bg-[#f2bd46]/10' : 'bg-green-500/10'}`}></div>
 
-            <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 relative z-10">
-                <section className="payment-in bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-[2.2rem] p-7 sm:p-10 shadow-[0_25px_90px_rgba(0,0,0,.85)] overflow-hidden relative flex flex-col items-center justify-center min-h-[640px]">
-                    <div className={`absolute -top-28 -right-28 w-80 h-80 blur-[90px] rounded-full transition-colors ${stage === 'success' ? 'bg-green-500/12' : 'bg-[#f2bd46]/12'}`}></div>
+                {/* --- CONTEÚDO DA ETAPA: PROCESSANDO --- */}
+                <div className={`absolute w-full px-8 transition-all duration-700 ease-in-out flex flex-col items-center ${stage === 'processing' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 -translate-y-10 pointer-events-none'}`}>
+                    <TimerCircle 
+                        duration={UNLOCK_TIME} 
+                        remaining={countdown} 
+                        colorClass="text-[#f2bd46]"
+                        textAnimationClass="animate-neon-text-[#f2bd46]"
+                        filterId="glow-[#f2bd46]-filter"
+                    />
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Pagamento <span className="text-[#f2bd46]">Aprovado!</span></h1>
+                    <p className="text-gray-400 text-base sm:text-lg mb-8">
+                        Prepare-se. Sua porta será destravada em <strong className="text-white text-xl">{countdown}</strong> segundos...
+                    </p>
+                </div>
 
-                    <div className="relative z-10">
-                        <TimerCircle duration={stage === 'processing' ? UNLOCK_TIME : RELOCK_TIME} remaining={countdown} mode={stage === 'success' ? 'success' : 'processing'} />
+                {/* --- CONTEÚDO DA ETAPA: SUCESSO --- */}
+                <div className={`absolute w-full px-8 transition-all duration-700 ease-in-out flex flex-col items-center ${stage === 'success' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+                    <TimerCircle 
+                        duration={RELOCK_TIME} 
+                        remaining={countdown} 
+                        colorClass="text-green-400"
+                        textAnimationClass="animate-neon-text-green"
+                        filterId="glow-green-filter"
+                    />
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Porta <span className="text-green-400">Destravada!</span></h1>
+                    <p className="text-gray-400 text-base sm:text-lg mb-8">
+                        Retire seus produtos. A porta travará novamente em <strong className="text-white text-xl">{countdown}</strong> segundos.
+                    </p>
+                </div>
 
-                        {stage === 'processing' ? (
-                            <div className="mt-8">
-                                <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-full px-3 py-2"><CheckCircle2 size={14}/> Pagamento aprovado</p>
-                                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-5">Liberando a porta</h1>
-                                <p className="text-gray-400 text-base sm:text-lg mt-4 max-w-xl mx-auto leading-relaxed">Aguarde alguns segundos. A trava está recebendo o comando de abertura com segurança.</p>
+                {/* --- ÁREA DE AVISOS IMPORTANTES (Sempre visível) --- */}
+                <div className="w-full mt-auto pt-6 border-t border-gray-800/80">
+                    <div className="bg-black/40 border border-gray-700/50 rounded-2xl p-5 space-y-4 text-left shadow-inner">
+                        <div className="flex items-start gap-3">
+                            <div className="bg-blue-500/10 p-2 rounded-lg border border-blue-500/20 mt-0.5">
+                                <Shield size={18} className="text-blue-400" />
                             </div>
-                        ) : (
-                            <div className="mt-8">
-                                <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-green-300 font-black bg-green-500/10 border border-green-500/20 rounded-full px-3 py-2"><KeyRound size={14}/> Porta destravada</p>
-                                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-5">Retire seus produtos</h1>
-                                <p className="text-gray-400 text-base sm:text-lg mt-4 max-w-xl mx-auto leading-relaxed">Pegue somente os itens pagos e feche bem a porta. Você voltará para a loja automaticamente.</p>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Ambiente Monitorado</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Para sua segurança, esta área possui vigilância por câmeras 24h.</p>
                             </div>
-                        )}
-                    </div>
-                </section>
-
-                <aside className="payment-in bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-[2.2rem] p-6 shadow-[0_25px_90px_rgba(0,0,0,.75)] text-left flex flex-col" style={{ animationDelay: '120ms' }}>
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.32em] text-[#f2bd46] font-black">Sua retirada</p>
-                        <h2 className="text-2xl font-black text-white mt-1">Itens pagos</h2>
-                        <p className="text-xs text-gray-500 mt-2">Confira antes de abrir a porta.</p>
-                    </div>
-
-                    <div className="mt-6 space-y-3 max-h-[310px] overflow-y-auto pr-1 custom-scrollbar">
-                        {summary?.items?.length ? summary.items.map(item => (
-                            <div key={`${item.id}-${item.name}`} className="bg-black/45 border border-white/10 rounded-2xl p-3 flex items-center gap-3">
-                                <img src={item.image_url || `https://placehold.co/120x120/111111/f2bd46?text=${encodeURIComponent(item.name || 'Produto')}`} alt={item.name} className="w-14 h-14 rounded-2xl object-cover bg-black" />
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-black text-white truncate">{item.name}</p>
-                                    <p className="text-xs text-gray-500 font-bold">Quantidade: {item.quantity}</p>
-                                </div>
-                                <CheckCircle2 className="text-green-300 flex-shrink-0" size={18}/>
-                            </div>
-                        )) : (
-                            <div className="bg-black/45 border border-white/10 rounded-2xl p-5 text-center">
-                                <Package size={30} className="text-[#f2bd46] mx-auto mb-2" />
-                                <p className="text-sm text-gray-400">Resumo indisponível. Retire somente os produtos comprados.</p>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
-                        {summary?.total !== undefined && (
-                            <div className="flex justify-between items-end mb-4">
-                                <span className="text-xs uppercase tracking-widest text-gray-500 font-black">Total pago</span>
-                                <span className="text-3xl font-black text-[#f2bd46]">{money(summary.total)}</span>
-                            </div>
-                        )}
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-3">
-                            <Shield size={18} className="text-blue-300 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-blue-100/80 leading-relaxed">Ambiente monitorado 24h para segurança dos clientes e da operação.</p>
                         </div>
-                        <div className="bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-2xl p-4 flex gap-3">
-                            <AlertTriangle size={18} className="text-[#f2bd46] flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-yellow-100/80 leading-relaxed">Retire exclusivamente os produtos pagos e feche a porta após retirar.</p>
+                        
+                        <div className="flex items-start gap-3">
+                            <div className="bg-[#f2bd46]/10 p-2 rounded-lg border border-[#f2bd46]/20 mt-0.5">
+                                <AlertTriangle size={18} className="text-[#f2bd46]" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Atenção aos Produtos</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Retire exclusivamente os itens que foram pagos. Evite transtornos e cobranças extras.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-3">
+                            <div className="bg-green-500/10 p-2 rounded-lg border border-green-500/20 mt-0.5">
+                                <CheckCircle2 size={18} className="text-green-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Feche a Porta</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Não se esqueça de fechar bem a porta da geladeira ao sair. Bom proveito!</p>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <button onClick={() => setPage('home')} className="mt-auto w-full bg-white/[0.05] border border-white/10 hover:border-[#f2bd46]/40 rounded-2xl py-4 font-black text-white transition-colors">Voltar para loja</button>
-                </aside>
             </div>
         </div>
     );
@@ -3521,7 +3328,7 @@ const Footer = () => {
                         <div className="flex flex-col gap-4">
                             <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
                                 <h4 className="font-bold text-white mb-1">Como peço reembolso?</h4>
-                                <p className="text-xs text-gray-400">Você pode abrir um chamado na aba "Ajuda" informando o ID da transação. Nossa equipe analisará rapidamente.</p>
+                                <p className="text-xs text-gray-400">Você pode abrir um chamado na aba "Meus Tiquetes" informando o ID da transação. Nossa equipe analisará rapidamente.</p>
                             </div>
                             <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
                                 <h4 className="font-bold text-white mb-1">A porta não abriu, o que eu faço?</h4>
@@ -3722,7 +3529,7 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
                 const data = await response.json();
                 setCondos(data);
             } catch (err) {
-                setError('Falha ao carregar pontos de venda.');
+                setError('Falha ao carregar condomínios.');
             }
         };
         fetchCondos();
@@ -3752,12 +3559,12 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
             <header className="bg-[#1a1a1a] shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                    <h1 className="text-2xl font-bold">Mudar ponto de venda</h1>
+                    <h1 className="text-2xl font-bold">Mudar de Condomínio</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
                 <div className="max-w-md mx-auto bg-[#1a1a1a] p-8 rounded-lg">
-                    <h2 className="text-xl font-semibold mb-4">Selecione o novo ponto de venda</h2>
+                    <h2 className="text-xl font-semibold mb-4">Selecione o seu novo condomínio</h2>
                     <div className="flex flex-col gap-3">
                         {condos.map(condo => (
                             <button key={condo.id} onClick={() => setSelectedCondoId(condo.id)} className={`w-full text-left p-4 rounded-lg transition ${selectedCondoId === condo.id ? 'bg-[#f2bd46] font-bold' : 'bg-[#1a1a1a] hover:bg-[#1a1a1a]'}`}>
@@ -4835,7 +4642,7 @@ const CentralCashierPage = ({ token }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
                 <div>
                     <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
-                        Financeiro
+                        Caixa Central
                     </h2>
                     <p className="text-gray-400 font-medium text-sm">Controle financeiro, saldos e retiradas</p>
                 </div>
@@ -5344,7 +5151,7 @@ const UserManagementPage = ({ condominiums, token }) => {
         <div className="flex flex-col gap-6">
             <UserEditModal user={selectedUser} isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveUser} token={token} />
             
-            <h2 className="text-2xl md:text-3xl font-bold">Gestão de Clientes</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Gestão de Utilizadores</h2>
             
             {/* --- BARRA DE PESQUISA RESPONSIVA --- */}
             <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
@@ -5487,9 +5294,9 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
         <div>
             {/* --- BOTÃO "NOVO CONDOMÍNIO" RESTAURADO --- */}
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Gestão de Pontos de Venda</h2>
+                <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
                 <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                    <PlusCircle size={20} /> Novo Ponto de Venda
+                    <PlusCircle size={20} /> Novo Condomínio
                 </button>
             </div>
             <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
@@ -6109,7 +5916,7 @@ const FinanceReport = ({ condominiums, token }) => {
 
     return (
         <div className="flex flex-col gap-8 pb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Resultado da Operação Financeiros</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Relatórios Financeiros</h2>
 
             {/* --- FILTROS RESPONSIVOS --- */}
             <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
@@ -6927,7 +6734,7 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
                     className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
-                    <option value="all">Todos os Pontos de Venda</option>
+                    <option value="all">Todos os Condomínios</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
@@ -7013,7 +6820,7 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
                     className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
-                    <option value="all">Todos os Pontos de Venda</option>
+                    <option value="all">Todos os Condomínios</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
@@ -7227,13 +7034,13 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
         <div className="flex flex-col gap-8 pb-12 relative z-10">
             <style>{keyframes}</style>
 
-            {/* Cabeçalho do Visão Geral */}
+            {/* Cabeçalho do Dashboard */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
                 <div>
                     <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#f2bd46] to-yellow-200 tracking-tight mb-1">
-                        Centro de Controle do Franqueado
+                        Dashboard de Gestão
                     </h2>
-                    <p className="text-gray-400 font-medium text-sm">Indicadores, vendas, estoque e resultado da operação</p>
+                    <p className="text-gray-400 font-medium text-sm">Visão geral e acompanhamento em tempo real</p>
                 </div>
                 <div className="bg-black/40 border border-gray-800 px-4 py-2 rounded-xl backdrop-blur-md flex items-center gap-2 text-sm text-gray-300 font-bold">
                     <Calendar size={16} className="text-[#f2bd46]"/> {new Date().toLocaleDateString('pt-BR')}
@@ -7265,41 +7072,11 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                 />
                 <StatCard 
                     icon={<UsersIcon size={28} />} 
-                    label="Total Clientes" 
+                    label="Total Utilizadores" 
                     value={stats?.total_users || 0} 
                     colorClass="text-purple-400" 
                     delay="150ms"
                 />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-surgir" style={{ animationDelay: '180ms' }}>
-                <div className="bg-gradient-to-br from-[#f2bd46]/12 to-white/[0.035] border border-[#f2bd46]/25 rounded-3xl p-6 shadow-2xl overflow-hidden relative">
-                    <div className="absolute -right-12 -top-12 w-44 h-44 bg-[#f2bd46]/10 blur-[55px] rounded-full"></div>
-                    <p className="relative text-[11px] uppercase tracking-[0.28em] text-[#f2bd46] font-black">Payback</p>
-                    <h3 className="relative text-2xl font-black text-white mt-2">Retorno da operação</h3>
-                    <p className="relative text-sm text-gray-400 mt-3 leading-relaxed">Use esta tela para mostrar ao franqueado faturamento, lucro e evolução do ponto. O backend novo poderá alimentar investimento inicial e payback automático.</p>
-                    <button onClick={() => setActiveTab('finance')} className="relative mt-5 bg-[#f2bd46] text-black font-black rounded-2xl px-5 py-3 flex items-center gap-2"><PieChart size={18}/> Ver resultado</button>
-                </div>
-
-                <div className="bg-white/[0.035] border border-white/10 rounded-3xl p-6 shadow-2xl">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-green-300 font-black">Saúde do ponto</p>
-                    <h3 className="text-2xl font-black text-white mt-2">Operação monitorada</h3>
-                    <div className="mt-5 space-y-3">
-                        <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-2xl p-3"><span className="text-sm text-gray-300 flex items-center gap-2"><CheckCircle2 size={16} className="text-green-300"/> Vendas</span><span className="text-green-300 font-black">Ativo</span></div>
-                        <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-2xl p-3"><span className="text-sm text-gray-300 flex items-center gap-2"><Shield size={16} className="text-blue-300"/> Monitoramento</span><span className="text-blue-300 font-black">24h</span></div>
-                        <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-2xl p-3"><span className="text-sm text-gray-300 flex items-center gap-2"><AlertTriangle size={16} className="text-[#f2bd46]"/> Estoque</span><span className="text-[#f2bd46] font-black">Acompanhar</span></div>
-                    </div>
-                </div>
-
-                <div className="bg-white/[0.035] border border-white/10 rounded-3xl p-6 shadow-2xl">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-blue-300 font-black">Próxima ação</p>
-                    <h3 className="text-2xl font-black text-white mt-2">Gestão inteligente</h3>
-                    <p className="text-sm text-gray-400 mt-3 leading-relaxed">Priorize reposição, produtos críticos, validade e promoções. Isso passa ao franqueado a sensação de que existe uma operação por trás da máquina.</p>
-                    <div className="grid grid-cols-2 gap-3 mt-5">
-                        <button onClick={() => setActiveTab('critical-stock')} className="bg-white/[0.05] border border-white/10 hover:border-[#f2bd46]/40 rounded-2xl py-3 font-black text-sm">Alertas</button>
-                        <button onClick={() => setActiveTab('stock')} className="bg-white/[0.05] border border-white/10 hover:border-[#f2bd46]/40 rounded-2xl py-3 font-black text-sm">Estoque</button>
-                    </div>
-                </div>
             </div>
 
             {/* --- SEÇÃO OPERACIONAL --- */}
@@ -7392,594 +7169,520 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
 // App.js -> SUBSTITUA o seu componente AdminDashboard por este
 
 const AdminDashboard = ({ onLogout }) => {
-    const token = localStorage.getItem('adminToken');
-    const [activeTab, setActiveTab] = React.useState('overview');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [activeTab, setActiveTab] = React.useState('dashboard');
     const [condominiums, setCondominiums] = React.useState([]);
-    const [products, setProducts] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(true);
+    const [products, setProducts] = React.useState([]); 
+    const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [isCondoModalOpen, setIsCondoModalOpen] = React.useState(false);
     const [currentCondo, setCurrentCondo] = React.useState(null);
     const [isProductModalOpen, setIsProductModalOpen] = React.useState(false);
     const [currentProduct, setCurrentProduct] = React.useState(null);
+    
+    // NOVO: Estado para controlar o menu no telemóvel
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    
+    const token = localStorage.getItem('adminToken');
 
-    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
-    const number = (value) => Number(value || 0).toLocaleString('pt-BR');
-    const adminFetch = React.useCallback(async (path, options = {}) => {
-        const response = await fetch(`${API_URL}${path}`, {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                ...(options.headers || {})
-            }
-        });
-        const text = await response.text();
-        let data = null;
-        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-        if (!response.ok) throw new Error(data?.message || data?.error || `Falha na rota ${path}`);
-        return data;
-    }, [token]);
-
-    const refreshBaseData = React.useCallback(async () => {
+    const fetchData = React.useCallback(async (dataType, setData, params = '') => {
         setIsLoading(true); setError('');
         try {
-            const [condosData, productsData] = await Promise.all([
-                adminFetch('/api/admin/condominiums').catch(() => []),
-                adminFetch('/api/admin/products').catch(() => [])
-            ]);
-            setCondominiums(Array.isArray(condosData) ? condosData : []);
-            setProducts(Array.isArray(productsData) ? productsData : []);
+            const response = await fetch(`${API_URL}/api/admin/${dataType}${params}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error(`Falha ao buscar ${dataType}.`);
+            const data = await response.json();
+            setData(data);
         } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, [adminFetch]);
+    }, [token]);
 
-    React.useEffect(() => { refreshBaseData(); }, [refreshBaseData]);
+    React.useEffect(() => {
+        if (condominiums.length === 0) fetchData('condominiums', setCondominiums);
+        if (products.length === 0) fetchData('products', setProducts);
+    }, [condominiums.length, products.length, fetchData]);
 
+    // --- FUNÇÕES DE CONDOMÍNIO ---
     const handleOpenCondoModal = (condo = null) => { setCurrentCondo(condo); setIsCondoModalOpen(true); };
-    const handleCloseCondoModal = () => { setCurrentCondo(null); setIsCondoModalOpen(false); };
+    const handleCloseCondoModal = () => { setIsCondoModalOpen(false); setCurrentCondo(null); };
     const handleSaveCondo = async (condoData) => {
         const method = condoData.id ? 'PUT' : 'POST';
-        const url = condoData.id ? `/api/admin/condominiums/${condoData.id}` : '/api/admin/condominiums';
+        const url = condoData.id ? `${API_URL}/api/admin/condominiums/${condoData.id}` : `${API_URL}/api/admin/condominiums`;
         try {
-            await adminFetch(url, { method, body: JSON.stringify(condoData) });
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(condoData) });
+            if (!response.ok) throw new Error('Falha ao salvar condomínio.');
+            fetchData('condominiums', setCondominiums);
             handleCloseCondoModal();
-            refreshBaseData();
         } catch (err) { alert(err.message); }
     };
     const handleDeleteCondo = async (id) => {
-        if (!window.confirm('Tem certeza que deseja apagar este ponto de venda?')) return;
-        try {
-            await adminFetch(`/api/admin/condominiums/${id}`, { method: 'DELETE' });
-            refreshBaseData();
-        } catch (err) { alert(err.message); }
+        if (window.confirm('Tem a certeza que quer apagar este condomínio?')) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/condominiums/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Falha ao apagar condomínio.');
+                fetchData('condominiums', setCondominiums);
+                alert(data.message);
+            } catch (err) { alert(err.message); }
+        }
     };
-
-    const handleOpenProductModal = (product = null) => { setCurrentProduct(product); setIsProductModalOpen(true); };
-    const handleCloseProductModal = () => { setCurrentProduct(null); setIsProductModalOpen(false); };
+    
+    // --- FUNÇÕES DE PRODUTO ---
+    const handleOpenProductModal = (product = null) => { setCurrentProduct(product); setIsProductModalOpen(true); }; 
+    const handleCloseProductModal = () => { setIsProductModalOpen(false); setCurrentProduct(null); };
+    
     const handleSaveProduct = async (productData) => {
         const method = productData.id ? 'PUT' : 'POST';
-        const url = productData.id ? `/api/admin/products/${productData.id}` : '/api/admin/products';
+        const url = productData.id ? `${API_URL}/api/admin/products/${productData.id}` : `${API_URL}/api/admin/products`;
         try {
-            await adminFetch(url, { method, body: JSON.stringify(productData) });
+            const response = await fetch(url, {
+                method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(productData) 
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Falha ao salvar produto.');
+            }
+            fetchData('products', setProducts);
             handleCloseProductModal();
-            refreshBaseData();
-        } catch (err) { alert(err.message); }
-    };
-    const handleDeleteProduct = async (id) => {
-        if (!window.confirm('Tem certeza que deseja apagar este produto do catálogo?')) return;
-        try {
-            await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE' });
-            refreshBaseData();
         } catch (err) { alert(err.message); }
     };
 
-    const tabs = [
-        { id: 'overview', label: 'Central', short: 'Central', icon: <LayoutDashboard size={20} /> },
-        { id: 'dre', label: 'Financeiro IA', short: 'DRE', icon: <PieChart size={20} /> },
-        { id: 'promotions', label: 'Promoções automáticas', short: 'Promo', icon: <Flame size={20} /> },
-        { id: 'audit', label: 'Abastecimento e auditoria', short: 'Auditoria', icon: <Shield size={20} /> },
-        { id: 'losses', label: 'Perdas e furtos', short: 'Perdas', icon: <AlertTriangle size={20} /> },
-        { id: 'purchases', label: 'Compras e fornecedores', short: 'Compras', icon: <ShoppingCart size={20} /> },
-        { id: 'clients-intel', label: 'Clientes e advertências', short: 'Clientes', icon: <UsersIcon size={20} /> },
-        { id: 'products', label: 'Produtos', short: 'Produtos', icon: <Package size={20} /> },
-        { id: 'stock', label: 'Estoque', short: 'Estoque', icon: <Refrigerator size={20} /> },
-        { id: 'points', label: 'Pontos de venda', short: 'Pontos', icon: <Building2 size={20} /> },
-        { id: 'sales', label: 'Vendas', short: 'Vendas', icon: <DollarSign size={20} /> },
-        { id: 'cashier', label: 'Caixa central', short: 'Caixa', icon: <PiggyBank size={20} /> },
-        { id: 'critical', label: 'Validade e críticos', short: 'Críticos', icon: <Bell size={20} /> }
-    ];
-
-    const activeMeta = tabs.find(t => t.id === activeTab) || tabs[0];
-    const closeAndGo = (tab) => { setActiveTab(tab); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-
-    const AdminPageHeader = ({ eyebrow, title, description, action }) => (
-        <div className="mb-5 sm:mb-7">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.24em] text-[#f2bd46] font-black">{eyebrow}</p>
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mt-1 leading-tight">{title}</h1>
-                    {description && <p className="text-sm sm:text-base text-gray-400 mt-2 leading-relaxed max-w-3xl">{description}</p>}
-                </div>
-                {action && <div className="shrink-0">{action}</div>}
-            </div>
-        </div>
-    );
-
-    const AdminCard = ({ children, className = '' }) => (
-        <div className={`bg-white/[0.035] border border-white/10 rounded-[1.4rem] sm:rounded-[1.8rem] shadow-[0_18px_70px_rgba(0,0,0,.35)] backdrop-blur-2xl overflow-hidden ${className}`}>{children}</div>
-    );
-
-    const KpiCard = ({ icon, label, value, hint, tone = 'gold' }) => {
-        const toneMap = {
-            gold: 'text-[#f2bd46] bg-[#f2bd46]/10 border-[#f2bd46]/20',
-            green: 'text-green-400 bg-green-500/10 border-green-500/20',
-            red: 'text-red-400 bg-red-500/10 border-red-500/20',
-            blue: 'text-blue-300 bg-blue-500/10 border-blue-500/20',
-            white: 'text-white bg-white/5 border-white/10'
-        };
-        return (
-            <AdminCard className="p-4 sm:p-5 relative">
-                <div className="absolute -right-8 -top-8 w-28 h-28 bg-[#f2bd46]/5 blur-[45px] rounded-full"></div>
-                <div className="relative flex items-start gap-3">
-                    <div className={`h-11 w-11 rounded-2xl border flex items-center justify-center shrink-0 ${toneMap[tone] || toneMap.gold}`}>{icon}</div>
-                    <div className="min-w-0">
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-black">{label}</p>
-                        <p className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1 truncate">{value}</p>
-                        {hint && <p className="text-xs text-gray-500 mt-1 leading-relaxed">{hint}</p>}
-                    </div>
-                </div>
-            </AdminCard>
-        );
-    };
-
-    const Field = ({ label, children }) => (
-        <label className="block">
-            <span className="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-black mb-2 block">{label}</span>
-            {children}
-        </label>
-    );
-    const inputClass = 'w-full bg-black/45 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-[#f2bd46]/70 focus:ring-2 focus:ring-[#f2bd46]/10 transition-all text-sm';
-    const goldButton = 'bg-[#f2bd46] text-black font-black rounded-2xl px-4 py-3 flex items-center justify-center gap-2 hover:bg-[#e2ae36] transition-all disabled:opacity-50 disabled:cursor-not-allowed';
-    const darkButton = 'bg-white/[0.045] border border-white/10 text-white font-black rounded-2xl px-4 py-3 flex items-center justify-center gap-2 hover:border-[#f2bd46]/40 transition-all';
-
-    const OverviewPage = () => {
-        const [stats, setStats] = React.useState(null);
-        const [ops, setOps] = React.useState(null);
-        React.useEffect(() => {
-            let alive = true;
-            adminFetch('/api/admin/dashboard-stats').then(data => alive && setStats(data)).catch(() => {});
-            adminFetch('/api/admin/operations/summary').then(data => alive && setOps(data)).catch(() => {});
-            return () => { alive = false; };
-        }, []);
-        const inventoryValue = products.reduce((sum, p) => sum + (Number(p.stock || p.quantity || 0) * Number(p.cost_price || p.purchase_price || p.cost || 0)), 0);
-        const criticalProducts = products.filter(p => Number(p.stock || p.quantity || 0) <= Number(p.critical_stock_level || p.min_stock || 2));
-        const activeProducts = products.filter(p => p.is_active !== false).length;
-        const revenue = stats?.total_revenue || stats?.revenue_month || stats?.month_revenue || 0;
-        const orders = stats?.total_orders || stats?.orders_month || 0;
-        const netProfit = stats?.total_net_profit || stats?.net_profit || 0;
-        const inconsistencies = ops?.open_inconsistencies || ops?.inconsistencies || 0;
-        return (
-            <div>
-                <AdminPageHeader eyebrow="Centro de controle" title="Operação do franqueado" description="Uma visão executiva, mobile-first e pronta para vender valor: vendas, estoque, DRE, auditoria, perdas, abastecimento e promoções automáticas." />
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
-                    <KpiCard icon={<DollarSign size={21}/>} label="Faturamento" value={money(revenue)} hint="mês atual" tone="green" />
-                    <KpiCard icon={<PiggyBank size={21}/>} label="Lucro estimado" value={money(netProfit)} hint="DRE inteligente" tone="gold" />
-                    <KpiCard icon={<ShoppingCart size={21}/>} label="Vendas" value={number(orders)} hint="pedidos pagos" tone="blue" />
-                    <KpiCard icon={<AlertTriangle size={21}/>} label="Alertas" value={number(criticalProducts.length + Number(inconsistencies || 0))} hint="estoque + auditoria" tone={(criticalProducts.length || inconsistencies) ? 'red' : 'white'} />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4 sm:gap-5">
-                    <AdminCard className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between gap-3 mb-5">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Inteligência operacional</p>
-                                <h2 className="text-xl sm:text-2xl font-black text-white">Próximas decisões recomendadas</h2>
-                            </div>
-                            <Shield className="text-[#f2bd46]" />
-                        </div>
-                        <div className="space-y-3">
-                            <button onClick={() => closeAndGo('audit')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
-                                <div className="h-10 w-10 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 flex items-center justify-center"><AlertTriangle size={19}/></div>
-                                <div><p className="font-black text-white">Auditar inconsistências após abastecimento</p><p className="text-sm text-gray-400 mt-1">Quando der diferença de produto, o painel cruza com vendas desde o último abastecimento e deixa tudo documentado.</p></div>
-                            </button>
-                            <button onClick={() => closeAndGo('dre')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
-                                <div className="h-10 w-10 rounded-2xl bg-[#f2bd46]/10 border border-[#f2bd46]/20 text-[#f2bd46] flex items-center justify-center"><PieChart size={19}/></div>
-                                <div><p className="font-black text-white">Atualizar investimento e payback</p><p className="text-sm text-gray-400 mt-1">O franqueado informa o investimento e o painel calcula retorno com base no faturamento e custos da operação.</p></div>
-                            </button>
-                            <button onClick={() => closeAndGo('promotions')} className="w-full text-left p-4 rounded-3xl bg-black/35 border border-white/10 hover:border-[#f2bd46]/40 transition-all flex items-start gap-3">
-                                <div className="h-10 w-10 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-300 flex items-center justify-center"><Flame size={19}/></div>
-                                <div><p className="font-black text-white">Ativar promoções automáticas com trava de margem</p><p className="text-sm text-gray-400 mt-1">Desconto calculado apenas sobre o lucro, nunca sobre o custo do produto.</p></div>
-                            </button>
-                        </div>
-                    </AdminCard>
-
-                    <div className="space-y-4">
-                        <AdminCard className="p-4 sm:p-5">
-                            <p className="text-[10px] uppercase tracking-[0.22em] text-gray-500 font-black">Resumo de estrutura</p>
-                            <div className="grid grid-cols-2 gap-3 mt-4">
-                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Pontos</p><p className="text-2xl font-black text-white">{condominiums.length}</p></div>
-                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Produtos</p><p className="text-2xl font-black text-white">{activeProducts}</p></div>
-                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Valor estoque</p><p className="text-lg font-black text-[#f2bd46]">{money(inventoryValue)}</p></div>
-                                <div className="bg-black/35 rounded-2xl p-3 border border-white/10"><p className="text-gray-500 text-xs font-bold">Críticos</p><p className="text-lg font-black text-red-300">{criticalProducts.length}</p></div>
-                            </div>
-                        </AdminCard>
-                        <AdminCard className="p-4 sm:p-5">
-                            <p className="text-[10px] uppercase tracking-[0.22em] text-gray-500 font-black">Acesso rápido</p>
-                            <div className="grid grid-cols-2 gap-2 mt-4">
-                                <button onClick={() => closeAndGo('products')} className={darkButton}><Package size={17}/> Produtos</button>
-                                <button onClick={() => closeAndGo('points')} className={darkButton}><Building2 size={17}/> Pontos</button>
-                                <button onClick={() => closeAndGo('losses')} className={darkButton}><AlertTriangle size={17}/> Perdas</button>
-                                <button onClick={() => closeAndGo('purchases')} className={darkButton}><ShoppingCart size={17}/> Compras</button>
-                            </div>
-                        </AdminCard>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const SmartFinancePage = () => {
-        const saved = (() => { try { return JSON.parse(localStorage.getItem('dmm_smart_finance') || '{}'); } catch { return {}; } })();
-        const [investment, setInvestment] = React.useState(saved.investment ?? 10549);
-        const [revenue, setRevenue] = React.useState(saved.revenue ?? 0);
-        const [cogsRate, setCogsRate] = React.useState(saved.cogsRate ?? 62);
-        const [fixedCosts, setFixedCosts] = React.useState(saved.fixedCosts ?? 349.90);
-        const [feesRate, setFeesRate] = React.useState(saved.feesRate ?? 4.99);
-        const [commissionRate, setCommissionRate] = React.useState(saved.commissionRate ?? 0);
-        const [losses, setLosses] = React.useState(saved.losses ?? 0);
-        React.useEffect(() => {
-            adminFetch('/api/admin/finance/smart-dre').then(data => {
-                if (data?.revenue) setRevenue(Number(data.revenue));
-                if (data?.investment) setInvestment(Number(data.investment));
-            }).catch(() => {});
-        }, []);
-        const cogs = Number(revenue) * Number(cogsRate) / 100;
-        const grossProfit = Number(revenue) - cogs;
-        const fees = Number(revenue) * Number(feesRate) / 100;
-        const commission = Number(revenue) * Number(commissionRate) / 100;
-        const netProfit = grossProfit - Number(fixedCosts) - fees - commission - Number(losses);
-        const margin = Number(revenue) > 0 ? (netProfit / Number(revenue)) * 100 : 0;
-        const payback = netProfit > 0 ? Number(investment) / netProfit : 0;
-        const saveConfig = async () => {
-            const payload = { investment, revenue, cogsRate, fixedCosts, feesRate, commissionRate, losses };
-            localStorage.setItem('dmm_smart_finance', JSON.stringify(payload));
-            try { await adminFetch('/api/admin/finance/smart-config', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
-            alert('Configuração financeira salva. Quando o backend estiver ativo, ela ficará sincronizada no banco.');
-        };
-        return (
-            <div>
-                <AdminPageHeader eyebrow="Financeiro inteligente" title="DRE, margem e payback" description="O franqueado coloca o investimento e o painel calcula retorno, margem líquida, prejuízos, taxas e projeção de payback com base na operação." action={<button onClick={saveConfig} className={goldButton}><Save size={18}/> Salvar</button>} />
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
-                    <KpiCard icon={<DollarSign size={21}/>} label="Faturamento" value={money(revenue)} tone="green" />
-                    <KpiCard icon={<PiggyBank size={21}/>} label="Lucro líquido" value={money(netProfit)} tone={netProfit >= 0 ? 'gold' : 'red'} />
-                    <KpiCard icon={<PieChart size={21}/>} label="Margem" value={`${margin.toFixed(1)}%`} tone={margin >= 15 ? 'green' : 'red'} />
-                    <KpiCard icon={<Clock size={21}/>} label="Payback" value={payback > 0 ? `${payback.toFixed(1)} meses` : 'Sem lucro'} tone={payback > 0 && payback <= 12 ? 'green' : 'gold'} />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-4 sm:gap-5">
-                    <AdminCard className="p-4 sm:p-6">
-                        <h2 className="text-xl font-black text-white mb-4">Variáveis da operação</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <Field label="Investimento inicial"><input className={inputClass} type="number" value={investment} onChange={e => setInvestment(e.target.value)} /></Field>
-                            <Field label="Faturamento mensal"><input className={inputClass} type="number" value={revenue} onChange={e => setRevenue(e.target.value)} /></Field>
-                            <Field label="Custo dos produtos (%)"><input className={inputClass} type="number" value={cogsRate} onChange={e => setCogsRate(e.target.value)} /></Field>
-                            <Field label="Taxas pagamento (%)"><input className={inputClass} type="number" value={feesRate} onChange={e => setFeesRate(e.target.value)} /></Field>
-                            <Field label="Comissão do local (%)"><input className={inputClass} type="number" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} /></Field>
-                            <Field label="Custos fixos mensais"><input className={inputClass} type="number" value={fixedCosts} onChange={e => setFixedCosts(e.target.value)} /></Field>
-                            <Field label="Perdas/furtos do mês"><input className={inputClass} type="number" value={losses} onChange={e => setLosses(e.target.value)} /></Field>
-                        </div>
-                    </AdminCard>
-                    <AdminCard className="p-4 sm:p-6">
-                        <h2 className="text-xl font-black text-white mb-4">DRE resumido</h2>
-                        <div className="space-y-3">
-                            {[
-                                ['Faturamento bruto', revenue], ['Custo dos produtos vendidos', -cogs], ['Lucro bruto', grossProfit], ['Taxas de pagamento', -fees], ['Comissão do ponto', -commission], ['Custos fixos', -Number(fixedCosts)], ['Perdas e furtos', -Number(losses)], ['Lucro líquido final', netProfit]
-                            ].map(([label, value], i) => (
-                                <div key={label} className={`flex justify-between items-center rounded-2xl px-4 py-3 border ${i === 7 ? 'bg-[#f2bd46]/10 border-[#f2bd46]/25' : 'bg-black/35 border-white/10'}`}>
-                                    <span className="text-sm text-gray-300 font-bold">{label}</span>
-                                    <span className={`font-black ${Number(value) >= 0 ? 'text-white' : 'text-red-300'}`}>{money(value)}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-5 bg-blue-500/10 border border-blue-500/20 rounded-3xl p-4">
-                            <p className="font-black text-blue-100 flex items-center gap-2"><Info size={18}/> Leitura inteligente</p>
-                            <p className="text-sm text-blue-100/75 mt-2 leading-relaxed">{netProfit <= 0 ? 'A operação ainda não está pagando os custos. Revise margem, perdas e mix de produtos antes de projetar payback.' : margin < 12 ? 'Existe lucro, mas a margem está apertada. Priorize produtos de maior giro e margem, reduza perdas e renegocie compras.' : 'A operação está saudável. O próximo passo é aumentar recorrência, combos e promoções com trava de custo.'}</p>
-                        </div>
-                    </AdminCard>
-                </div>
-            </div>
-        );
-    };
-
-    const AutoPromotionsPage = () => {
-        const saved = (() => { try { return JSON.parse(localStorage.getItem('dmm_auto_promos') || '{}'); } catch { return {}; } })();
-        const [enabled, setEnabled] = React.useState(saved.enabled ?? false);
-        const [maxProducts, setMaxProducts] = React.useState(saved.maxProducts ?? 4);
-        const [defaultDiscount, setDefaultDiscount] = React.useState(saved.defaultDiscount ?? 35);
-        const [excludedIds, setExcludedIds] = React.useState(saved.excludedIds ?? []);
-        const [discounts, setDiscounts] = React.useState(saved.discounts ?? {});
-        React.useEffect(() => {
-            adminFetch('/api/admin/promotions/automation').then(data => {
-                if (typeof data?.enabled === 'boolean') setEnabled(data.enabled);
-                if (data?.max_products) setMaxProducts(Number(data.max_products));
-                if (data?.default_discount_profit_percent) setDefaultDiscount(Number(data.default_discount_profit_percent));
-                if (Array.isArray(data?.excluded_product_ids)) setExcludedIds(data.excluded_product_ids.map(String));
-                if (data?.product_discounts) setDiscounts(data.product_discounts);
-            }).catch(() => {});
-        }, []);
-        const calcPromo = (product) => {
-            const sale = Number(product.sale_price || 0);
-            const cost = Number(product.cost_price || product.purchase_price || product.cost || 0);
-            const profit = Math.max(0, sale - cost);
-            const pct = Number(discounts[String(product.id)] ?? defaultDiscount);
-            const promo = Math.max(cost, sale - (profit * pct / 100));
-            return { sale, cost, profit, pct, promo, safe: promo >= cost && profit > 0 };
-        };
-        const eligibleProducts = products.filter(p => !excludedIds.includes(String(p.id)) && calcPromo(p).profit > 0);
-        const toggleExcluded = (id) => setExcludedIds(prev => prev.includes(String(id)) ? prev.filter(x => x !== String(id)) : [...prev, String(id)]);
-        const save = async () => {
-            const payload = { enabled, maxProducts: Math.min(7, Math.max(1, Number(maxProducts))), defaultDiscount, excludedIds, discounts };
-            localStorage.setItem('dmm_auto_promos', JSON.stringify(payload));
-            try { await adminFetch('/api/admin/promotions/automation', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
-            alert('Configuração de promoções salva. O backend vai usar essa regra para escolher produtos aleatórios todos os dias.');
-        };
-        return (
-            <div>
-                <AdminPageHeader eyebrow="Motor de promoções" title="Promoções automáticas com trava de margem" description="O franqueado ativa/desativa, escolhe até 7 produtos por dia, exclui itens proibidos e define desconto calculado apenas em cima do lucro do produto." action={<button onClick={save} className={goldButton}><Save size={18}/> Salvar regras</button>} />
-                <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4 sm:gap-5">
-                    <AdminCard className="p-4 sm:p-6 space-y-4">
-                        <button onClick={() => setEnabled(!enabled)} className={`w-full rounded-3xl p-5 border text-left transition-all ${enabled ? 'bg-green-500/10 border-green-500/25' : 'bg-white/[0.035] border-white/10'}`}>
-                            <p className="text-sm text-gray-400 font-bold">Status</p>
-                            <div className="flex items-center justify-between mt-2"><span className="text-2xl font-black text-white">{enabled ? 'Ativado' : 'Desativado'}</span><span className={`h-8 w-14 rounded-full p-1 ${enabled ? 'bg-green-500' : 'bg-gray-700'}`}><span className={`block h-6 w-6 rounded-full bg-white transition-transform ${enabled ? 'translate-x-6' : ''}`}></span></span></div>
-                        </button>
-                        <Field label="Máximo de produtos por dia"><input className={inputClass} type="number" min="1" max="7" value={maxProducts} onChange={e => setMaxProducts(Math.min(7, Math.max(1, Number(e.target.value || 1))))} /></Field>
-                        <Field label="Desconto padrão sobre o lucro (%)"><input className={inputClass} type="number" min="0" max="100" value={defaultDiscount} onChange={e => setDefaultDiscount(e.target.value)} /></Field>
-                        <div className="bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-3xl p-4">
-                            <p className="font-black text-[#f2bd46] flex items-center gap-2"><Shield size={18}/> Regra anti-prejuízo</p>
-                            <p className="text-sm text-gray-300 mt-2">Preço promocional = preço de venda - desconto sobre o lucro. O sistema nunca deixa o valor ficar abaixo do custo.</p>
-                        </div>
-                    </AdminCard>
-                    <AdminCard className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-xl font-black text-white">Produtos elegíveis</h2><span className="text-xs font-black text-[#f2bd46] bg-[#f2bd46]/10 border border-[#f2bd46]/20 rounded-full px-3 py-1">{eligibleProducts.length} liberados</span></div>
-                        <div className="space-y-3 max-h-[620px] overflow-y-auto custom-scrollbar pr-1">
-                            {products.map(product => {
-                                const calc = calcPromo(product);
-                                const excluded = excludedIds.includes(String(product.id));
-                                return (
-                                    <div key={product.id} className={`rounded-3xl p-3 border ${excluded ? 'bg-red-500/5 border-red-500/15 opacity-70' : 'bg-black/35 border-white/10'}`}>
-                                        <div className="flex gap-3">
-                                            <img src={product.image_url || `https://placehold.co/160x160/111111/f2bd46?text=${encodeURIComponent(product.name || 'Produto')}`} alt={product.name} className="h-16 w-16 rounded-2xl object-cover bg-black border border-white/10" />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2"><p className="font-black text-white truncate">{product.name}</p><button onClick={() => toggleExcluded(product.id)} className={`text-[10px] font-black rounded-full px-3 py-1 ${excluded ? 'bg-red-500 text-white' : 'bg-white/10 text-gray-300'}`}>{excluded ? 'Excluído' : 'Permitir'}</button></div>
-                                                <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
-                                                    <div><p className="text-gray-500 font-bold">Custo</p><p className="text-white font-black">{money(calc.cost)}</p></div>
-                                                    <div><p className="text-gray-500 font-bold">Venda</p><p className="text-white font-black">{money(calc.sale)}</p></div>
-                                                    <div><p className="text-gray-500 font-bold">Promo</p><p className="text-[#f2bd46] font-black">{money(calc.promo)}</p></div>
-                                                </div>
-                                                <div className="grid grid-cols-[1fr_auto] gap-2 mt-3 items-end">
-                                                    <Field label="% sobre lucro"><input className={inputClass} type="number" value={discounts[String(product.id)] ?? defaultDiscount} onChange={e => setDiscounts(prev => ({ ...prev, [String(product.id)]: e.target.value }))} /></Field>
-                                                    <span className={`text-[10px] font-black rounded-2xl px-3 py-3 ${calc.safe ? 'bg-green-500/10 text-green-300 border border-green-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'}`}>{calc.safe ? 'Seguro' : 'Sem margem'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </AdminCard>
-                </div>
-            </div>
-        );
-    };
-
-    const AuditCenterPage = () => {
-        const [selectedCondo, setSelectedCondo] = React.useState('');
-        const [selectedProduct, setSelectedProduct] = React.useState('');
-        const [expected, setExpected] = React.useState('');
-        const [counted, setCounted] = React.useState('');
-        const [lastRestockAt, setLastRestockAt] = React.useState('');
-        const [suspectSales, setSuspectSales] = React.useState([]);
-        const [supply, setSupply] = React.useState({ product_id: '', condo_id: '', quantity: '', supplier: '', unit_cost: '', expires_at: '', invoice: '' });
-        const selectedProductData = products.find(p => String(p.id) === String(selectedProduct));
-        const diff = Number(expected || 0) - Number(counted || 0);
-        const unitValue = Number(selectedProductData?.sale_price || 0);
-        React.useEffect(() => {
-            if (!selectedCondo || !selectedProduct || !lastRestockAt) return;
-            adminFetch(`/api/admin/audit/suspect-sales?condoId=${selectedCondo}&productId=${selectedProduct}&since=${encodeURIComponent(lastRestockAt)}`).then(data => setSuspectSales(Array.isArray(data) ? data : (data?.sales || []))).catch(() => setSuspectSales([]));
-        }, [selectedCondo, selectedProduct, lastRestockAt]);
-        const registerSupply = async () => {
-            try { await adminFetch('/api/admin/supply-records', { method: 'POST', body: JSON.stringify(supply) }); alert('Abastecimento registrado.'); }
-            catch (err) { alert(`Registro ficará disponível quando o backend for atualizado: ${err.message}`); }
-        };
-        const documentInconsistency = async () => {
-            const payload = { condo_id: selectedCondo, product_id: selectedProduct, expected_quantity: Number(expected), counted_quantity: Number(counted), difference: diff, estimated_loss: diff > 0 ? diff * unitValue : 0, last_restock_at: lastRestockAt, suspect_sales: suspectSales };
-            try { await adminFetch('/api/admin/audit/inconsistencies', { method: 'POST', body: JSON.stringify(payload) }); alert('Inconsistência documentada.'); }
-            catch (err) { alert(`A tela está pronta. O backend ainda precisa receber a rota: ${err.message}`); }
-        };
-        return (
-            <div>
-                <AdminPageHeader eyebrow="Segurança operacional" title="Abastecimento, auditoria e inconsistências" description="Registre abastecimentos, compare estoque esperado vs. contado e documente possíveis furtos mostrando vendas do produto desde o último abastecimento." />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-                    <AdminCard className="p-4 sm:p-6">
-                        <h2 className="text-xl font-black text-white mb-4">Registrar abastecimento</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <Field label="Ponto"><select className={inputClass} value={supply.condo_id} onChange={e => setSupply({...supply, condo_id: e.target.value})}><option value="">Selecione</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
-                            <Field label="Produto"><select className={inputClass} value={supply.product_id} onChange={e => setSupply({...supply, product_id: e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
-                            <Field label="Quantidade"><input className={inputClass} type="number" value={supply.quantity} onChange={e => setSupply({...supply, quantity: e.target.value})} /></Field>
-                            <Field label="Custo unitário"><input className={inputClass} type="number" value={supply.unit_cost} onChange={e => setSupply({...supply, unit_cost: e.target.value})} /></Field>
-                            <Field label="Fornecedor"><input className={inputClass} value={supply.supplier} onChange={e => setSupply({...supply, supplier: e.target.value})} placeholder="Ex: Atacadão" /></Field>
-                            <Field label="Validade"><input className={inputClass} type="date" value={supply.expires_at} onChange={e => setSupply({...supply, expires_at: e.target.value})} /></Field>
-                            <Field label="Nota/observação"><input className={inputClass} value={supply.invoice} onChange={e => setSupply({...supply, invoice: e.target.value})} placeholder="NF, lote ou observação" /></Field>
-                        </div>
-                        <button onClick={registerSupply} className={`${goldButton} w-full mt-4`}><Save size={18}/> Salvar abastecimento</button>
-                    </AdminCard>
-                    <AdminCard className="p-4 sm:p-6">
-                        <h2 className="text-xl font-black text-white mb-4">Auditoria de inconsistência</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <Field label="Ponto"><select className={inputClass} value={selectedCondo} onChange={e => setSelectedCondo(e.target.value)}><option value="">Selecione</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
-                            <Field label="Produto"><select className={inputClass} value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
-                            <Field label="Último abastecimento"><input className={inputClass} type="datetime-local" value={lastRestockAt} onChange={e => setLastRestockAt(e.target.value)} /></Field>
-                            <Field label="Estoque esperado"><input className={inputClass} type="number" value={expected} onChange={e => setExpected(e.target.value)} /></Field>
-                            <Field label="Estoque contado"><input className={inputClass} type="number" value={counted} onChange={e => setCounted(e.target.value)} /></Field>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 mt-4">
-                            <KpiCard icon={<AlertTriangle size={20}/>} label="Diferença" value={diff > 0 ? `${diff} faltando` : diff < 0 ? `${Math.abs(diff)} sobrando` : 'Sem diferença'} tone={diff > 0 ? 'red' : 'green'} />
-                            <KpiCard icon={<DollarSign size={20}/>} label="Prejuízo estimado" value={money(diff > 0 ? diff * unitValue : 0)} tone={diff > 0 ? 'red' : 'white'} />
-                        </div>
-                        <button onClick={documentInconsistency} disabled={!selectedCondo || !selectedProduct || !expected || !counted} className={`${goldButton} w-full mt-4`}><FileText size={18}/> Documentar inconsistência</button>
-                    </AdminCard>
-                </div>
-                <AdminCard className="p-4 sm:p-6 mt-4 sm:mt-5">
-                    <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-xl font-black text-white">Vendas do produto desde o último abastecimento</h2><span className="text-xs text-gray-500 font-bold">Base para investigação</span></div>
-                    {suspectSales.length ? suspectSales.map((sale, index) => <div key={sale.id || index} className="p-4 rounded-2xl bg-black/35 border border-white/10 mb-2 flex items-center justify-between gap-3"><div><p className="font-black text-white">{sale.customer_name || sale.user_name || 'Cliente'}</p><p className="text-xs text-gray-500">{sale.created_at || sale.date || sale.time}</p></div><div className="text-right"><p className="font-black text-[#f2bd46]">{sale.quantity || 1} un.</p><p className="text-xs text-gray-500">{money(sale.total || sale.amount || 0)}</p></div></div>) : <div className="text-center p-8 text-gray-500 bg-black/25 rounded-3xl border border-white/10">Selecione ponto, produto e horário do último abastecimento. Quando o backend estiver ativo, as vendas suspeitas aparecerão aqui.</div>}
-                </AdminCard>
-            </div>
-        );
-    };
-
-    const LossesPage = () => {
-        const [entries, setEntries] = React.useState([]);
-        const [form, setForm] = React.useState({ type: 'furto', product_id: '', quantity: 1, value: '', reason: '', customer_note: '', status: 'em_analise' });
-        React.useEffect(() => { adminFetch('/api/admin/losses').then(data => setEntries(Array.isArray(data) ? data : (data?.losses || []))).catch(() => {}); }, []);
-        const totalLoss = entries.reduce((sum, item) => sum + Number(item.value || item.amount || 0), 0);
-        const save = async () => {
-            const product = products.find(p => String(p.id) === String(form.product_id));
-            const payload = { ...form, product_name: product?.name, value: Number(form.value || 0) || (Number(form.quantity || 0) * Number(product?.sale_price || 0)) };
-            setEntries(prev => [{ ...payload, id: Date.now(), created_at: new Date().toISOString() }, ...prev]);
-            try { await adminFetch('/api/admin/losses', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
-            setForm({ type: 'furto', product_id: '', quantity: 1, value: '', reason: '', customer_note: '', status: 'em_analise' });
-        };
-        return (
-            <div>
-                <AdminPageHeader eyebrow="Controle de prejuízo" title="Registro de perdas e furtos" description="Tudo que virar prejuízo fica registrado e entra no DRE para o franqueado enxergar o impacto real da operação." />
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5"><KpiCard icon={<AlertTriangle size={20}/>} label="Prejuízo registrado" value={money(totalLoss)} tone="red"/><KpiCard icon={<FileText size={20}/>} label="Ocorrências" value={entries.length} tone="gold"/><KpiCard icon={<Shield size={20}/>} label="Em análise" value={entries.filter(e => (e.status || '').includes('analise')).length} tone="blue"/><KpiCard icon={<CheckCircle2 size={20}/>} label="Resolvidos" value={entries.filter(e => (e.status || '').includes('resol')).length} tone="green"/></div>
-                <div className="grid grid-cols-1 lg:grid-cols-[.85fr_1.15fr] gap-4 sm:gap-5">
-                    <AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova ocorrência</h2><div className="space-y-3"><Field label="Tipo"><select className={inputClass} value={form.type} onChange={e => setForm({...form, type:e.target.value})}><option value="furto">Furto</option><option value="perda">Perda</option><option value="vencimento">Vencimento</option><option value="quebra">Quebra/avaria</option></select></Field><Field label="Produto"><select className={inputClass} value={form.product_id} onChange={e => setForm({...form, product_id:e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Quantidade"><input className={inputClass} type="number" value={form.quantity} onChange={e => setForm({...form, quantity:e.target.value})}/></Field><Field label="Valor do prejuízo"><input className={inputClass} type="number" value={form.value} onChange={e => setForm({...form, value:e.target.value})} placeholder="Calcula pelo produto se vazio"/></Field><Field label="Motivo/documentação"><textarea className={inputClass} rows="3" value={form.reason} onChange={e => setForm({...form, reason:e.target.value})} placeholder="Descreva a ocorrência, horário, câmera, cliente envolvido..."/></Field><button onClick={save} className={`${goldButton} w-full`}><Save size={18}/> Registrar prejuízo</button></div></AdminCard>
-                    <AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Histórico documentado</h2><div className="space-y-3 max-h-[620px] overflow-y-auto custom-scrollbar pr-1">{entries.length ? entries.map(entry => <div key={entry.id || entry.created_at} className="rounded-3xl p-4 bg-black/35 border border-white/10"><div className="flex justify-between gap-3"><div><p className="font-black text-white capitalize">{entry.type} {entry.product_name ? `• ${entry.product_name}` : ''}</p><p className="text-xs text-gray-500 mt-1">{entry.created_at ? new Date(entry.created_at).toLocaleString('pt-BR') : 'Agora'}</p></div><p className="font-black text-red-300">{money(entry.value || entry.amount)}</p></div><p className="text-sm text-gray-400 mt-3">{entry.reason || entry.description || 'Sem observação.'}</p></div>) : <div className="p-8 text-center text-gray-500 bg-black/25 border border-white/10 rounded-3xl">Nenhuma perda registrada ainda.</div>}</div></AdminCard>
-                </div>
-            </div>
-        );
-    };
-
-    const PurchasesPage = () => {
-        const [records, setRecords] = React.useState([]);
-        const [form, setForm] = React.useState({ product_id: '', supplier: '', unit_cost: '', quantity: '', invoice: '', bought_at: new Date().toISOString().slice(0,10) });
-        React.useEffect(() => { adminFetch('/api/admin/purchases').then(data => setRecords(Array.isArray(data) ? data : (data?.purchases || []))).catch(() => {}); }, []);
-        const save = async () => {
-            const product = products.find(p => String(p.id) === String(form.product_id));
-            const payload = { ...form, product_name: product?.name, total: Number(form.unit_cost || 0) * Number(form.quantity || 0) };
-            setRecords(prev => [{...payload, id: Date.now()}, ...prev]);
-            try { await adminFetch('/api/admin/purchases', { method: 'POST', body: JSON.stringify(payload) }); } catch {}
-            setForm({ product_id: '', supplier: '', unit_cost: '', quantity: '', invoice: '', bought_at: new Date().toISOString().slice(0,10) });
-        };
-        const cheapestByProduct = Object.values(records.reduce((acc, r) => { const key = r.product_name || r.product_id; if (!key) return acc; if (!acc[key] || Number(r.unit_cost) < Number(acc[key].unit_cost)) acc[key] = r; return acc; }, {}));
-        return (
-            <div><AdminPageHeader eyebrow="Compras inteligentes" title="Fornecedores, custo e melhor preço" description="Registre onde compra mais barato, acompanhe custo por produto e alimente o DRE e as promoções com margem real." />
-            <div className="grid grid-cols-1 lg:grid-cols-[.85fr_1.15fr] gap-4 sm:gap-5"><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova compra</h2><div className="space-y-3"><Field label="Produto"><select className={inputClass} value={form.product_id} onChange={e => setForm({...form, product_id:e.target.value})}><option value="">Selecione</option>{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Fornecedor/local"><input className={inputClass} value={form.supplier} onChange={e => setForm({...form, supplier:e.target.value})} placeholder="Atacadão, Assaí, distribuidora..." /></Field><div className="grid grid-cols-2 gap-3"><Field label="Custo unitário"><input className={inputClass} type="number" value={form.unit_cost} onChange={e => setForm({...form, unit_cost:e.target.value})}/></Field><Field label="Quantidade"><input className={inputClass} type="number" value={form.quantity} onChange={e => setForm({...form, quantity:e.target.value})}/></Field></div><Field label="Data"><input className={inputClass} type="date" value={form.bought_at} onChange={e => setForm({...form, bought_at:e.target.value})}/></Field><Field label="Nota/observação"><input className={inputClass} value={form.invoice} onChange={e => setForm({...form, invoice:e.target.value})}/></Field><button onClick={save} className={`${goldButton} w-full`}><Save size={18}/> Registrar compra</button></div></AdminCard><div className="space-y-4"><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Onde está mais barato</h2><div className="space-y-2">{cheapestByProduct.length ? cheapestByProduct.slice(0,8).map((r,i) => <div key={`${r.product_name}-${i}`} className="flex justify-between gap-3 p-3 rounded-2xl bg-black/35 border border-white/10"><div><p className="font-black text-white">{r.product_name}</p><p className="text-xs text-gray-500">{r.supplier}</p></div><p className="font-black text-[#f2bd46]">{money(r.unit_cost)}</p></div>) : <p className="text-center text-gray-500 p-6">Registre compras para o ranking aparecer.</p>}</div></AdminCard><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Últimas compras</h2><div className="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">{records.map(r => <div key={r.id} className="p-3 rounded-2xl bg-black/35 border border-white/10"><div className="flex justify-between"><p className="font-black text-white">{r.product_name || 'Produto'}</p><p className="text-[#f2bd46] font-black">{money(r.total || (Number(r.unit_cost)*Number(r.quantity)))}</p></div><p className="text-xs text-gray-500 mt-1">{r.supplier} • {r.quantity} un. • {money(r.unit_cost)} cada</p></div>)}</div></AdminCard></div></div></div>
-        );
-    };
-
-    const ClientsIntelligencePage = () => {
-        const [users, setUsers] = React.useState([]);
-        const [search, setSearch] = React.useState('');
-        const [selectedUser, setSelectedUser] = React.useState(null);
-        const [note, setNote] = React.useState('');
-        const [severity, setSeverity] = React.useState('observacao');
-        React.useEffect(() => { adminFetch('/api/admin/users-paginated?page=1&limit=80').then(data => setUsers(data?.users || data || [])).catch(() => {}); }, []);
-        const filtered = users.filter(u => `${u.name || ''} ${u.cpf || ''} ${u.apartment || ''}`.toLowerCase().includes(search.toLowerCase()));
-        const saveWarning = async () => {
-            if (!selectedUser || !note.trim()) return;
-            const payload = { note, severity, created_at: new Date().toISOString() };
-            setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, warnings: [payload, ...(u.warnings || [])], warning_count: Number(u.warning_count || 0) + 1 } : u));
-            try { await adminFetch(`/api/admin/users/${selectedUser.id}/warnings`, { method: 'POST', body: JSON.stringify(payload) }); } catch {}
-            setNote(''); setSelectedUser(null);
-        };
-        return (<div><AdminPageHeader eyebrow="Relacionamento e segurança" title="Clientes, advertências e anotações" description="Cada cliente pode receber observações internas para o franqueado identificar consumidores problemáticos, reincidentes ou que precisam de atenção no suporte." /><div className="mb-4"><div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18}/><input className={`${inputClass} pl-11`} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente por nome, CPF ou apartamento"/></div></div><div className="grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-4 sm:gap-5"><AdminCard className="p-3 sm:p-5"><div className="space-y-3 max-h-[720px] overflow-y-auto custom-scrollbar pr-1">{filtered.map(user => <button key={user.id} onClick={() => setSelectedUser(user)} className={`w-full text-left rounded-3xl p-4 border transition-all ${selectedUser?.id === user.id ? 'bg-[#f2bd46]/10 border-[#f2bd46]/30' : 'bg-black/35 border-white/10 hover:border-[#f2bd46]/30'}`}><div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3 min-w-0"><div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-white shrink-0">{(user.name || 'C').charAt(0)}</div><div className="min-w-0"><p className="font-black text-white truncate">{user.name}</p><p className="text-xs text-gray-500 truncate">{user.condo_name || 'Sem ponto'} • Ap. {user.apartment || '-'}</p></div></div><div className="text-right"><p className={`text-xs font-black rounded-full px-2 py-1 ${Number(user.warning_count || user.warnings?.length || 0) > 0 ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-green-500/10 text-green-300 border border-green-500/20'}`}>{Number(user.warning_count || user.warnings?.length || 0)} avisos</p><p className="text-xs text-[#f2bd46] font-black mt-1">{money(user.wallet_balance)}</p></div></div></button>)}</div></AdminCard><AdminCard className="p-4 sm:p-6"><h2 className="text-xl font-black text-white mb-4">Nova anotação interna</h2>{selectedUser ? <div className="space-y-3"><div className="p-4 bg-black/35 border border-white/10 rounded-3xl"><p className="font-black text-white">{selectedUser.name}</p><p className="text-sm text-gray-500">{selectedUser.cpf} • {selectedUser.condo_name || 'Sem ponto'}</p></div><Field label="Tipo"><select className={inputClass} value={severity} onChange={e => setSeverity(e.target.value)}><option value="observacao">Observação</option><option value="advertencia">Advertência</option><option value="grave">Grave / problemático</option></select></Field><Field label="Anotação"><textarea rows="5" className={inputClass} value={note} onChange={e => setNote(e.target.value)} placeholder="Ex: cliente retirou produto errado, abriu chamado, reincidente em divergência..."/></Field><button onClick={saveWarning} className={`${goldButton} w-full`}><Save size={18}/> Salvar anotação</button></div> : <div className="text-center p-8 text-gray-500 bg-black/25 rounded-3xl border border-white/10">Selecione um cliente para criar uma advertência ou observação interna.</div>}</AdminCard></div></div>);
-    };
-
-    const ProductOperationsPage = () => {
-        const [search, setSearch] = React.useState('');
-        const filtered = products.filter(p => `${p.name || ''} ${p.category || ''}`.toLowerCase().includes(search.toLowerCase()));
-        return (<div><AdminPageHeader eyebrow="Catálogo operacional" title="Produtos" description="Cadastro central de produtos com custo, preço, margem, promoção e status para todas as máquinas." action={<button onClick={() => handleOpenProductModal()} className={goldButton}><PlusCircle size={18}/> Novo</button>} /><div className="mb-4"><div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18}/><input className={`${inputClass} pl-11`} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar produto"/></div></div><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">{filtered.map(product => { const cost = Number(product.cost_price || product.purchase_price || product.cost || 0); const sale = Number(product.sale_price || 0); const margin = sale > 0 ? ((sale - cost) / sale) * 100 : 0; return <AdminCard key={product.id} className="p-3"><div className="flex gap-3"><img src={product.image_url || `https://placehold.co/180x180/111111/f2bd46?text=${encodeURIComponent(product.name || 'Produto')}`} alt={product.name} className="h-20 w-20 rounded-2xl object-cover bg-black border border-white/10"/><div className="flex-1 min-w-0"><p className="font-black text-white line-clamp-2">{product.name}</p><p className="text-xs text-gray-500 mt-1">{product.category || 'Sem categoria'}</p><div className="grid grid-cols-3 gap-2 mt-3 text-xs"><div><p className="text-gray-500">Custo</p><p className="font-black text-white">{money(cost)}</p></div><div><p className="text-gray-500">Venda</p><p className="font-black text-[#f2bd46]">{money(sale)}</p></div><div><p className="text-gray-500">Margem</p><p className={`font-black ${margin > 25 ? 'text-green-300' : 'text-red-300'}`}>{margin.toFixed(0)}%</p></div></div><div className="grid grid-cols-2 gap-2 mt-3"><button onClick={() => handleOpenProductModal(product)} className={darkButton}><Edit size={16}/> Editar</button><button onClick={() => handleDeleteProduct(product.id)} className="bg-red-500/10 border border-red-500/20 text-red-300 font-black rounded-2xl px-3 py-3 flex items-center justify-center gap-2"><Trash2 size={16}/> Apagar</button></div></div></div></AdminCard>; })}</div></div>);
-    };
-
-    const PointsPage = () => {
-        const unlock = async (condo) => { const reason = window.prompt('Motivo do destravamento remoto:'); if (!reason) return; try { await adminFetch(`/api/admin/fridges/${condo.fridge_id}/unlock`, { method: 'POST', body: JSON.stringify({ reason, condo_id: condo.id }) }); alert('Comando enviado.'); } catch (err) { alert(err.message); } };
-        return (<div><AdminPageHeader eyebrow="Estrutura física" title="Pontos de venda e máquinas" description="Gerencie máquinas, IDs de geladeira, síndico/responsável e destravamentos documentados." action={<button onClick={() => handleOpenCondoModal()} className={goldButton}><PlusCircle size={18}/> Novo ponto</button>} /><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">{condominiums.map(condo => <AdminCard key={condo.id} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Ponto de venda</p><h3 className="text-xl font-black text-white mt-1">{condo.name}</h3><p className="text-sm text-gray-500 mt-1">ID geladeira: <span className="font-mono text-gray-300">{condo.fridge_id || 'Não definido'}</span></p></div><Refrigerator className="text-[#f2bd46]"/></div><div className="grid grid-cols-2 gap-2 mt-4"><button onClick={() => unlock(condo)} className={darkButton}><KeyRound size={16}/> Destravar</button><button onClick={() => handleOpenCondoModal(condo)} className={darkButton}><Edit size={16}/> Editar</button><button onClick={() => handleDeleteCondo(condo.id)} className="col-span-2 bg-red-500/10 border border-red-500/20 text-red-300 font-black rounded-2xl px-3 py-3 flex items-center justify-center gap-2"><Trash2 size={16}/> Apagar ponto</button></div></AdminCard>)}</div></div>);
-    };
-
-    const renderContent = () => {
-        if (isLoading && ['overview','products','points'].includes(activeTab)) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="animate-spin text-[#f2bd46]" size={44}/></div>;
-        if (error) return <AdminCard className="p-6 text-red-300 border-red-500/20 bg-red-500/10">{error}</AdminCard>;
-        switch (activeTab) {
-            case 'overview': return <OverviewPage />;
-            case 'dre': return <SmartFinancePage />;
-            case 'promotions': return <AutoPromotionsPage />;
-            case 'audit': return <AuditCenterPage />;
-            case 'losses': return <LossesPage />;
-            case 'purchases': return <PurchasesPage />;
-            case 'clients-intel': return <ClientsIntelligencePage />;
-            case 'products': return <ProductOperationsPage />;
-            case 'points': return <PointsPage />;
-            case 'sales': return <EntradasVendasPage condominiums={condominiums} token={token} />;
-            case 'cashier': return <CentralCashierPage token={token} />;
-            case 'critical': return <CriticalStockPage condominiums={condominiums} token={token} />;
-            case 'stock': return <StockManagement condominiums={condominiums} products={products} token={token} />;
-            default: return <OverviewPage />;
+    const handleDeleteProduct = async (id) => { 
+        if (window.confirm('Tem a certeza que quer apagar este produto?')) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error('Falha ao apagar produto.');
+                fetchData('products', setProducts);
+            } catch (err) { alert(err.message); }
         }
     };
 
-    const SidebarContent = () => (
-        <>
-            <div className="p-4 sm:p-5 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                    <div className="h-14 w-24 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center px-2"><img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="max-h-11 w-auto object-contain"/></div>
-                    <div className="min-w-0"><p className="text-[10px] uppercase tracking-[0.22em] text-[#f2bd46] font-black">Franqueado</p><p className="text-white font-black truncate">Centro de Controle</p></div>
-                </div>
-            </div>
-            <nav className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1">
-                {tabs.map(tab => <button key={tab.id} onClick={() => closeAndGo(tab.id)} className={`w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all ${activeTab === tab.id ? 'bg-[#f2bd46] text-black shadow-[0_0_30px_rgba(242,189,70,.18)]' : 'text-gray-300 hover:bg-white/[0.045] hover:text-white'}`}><span className="shrink-0">{tab.icon}</span><span className="font-black text-sm leading-tight">{tab.label}</span></button>)}
-            </nav>
-            <div className="p-3 border-t border-white/10"><button onClick={onLogout} className="w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3 bg-red-500/10 border border-red-500/20 text-red-300 font-black"><LogOut size={18}/> Sair</button></div>
-        </>
-    );
+    const ProductManager = () => {
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const [filterCategory, setFilterCategory] = React.useState('all');
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const itemsPerPage = 10; // 10 produtos por página
+    
+    // 1. Filtragem (Lógica 100% Intocada)
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = (product.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = filterCategory === 'all' || !filterCategory || product.category === filterCategory;
+        return matchesSearch && matchesCategory;
+    });
+    
+    // 2. Paginação (Lógica 100% Intocada)
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+    // Resetar página quando filtrar
+    React.useEffect(() => { setCurrentPage(1); }, [searchQuery, filterCategory]);
+
+    const nextPage = () => { if (currentPage < totalPages) setCurrentPage(prev => prev + 1); };
+    const prevPage = () => { if (currentPage > 1) setCurrentPage(prev => prev - 1); };
+
+    // ==============================================
+    // --- ANIMAÇÕES E CLASSES PREMIUM ---
+    // ==============================================
+    const keyframes = `
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-surgir {
+            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
+    `;
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white relative overflow-x-hidden">
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,.04); border-radius: 999px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242,189,70,.35); border-radius: 999px; }
-                .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-            `}</style>
-            <CondoModal isOpen={isCondoModalOpen} onClose={handleCloseCondoModal} onSave={handleSaveCondo} condo={currentCondo} />
-            <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
-            <div className="fixed -top-40 -left-40 h-96 w-96 rounded-full bg-[#f2bd46]/10 blur-[140px] pointer-events-none"></div>
-            <div className="fixed -bottom-44 -right-44 h-[30rem] w-[30rem] rounded-full bg-[#f2bd46]/6 blur-[160px] pointer-events-none"></div>
-            <div className="lg:hidden sticky top-0 z-40 bg-black/80 backdrop-blur-2xl border-b border-white/10 px-3 py-3 flex items-center justify-between gap-3">
-                <button onClick={() => setIsMobileMenuOpen(true)} className="h-11 w-11 rounded-2xl bg-white/[0.045] border border-white/10 flex items-center justify-center"><Menu size={22}/></button>
-                <div className="flex items-center gap-2 min-w-0"><img src={BRAND_LOGO_URL} alt="Daniel Marques Market" className="h-9 w-auto object-contain"/><div className="min-w-0"><p className="text-[10px] text-[#f2bd46] font-black uppercase tracking-widest">{activeMeta.short}</p><p className="text-sm font-black text-white truncate">Painel do franqueado</p></div></div>
-                <button onClick={onLogout} className="h-11 w-11 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 flex items-center justify-center"><LogOut size={19}/></button>
+        <div className="flex flex-col gap-6 md:gap-8 pb-12 relative z-10">
+            <style>{keyframes}</style>
+
+            {/* --- HEADER --- */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
+                        Catálogo de Produtos
+                    </h2>
+                    <p className="text-gray-400 font-medium text-sm">Gerencie seu estoque, preços e disponibilidade</p>
+                </div>
+                <button 
+                    onClick={() => handleOpenProductModal()} 
+                    className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 md:py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 hover:-translate-y-0.5"
+                >
+                    <PlusCircle size={20} /> Novo Produto
+                </button>
             </div>
-            {isMobileMenuOpen && <div className="fixed inset-0 z-50 lg:hidden"><div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div><aside className="absolute inset-y-0 left-0 w-[86vw] max-w-sm bg-[#080808] border-r border-white/10 flex flex-col shadow-[30px_0_90px_rgba(0,0,0,.8)]"><button onClick={() => setIsMobileMenuOpen(false)} className="absolute right-3 top-3 h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center"><X size={20}/></button><SidebarContent /></aside></div>}
-            <div className="lg:flex min-h-screen">
-                <aside className="hidden lg:flex lg:w-80 xl:w-86 bg-black/65 border-r border-white/10 flex-col sticky top-0 h-screen"><SidebarContent /></aside>
-                <main className="flex-1 w-full px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8">
-                    {renderContent()}
-                </main>
-            </div>
-            <div className="fixed bottom-0 left-0 right-0 z-30 bg-black/88 backdrop-blur-2xl border-t border-white/10 p-2 lg:hidden">
-                <div className="grid grid-cols-5 gap-1">
-                    {tabs.slice(0,5).map(tab => <button key={tab.id} onClick={() => closeAndGo(tab.id)} className={`rounded-2xl py-2 flex flex-col items-center justify-center gap-1 ${activeTab === tab.id ? 'bg-[#f2bd46] text-black' : 'text-gray-400'}`}><span>{tab.icon}</span><span className="text-[9px] font-black leading-none">{tab.short}</span></button>)}
+            
+            {/* --- FILTROS RESPONSIVOS (Glassmorphism) --- */}
+            <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 relative overflow-hidden animate-surgir" style={{ animationDelay: '50ms' }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
+                
+                <div className="flex flex-col md:flex-row gap-5 items-end relative z-10">
+                    <div className="w-full md:flex-grow">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Pesquisar Produto</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Search className="text-gray-500" size={18} />
+                            </div>
+                            <input 
+                                type="text" 
+                                placeholder="Nome, marca..." 
+                                value={searchQuery} 
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 pl-11 pr-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all placeholder-gray-600"
+                            />
+                        </div>
+                    </div>
+                    <div className="w-full md:w-auto md:min-w-[280px]">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Filtrar por Categoria</label>
+                        <select 
+                            value={filterCategory} 
+                            onChange={(e) => setFilterCategory(e.target.value)} 
+                            className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer appearance-none"
+                        >
+                            <option value="all">Todas as Categorias</option>
+                            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                    </div>
                 </div>
             </div>
+
+            {isLoading && activeTab === 'products' ? (
+                <div className="flex flex-col justify-center items-center h-64 gap-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl animate-surgir">
+                    <Loader2 className="animate-spin text-[#f2bd46]" size={48} />
+                    <span className="text-gray-400 font-bold tracking-widest text-sm animate-pulse">CARREGANDO CATÁLOGO...</span>
+                </div>
+            ) : (
+                <div className="animate-surgir" style={{ animationDelay: '100ms' }}>
+                    
+                    {/* --- VISÃO PC (Tabela Premium Glassmorphism) --- */}
+                    <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left whitespace-nowrap">
+                                <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                    <tr>
+                                        <th className="p-5">Produto</th>
+                                        <th className="p-5">Categoria</th>
+                                        <th className="p-5">Preço Venda</th>
+                                        <th className="p-5 text-center">Promoção</th>
+                                        <th className="p-5 text-center">Estoque Total</th>
+                                        <th className="p-5 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800/80">
+                                    {currentItems.length > 0 ? currentItems.map(product => (
+                                        <tr key={product.id} className="hover:bg-white/5 transition-colors duration-300">
+                                            <td className="p-5 flex items-center gap-4">
+                                                <img src={product.image_url || 'https://placehold.co/100x100/1a1a1a/4B5563?text=Img'} className="h-12 w-12 rounded-xl object-cover border border-gray-700/50 shadow-sm" alt={product.name}/>
+                                                <span className="font-extrabold text-white text-base truncate max-w-[200px]">{product.name}</span>
+                                            </td>
+                                            <td className="p-5 text-gray-400 font-medium">
+                                                <span className="bg-gray-800/50 px-3 py-1 rounded-full text-xs border border-gray-700/50">{product.category || 'Sem Categoria'}</span>
+                                            </td>
+                                            <td className="p-5">
+                                                {product.promotional_price ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs text-gray-500 line-through mb-0.5">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
+                                                        <span className="text-green-400 font-black tracking-tight text-lg shadow-green-400/20 drop-shadow-md">R$ {parseFloat(product.promotional_price).toFixed(2)}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-white font-black tracking-tight text-lg">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
+                                                )}
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                {product.promotional_price ? (
+                                                    <span className="bg-green-500/10 text-green-400 border border-green-500/30 text-[10px] px-3 py-1.5 rounded-full font-black tracking-widest">ATIVA</span>
+                                                ) : (
+                                                    <span className="text-gray-600">-</span>
+                                                )}
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <span className={`px-3 py-1.5 rounded-full text-xs font-black border ${product.global_stock <= 5 ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-gray-800/50 text-white border-gray-700/50'}`}>
+                                                    {product.global_stock} un.
+                                                </span>
+                                            </td>
+                                            <td className="p-5 flex justify-center gap-2">
+                                                <button onClick={() => handleOpenProductModal(product)} className="text-blue-400 bg-blue-400/10 hover:bg-blue-400/20 border border-blue-400/20 p-2.5 rounded-xl transition-all"><Edit size={18}/></button>
+                                                <button onClick={() => handleDeleteProduct(product.id)} className="text-red-400 bg-red-400/10 hover:bg-red-400/20 border border-red-400/20 p-2.5 rounded-xl transition-all"><Trash2 size={18}/></button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr><td colSpan="6" className="text-center p-12 text-gray-500 font-medium">Nenhum produto encontrado.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* --- VISÃO MOBILE (Cards Premium Reestilizados) --- */}
+                    <div className="md:hidden flex flex-col gap-4">
+                        {currentItems.length > 0 ? currentItems.map(product => (
+                            <div key={product.id} className="bg-black/40 backdrop-blur-xl p-5 rounded-2xl border border-gray-700/50 shadow-lg relative overflow-hidden flex flex-col">
+                                
+                                {/* Etiqueta de Promoção Absoluta */}
+                                {product.promotional_price && (
+                                    <div className="absolute top-0 right-0 bg-green-500/20 backdrop-blur-md border-b border-l border-green-500/30 text-green-400 text-[10px] font-black tracking-widest px-3 py-1.5 rounded-bl-xl z-10 shadow-sm">
+                                        OFERTA
+                                    </div>
+                                )}
+
+                                <div className="flex gap-4 items-start">
+                                    <img 
+                                        src={product.image_url || 'https://placehold.co/120x120/1a1a1a/4B5563?text=Foto'} 
+                                        className="h-24 w-24 rounded-xl object-cover border border-gray-700/50 shrink-0 shadow-md" 
+                                        alt={product.name}
+                                    />
+                                    <div className="flex-1 min-w-0 flex flex-col pt-1">
+                                        <h3 className="font-extrabold text-white text-lg tracking-tight leading-tight mb-1">{product.name}</h3>
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{product.category || 'Sem Categoria'}</p>
+                                        
+                                        <div className="flex items-end justify-between mt-auto">
+                                            <div className="flex flex-col">
+                                                {product.promotional_price ? (
+                                                    <>
+                                                        <span className="text-[10px] text-gray-500 line-through mb-0.5">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
+                                                        <span className="text-xl font-black text-green-400 tracking-tight leading-none drop-shadow-md">R$ {parseFloat(product.promotional_price).toFixed(2)}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-xl font-black text-white tracking-tight leading-none">R$ {parseFloat(product.sale_price).toFixed(2)}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Indicadores e Ações na parte inferior do Card */}
+                                <div className="mt-4 pt-4 border-t border-gray-800/80 flex flex-col gap-3">
+                                    <div className="flex justify-between items-center bg-black/60 border border-gray-800 p-3 rounded-xl shadow-inner">
+                                        <span className="text-xs font-bold text-gray-400 uppercase">Estoque:</span>
+                                        <span className={`px-2 py-1 rounded-md text-xs font-black ${product.global_stock <= 5 ? 'bg-red-500/20 text-red-400' : 'bg-gray-800 text-white'}`}>
+                                            {product.global_stock} unidades
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex gap-3">
+                                        <button 
+                                            onClick={() => handleOpenProductModal(product)} 
+                                            className="flex-1 bg-transparent border border-blue-500/40 text-blue-400 hover:bg-blue-500/10 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all"
+                                        >
+                                            <Edit size={16} /> Editar
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteProduct(product.id)} 
+                                            className="flex-1 bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all"
+                                        >
+                                            <Trash2 size={16} /> Apagar
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )) : (
+                            <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium">
+                                Nenhum produto encontrado.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- PAGINAÇÃO (Visível em Mobile e Desktop) --- */}
+                    {filteredProducts.length > itemsPerPage && (
+                        <div className="mt-6 bg-black/60 backdrop-blur-2xl p-4 sm:px-6 rounded-2xl border border-gray-700/80 shadow-xl flex justify-between items-center">
+                            <span className="text-xs sm:text-sm text-gray-400 font-medium">
+                                Página <span className="text-white font-black bg-gray-800 px-2 py-1 rounded">{currentPage}</span> de {totalPages}
+                            </span>
+                            <div className="flex gap-2 sm:gap-3">
+                                <button 
+                                    onClick={prevPage} 
+                                    disabled={currentPage === 1}
+                                    className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === 1 ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600 shadow-md'}`}
+                                >
+                                    Anterior
+                                </button>
+                                <button 
+                                    onClick={nextPage} 
+                                    disabled={currentPage === totalPages}
+                                    className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-[#f2bd46] text-black hover:bg-[#e0af40] border border-[#f2bd46]/50 shadow-[0_0_10px_rgba(242,189,70,0.2)]'}`}
+                                >
+                                    Próxima
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
-}
-;
+};
+    
+    const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
+        const handleRemoteUnlock = async (fridgeId) => {
+            if (!fridgeId) {
+                alert('Este condomínio não tem um ID de geladeira definido.');
+                return;
+            }
+            if (window.confirm(`Tem a certeza que quer destravar remotamente a geladeira ${fridgeId}?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/api/admin/fridges/${fridgeId}/unlock`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) throw new Error('Falha ao enviar comando.');
+                    alert('Comando de desbloqueio enviado com sucesso!');
+                } catch (err) {
+                    alert(err.message);
+                }
+            }
+        };
+
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
+                    <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <PlusCircle size={20} /> Novo Condomínio
+                    </button>
+                </div>
+                {isLoading && activeTab === 'condominiums' ? <Loader2 className="animate-spin" /> : (
+                    <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-[#1a1a1a]">
+                                <tr>
+                                    <th className="p-4">Nome</th>
+                                    <th className="p-4">ID da Geladeira</th>
+                                    <th className="p-4">Nº de Usuários</th>
+                                    <th className="p-4">Itens em Estoque</th>
+                                    <th className="p-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {condominiums.map(condo => (
+                                    <tr key={condo.id} className="border-b border-gray-700">
+                                        <td className="p-4">{condo.name}</td>
+                                        <td className="p-4 font-mono">{condo.fridge_id}</td>
+                                        <td className="p-4 text-center">{condo.user_count}</td>
+                                        <td className="p-4 text-center">{condo.item_count}</td>
+                                        <td className="p-4 flex gap-2">
+                                            <button onClick={() => handleRemoteUnlock(condo.fridge_id)} className="text-green-400 hover:text-green-300 p-2" title="Destravar Remotamente">
+                                                <KeyRound size={18} />
+                                            </button>
+                                            <button onClick={() => onEdit(condo)} className="text-blue-400 hover:text-blue-300 p-2" title="Editar">
+                                                <Edit size={18} />
+                                            </button>
+                                            <button onClick={() => onDelete(condo.id)} className="text-red-400 hover:text-red-300 p-2" title="Apagar">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // --- FUNÇÃO RENDERCONTENT ---
+    const renderContent = () => {
+        const isMainLoading = (isLoading && (products.length === 0 || condominiums.length === 0));
+        if (isMainLoading) return <div className="flex justify-center items-center h-full"><Loader2 className="w-12 h-12 text-[#f2bd46] animate-spin" /></div>;
+        if (error) return <div className="text-red-400 bg-red-900/20 p-4 rounded-lg">Erro: {error}</div>;
+        
+        switch (activeTab) {
+            case 'dashboard': return <AdminDashboardPage token={token} setActiveTab={setActiveTab} />;
+            case 'sales': return <EntradasVendasPage condominiums={condominiums} token={token} />;
+            case 'central-cashier': return <CentralCashierPage token={token} />;
+            case 'critical-stock': return <CriticalStockPage condominiums={condominiums} token={token} />;
+            case 'users': return <UserManagementPage condominiums={condominiums} token={token} />;
+            case 'stock': return <StockManagement condominiums={condominiums} products={products} token={token} />;
+            case 'condominiums': return <CondoManager condominiums={condominiums} onAddNew={handleOpenCondoModal} onEdit={handleOpenCondoModal} onDelete={handleDeleteCondo} token={token} />;
+            case 'products': return <ProductManager />; 
+            case 'finance': return <FinanceReport condominiums={condominiums} token={token} />;
+            default: return <div>Selecione uma opção</div>;
+        }
+    };
+
+    // Função para fechar o menu ao clicar num link (mobile)
+    const handleNavClick = (tab) => {
+        setActiveTab(tab);
+        setIsMobileMenuOpen(false);
+    };
+
+    return (
+        <div className="flex flex-col md:flex-row min-h-screen bg-black text-white">
+            <CondoModal isOpen={isCondoModalOpen} onClose={handleCloseCondoModal} onSave={handleSaveCondo} condo={currentCondo} />
+            <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
+            
+            {/* --- HEADER MOBILE (Novo) --- */}
+            <div className="md:hidden bg-[#1a1a1a] p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
+                <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-[#f2bd46]">DM</span>
+                    <span className="text-xl font-light">Admin</span>
+                </div>
+                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">
+                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                </button>
+            </div>
+
+            {/* --- OVERLAY PARA MOBILE --- */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
+            )}
+            
+            {/* --- SIDEBAR RESPONSIVA --- */}
+            <aside className={`
+                fixed inset-y-0 left-0 z-40 w-64 bg-[#1a1a1a] p-4 flex flex-col shrink-0 border-r border-gray-700
+                transform transition-transform duration-300 ease-in-out
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                md:translate-x-0 md:static md:block
+            `}>
+                <div className="text-center mb-8 hidden md:block">
+                    <span className="text-2xl font-bold text-[#f2bd46]">DM</span><span className="text-2xl font-light text-white">24h</span>
+                    <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Painel Admin</p>
+                </div>
+                
+                <nav className="flex flex-col gap-1 flex-grow overflow-y-auto">
+                    <NavButton active={activeTab === 'dashboard'} onClick={() => handleNavClick('dashboard')} icon={<LayoutDashboard size={20} />} label="Dashboard" />
+                    <NavButton active={activeTab === 'sales'} onClick={() => handleNavClick('sales')} icon={<DollarSign size={20} />} label="Entradas e Vendas" />
+                    <NavButton active={activeTab === 'central-cashier'} onClick={() => handleNavClick('central-cashier')} icon={<PiggyBank size={20} />} label="Caixa Central" />
+                    
+                    <div className="my-2 border-t border-gray-700/50"></div>
+                    
+                    <NavButton active={activeTab === 'products'} onClick={() => handleNavClick('products')} icon={<Package size={20} />} label="Catálogo Produtos" />
+                    <NavButton active={activeTab === 'stock'} onClick={() => handleNavClick('stock')} icon={<ShoppingCart size={20} />} label="Estoque Geral" />
+                    <NavButton active={activeTab === 'critical-stock'} onClick={() => handleNavClick('critical-stock')} icon={<AlertTriangle size={20} />} label="Validade / Críticos" />
+                    
+                    <div className="my-2 border-t border-gray-700/50"></div>
+
+                    <NavButton active={activeTab === 'condominiums'} onClick={() => handleNavClick('condominiums')} icon={<Building2 size={20} />} label="Condomínios" />
+                    <NavButton active={activeTab === 'users'} onClick={() => handleNavClick('users')} icon={<UsersIcon size={20} />} label="Utilizadores" />
+                    <NavButton active={activeTab === 'finance'} onClick={() => handleNavClick('finance')} icon={<BarChart size={20} />} label="Relatórios" />
+                </nav>
+                
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                    <button onClick={onLogout} className="flex items-center w-full gap-3 p-3 rounded-md text-red-400 hover:bg-red-500/10 transition">
+                        <LogOut size={20} /> Sair
+                    </button>
+                </div>
+            </aside>
+            
+            {/* --- MAIN CONTENT --- */}
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+                {renderContent()}
+            </main>
+        </div>
+    )
+};
 
 // Componente auxiliar para os botões do menu ficarem mais limpos
 const NavButton = ({ active, onClick, icon, label }) => (
@@ -8069,7 +7772,7 @@ const MyTicketsPage = ({ setPage }) => {
                         >
                             <ArrowLeft size={22} />
                         </button>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meus <span className="text-[#f2bd46]">Ajuda</span></h1>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Meus <span className="text-[#f2bd46]">Tiquetes</span></h1>
                     </div>
                 </header>
                 
@@ -8429,7 +8132,165 @@ const UserEditModal = ({ user, isOpen, onClose, onSave, token }) => {
     );
 };
 
-// Crédito removido da experiência do cliente final.
+const CreditPage = ({ user, setPage, setPaymentData, setPaymentMethod }) => {
+    // ESTADO: 'summary' irá guardar os dados completos vindos do backend.
+    const [summary, setSummary] = React.useState(null);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [error, setError] = React.useState('');
+
+    // EFEITO: Busca os dados do backend assim que a página carrega.
+    React.useEffect(() => {
+        const fetchSummary = async () => {
+            setIsLoading(true);
+            const token = localStorage.getItem('token');
+            try {
+                // Chama a nova rota '/api/credit/summary'
+                const response = await fetch(`${API_URL}/api/credit/summary`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Falha ao carregar dados de crédito.');
+                const data = await response.json();
+                setSummary(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSummary();
+    }, []); // O array vazio [] garante que isto só executa uma vez.
+
+    const handlePayInvoice = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/credit/pay-invoice`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Falha ao gerar PIX da fatura.');
+            }
+            
+            setPaymentData(data);
+            setPaymentMethod('pix');
+            setPage('payment');
+
+        } catch (err) {
+            setError(err.message);
+            alert(`Erro na comunicação com o servidor: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Estado de Carregamento
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-black flex justify-center items-center">
+                <Loader2 className="animate-spin text-[#f2bd46]" size={48} />
+            </div>
+        );
+    }
+    
+    // Estado de Erro
+    if (error || !summary) {
+        return (
+             <div className="min-h-screen bg-black text-white">
+                <header className="bg-[#1a1a1a] shadow-md">
+                    <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+                        <button onClick={() => setPage('home')} className="text-[#f2bd46] hover-text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
+                        <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
+                    </div>
+                </header>
+                 <main className="container mx-auto p-4 md:p-8 max-w-2xl text-center">
+                     <p className="text-red-400">{error || "Não foi possível carregar as informações."}</p>
+                 </main>
+             </div>
+        );
+    }
+
+    // Calcula a percentagem de uso com base nos dados do backend
+    const usagePercentage = summary.creditLimit > 0 ? (summary.creditUsed / summary.creditLimit) * 100 : 0;
+
+    return (
+        <div className="min-h-screen bg-black text-white">
+            <header className="bg-[#1a1a1a] shadow-md">
+                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+                    <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
+                    <h1 className="text-2xl font-bold">Meu Crédito SmartFridge</h1>
+                </div>
+            </header>
+            <main className="container mx-auto p-4 md:p-8 max-w-2xl">
+                <div className="bg-[#1a1a1a] p-6 rounded-lg">
+                     <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-6 rounded-xl shadow-lg text-white">
+                         <div className="flex justify-between items-start">
+                             <div>
+                                 <p className="text-sm opacity-80">SmartFridge</p>
+                                 <p className="font-bold text-lg">Crédito</p>
+                             </div>
+                             <CreditCard size={32} />
+                         </div>
+                         <div className="mt-6">
+                             <p className="text-sm opacity-80">Dívida Total (Faturas + Gastos)</p>
+                             <p className="text-3xl font-bold">R$ {summary.creditUsed.toFixed(2).replace('.', ',')}</p>
+                         </div>
+                         <div className="mt-2 flex justify-between items-end">
+                             <div>
+                                 <p className="text-xs opacity-80">Limite Disponível</p>
+                                 <p className="font-semibold">R$ {summary.availableCredit.toFixed(2).replace('.', ',')}</p>
+                             </div>
+                             <p className="text-xs opacity-80">Vencimento: {summary.dueDate ? new Date(summary.dueDate).toLocaleDateString('pt-BR') : 'N/D'}</p>
+                         </div>
+                     </div>
+                     <div className="mt-4">
+                         <div className="w-full bg-[#1a1a1a] rounded-full h-2.5">
+                             <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: `${usagePercentage}%` }}></div>
+                         </div>
+                         <div className="flex justify-between text-xs mt-1 text-gray-400">
+                             <span>Gasto Total: R$ {summary.creditUsed.toFixed(2).replace('.', ',')}</span>
+                             <span>Limite Total: R$ {summary.creditLimit.toFixed(2).replace('.', ',')}</span>
+                         </div>
+                     </div>
+                </div>
+
+                <div className="bg-[#1a1a1a] p-6 rounded-lg mt-8">
+                    <h3 className="text-xl font-bold mb-4">Pagar Fatura</h3>
+                    {summary.totalToPay > 0 ? (
+                        <>
+                            <div className="space-y-2 text-gray-300 mb-4 border-b border-gray-700 pb-4">
+                                <p className="flex justify-between"><span>Faturas Pendentes:</span> <span>R$ {summary.pendingInvoicesAmount.toFixed(2).replace('.', ',')}</span></p>
+                                <p className="flex justify-between"><span>Gastos do ciclo atual:</span> <span>R$ {summary.currentSpending.toFixed(2).replace('.', ',')}</span></p>
+                                <p className="flex justify-between"><span>Taxa de Serviço (10%):</span> <span>R$ {summary.serviceFee.toFixed(2).replace('.', ',')}</span></p>
+                                {summary.interest > 0 && (
+                                     <p className="flex justify-between text-red-400"><span>Juros por Atraso:</span> <span>R$ {summary.interest.toFixed(2).replace('.', ',')}</span></p>
+                                )}
+                                <p className="flex justify-between text-white font-bold text-lg mt-2 pt-2 border-t border-gray-600"><span>Total a Pagar:</span> <span>R$ {summary.totalToPay.toFixed(2).replace('.', ',')}</span></p>
+                            </div>
+                            <button
+                                onClick={handlePayInvoice}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <Loader2 className="animate-spin" /> : <> <QrCode/> Gerar PIX para Pagamento</>}
+                            </button>
+                        </>
+                    ) : (
+                        <p className="text-center text-gray-400">Sua fatura está zerada. Nenhum pagamento é necessário.</p>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+};
+
+// App.js -> Substitua o seu componente HistoryPage por este
 
 const HistoryPage = ({ setPage, token, showToast }) => {
     // === ESTADOS ===
@@ -8498,12 +8359,12 @@ const HistoryPage = ({ setPage, token, showToast }) => {
         const transactions = historyData.transactions || [];
         
         // 1. Listas (para as abas)
-        const purchases = transactions.filter(tx => tx.type === 'purchase' && tx.items?.length > 0);
-        const walletActivity = transactions.filter(tx => tx.type !== 'purchase' && tx.type !== 'credit_purchase' && tx.type !== 'invoice_payment');
+        const purchases = transactions.filter(tx => (tx.type === 'purchase' || tx.type === 'credit_purchase') && tx.items?.length > 0);
+        const walletActivity = transactions.filter(tx => tx.type !== 'purchase' && tx.type !== 'credit_purchase');
         
         // 2. Cálculos de Resumo (para os cards)
         const totalPurchases = transactions
-            .filter(tx => tx.type === 'purchase')
+            .filter(tx => tx.type === 'purchase' || tx.type === 'credit_purchase')
             .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
         
         const totalWalletIn = transactions
@@ -8511,7 +8372,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
             .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
             
         const totalWalletOut = transactions
-            .filter(tx => tx.type === 'purchase' || tx.type === 'transfer_out')
+            .filter(tx => tx.type === 'purchase' || tx.type === 'credit_purchase' || tx.type === 'transfer_out')
             .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
         
         return { 
@@ -8787,7 +8648,7 @@ const HistoryPage = ({ setPage, token, showToast }) => {
 };
 
 export default function App() {
-    const [page, setPage] = React.useState('login');
+    const [page, setPage] = React.useState('home');
     const [user, setUser] = React.useState(null);
     const [cart, setCart] = React.useState([]);
     const [paymentData, setPaymentData] = React.useState(null);
@@ -8829,7 +8690,7 @@ export default function App() {
         localStorage.removeItem('token');
         localStorage.removeItem('adminToken');
         localStorage.removeItem('savedFridgeId'); 
-        setPage('login');
+        setPage('home');
     };
     
     // ==========================================================
@@ -8881,8 +8742,12 @@ export default function App() {
 
                 const token = localStorage.getItem('token');
                 const adminToken = localStorage.getItem('adminToken');
+                const forceLogin = new URLSearchParams(window.location.search).get('admin') === '1';
                 
-                if (adminToken) {
+                if (forceLogin && !adminToken) {
+                    setUser(null);
+                    setPage('login');
+                } else if (adminToken) {
                     setUser({ name: "Admin" });
                     setPage('admin');
                 } else if (token) {
@@ -8892,8 +8757,21 @@ export default function App() {
                         setUser(userData);
                         setFridgeAndGoHome(userData, condosData);
                     } else {
-                        handleLogout();
+                        localStorage.removeItem('token');
+                        const urlFridgeId = new URLSearchParams(window.location.search).get('fridgeId');
+                        const savedFridgeId = urlFridgeId || localStorage.getItem('savedFridgeId');
+                        const selectedCondo = condosData.find(c => c.fridge_id === savedFridgeId) || condosData[0];
+                        setUser(buildGuestUser(selectedCondo));
+                        setFridgeId(selectedCondo?.fridge_id || null);
+                        setPage('home');
                     }
+                } else {
+                    const urlFridgeId = new URLSearchParams(window.location.search).get('fridgeId');
+                    const savedFridgeId = urlFridgeId || localStorage.getItem('savedFridgeId');
+                    const selectedCondo = condosData.find(c => c.fridge_id === savedFridgeId) || condosData[0];
+                    setUser(buildGuestUser(selectedCondo));
+                    setFridgeId(selectedCondo?.fridge_id || null);
+                    setPage('home');
                 }
             } catch (error) {
                 console.error("Falha ao inicializar a aplicação:", error);
@@ -8914,8 +8792,8 @@ export default function App() {
             localStorage.removeItem('savedFridgeId');
         }
         setCart([]);
-        if (user.condoId !== selectedCondo.id) {
-             setUser(prevUser => ({ ...prevUser, condoId: selectedCondo.id }));
+        if (user?.condoId !== selectedCondo.id) {
+             setUser(prevUser => ({ ...(prevUser || buildGuestUser(selectedCondo)), condoId: selectedCondo.id }));
         }
         setFridgeId(selectedCondo.fridge_id);
         setPage('home'); 
@@ -8962,11 +8840,6 @@ export default function App() {
     
     // O roteador principal
     const renderPage = () => {
-        // Se não estiver logado, força o login
-        if (!user && !['login', 'register', 'forgot-password', 'admin'].includes(page)) {
-            return <LoginPage onLogin={handleLogin} onAdminLogin={handleAdminLogin} onSwitchToRegister={() => setPage('register')} setPage={setPage} />;
-        }
-        
         // --- CORREÇÃO 3: REMOVIDO O 'IF' QUE FORÇAVA O 'fridgeSelection' ---
         // if (user && user.name !== "Admin" && !fridgeId && !['fridgeSelection', 'admin'].includes(page)) {
         //      return <FridgeSelectionPage onCondoSelected={handleCondoSelect} setPage={setPage} user={user} onLogout={handleLogout} />;
@@ -8980,9 +8853,8 @@ export default function App() {
             case 'fridgeSelection': return <FridgeSelectionPage onCondoSelected={handleCondoSelect} setPage={setPage} user={user} onLogout={handleLogout} />;
             
             case 'home': 
-                return user
-                    ? <HomePage 
-                        user={user} 
+                return <HomePage 
+                        user={user || buildGuestUser(allCondos[0])} 
                         onLogout={handleLogout} 
                         cart={cart} 
                         setCart={setCart} 
@@ -8991,11 +8863,10 @@ export default function App() {
                         fridgeId={fridgeId} 
                         onCondoSelected={handleCondoSelect}
                         condos={allCondos}
-                      /> 
-                    : <LoginPage onLogin={handleLogin} onAdminLogin={handleAdminLogin} onSwitchToRegister={() => setPage('register')} setPage={setPage} />;
+                      />;
             
-            case 'cart': return <CartPage cart={cart} setCart={setCart} setPage={setPage} user={user} setPaymentData={setPaymentData} onPaymentSuccess={updateUserBalance} fridgeId={fridgeId} />;
-            case 'payment': return <PaymentPage paymentData={paymentData} setPage={setPage} paymentMethod={paymentMethod} user={user} cart={cart} onPaymentSuccess={updateUserBalance} setPaymentData={setPaymentData} fridgeId={fridgeId}/>;
+            case 'cart': return <CartPage cart={cart} setCart={setCart} setPage={setPage} user={user} setPaymentData={setPaymentData} setPaymentMethod={setPaymentMethod} fridgeId={fridgeId} />;
+            case 'payment': return <PaymentPage paymentData={paymentData} setPage={setPage} paymentMethod={paymentMethod} user={user} cart={cart} setCart={setCart} onPaymentSuccess={updateUserBalance} setPaymentData={setPaymentData} fridgeId={fridgeId}/>;
             case 'postPayment': return <PostPaymentStatusPage user={user} setPage={setPage} />;
             case 'my-account': return <MyAccountPage user={user} setPage={setPage} onAccountUpdate={handleAccountUpdate} onLogout={handleLogout} />;
             case 'changeCondo': return <ChangeCondoPage user={user} setPage={setPage} onCondoChanged={handleCondoChanged} />;
@@ -9004,22 +8875,17 @@ export default function App() {
             case 'wallet': return <WalletPage user={user} setPage={setPage} setPaymentData={setPaymentData} setDepositData={setDepositData} setPaymentMethod={setPaymentMethod} updateUserBalance={updateUserBalance} showToast={showToast} />;
             case 'card-deposit': return <CardDepositPage user={user} depositData={depositData} setPage={setPage} onPaymentSuccess={handleDepositSuccess} />;
             case 'my-tickets': return <MyTicketsPage setPage={setPage} />;
+            case 'credit': return <CreditPage user={user} setPage={setPage} setPaymentData={setPaymentData} setPaymentMethod={setPaymentMethod} />;
             case 'depositSuccess': return <DepositSuccessPage setPage={setPage} />;
             case 'history': return <HistoryPage setPage={setPage} token={localStorage.getItem('token')} showToast={showToast} />;
             
-            case 'login':
-            default: return <LoginPage onLogin={handleLogin} onAdminLogin={handleAdminLogin} onSwitchToRegister={() => setPage('register')} setPage={setPage} />;
+            case 'login': return <LoginPage onLogin={handleLogin} onAdminLogin={handleAdminLogin} onSwitchToRegister={() => setPage('register')} setPage={setPage} />;
+            default: return <HomePage user={user || buildGuestUser(allCondos[0])} onLogout={handleLogout} cart={cart} setCart={setCart} addToCart={addToCart} setPage={setPage} fridgeId={fridgeId} onCondoSelected={handleCondoSelect} condos={allCondos} />;
         }
     };
 
     return (
         <>
-            <style>{`
-                body { background: #000; }
-                .slick-dots li button:before { color: rgba(242,189,70,.9) !important; }
-                .slick-dots li.slick-active button:before { color: #f2bd46 !important; }
-                .slick-slider, .slick-list, .slick-track { border-radius: 1.5rem; overflow: hidden; }
-            `}</style>
             <Toast show={toast.show} message={toast.message} />
             <div className="flex flex-col min-h-screen bg-black text-white">
                 <main className="flex-grow">
