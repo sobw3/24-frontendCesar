@@ -345,7 +345,7 @@ const TransactionReceiptModal = ({ isOpen, onClose, transactionId, token }) => {
                                 <h3 className="font-bold text-lg text-gray-200 print:text-black mb-2">Detalhes do Destinatário</h3>
                                 <p className="flex justify-between"><strong className="text-gray-400 font-medium">Nome:</strong> <span>{details.recipient.name}</span></p>
                                 <p className="flex justify-between"><strong className="text-gray-400 font-medium">E-mail:</strong> <span>{details.recipient.email}</span></p>
-                                <p className="flex justify-between"><strong className="text-gray-400 font-medium">Condomínio:</strong> <span>{details.recipient.condominium_name}</span></p>
+                                <p className="flex justify-between"><strong className="text-gray-400 font-medium">Máquina:</strong> <span>{details.recipient.condominium_name}</span></p>
                             </div>
                         )}
                     </div>
@@ -521,771 +521,20 @@ const formatDate = (value) => {
 };
 
 const ForgotPasswordPage = ({ setPage }) => {
-    const [step, setStep] = React.useState(1);
-    const [cpf, setCpf] = React.useState('');
-    const [birthDate, setBirthDate] = React.useState('');
-    const [newPassword, setNewPassword] = React.useState('');
-    const [confirmPassword, setConfirmPassword] = React.useState('');
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [success, setSuccess] = React.useState('');
-
-    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-surgir {
-            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-    `;
-
-    // --- CLASSES DOS BOTÕES (Novo Design) ---
-    const neonButtonClassOrange = `
-        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
-
-    const neonButtonClassGreen = `
-        bg-[#22c55e] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
-
-    // Manutenção de Lógica Intacta
-    const handleDateChange = (e) => { setBirthDate(formatDate(e.target.value)); };
-
-    const handleVerifyUser = async (e) => {
-        e.preventDefault(); setIsLoading(true); setError('');
-        
-        const [day, month, year] = birthDate.split('/');
-        const birthDateForBackend = `${year}-${month}-${day}`;
-        
-        try {
-            const response = await fetch(`${API_URL}/api/auth/verify-user`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cpf: cpf, birth_date: birthDateForBackend })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha na verificação.');
-            setStep(2);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        if (newPassword !== confirmPassword) { setError('As senhas não coincidem.'); return; }
-        if (newPassword.length < 6) { setError('A nova senha deve ter pelo menos 6 caracteres.'); return; }
-        setIsLoading(true); setError(''); setSuccess('');
-        try {
-            const response = await fetch(`${API_URL}/api/auth/reset-password`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ cpf: cpf, newPassword })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha ao alterar a senha.');
-            setSuccess(data.message);
-            setTimeout(() => setPage('login'), 3000);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div 
-            className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
-            style={{
-                backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')`
-            }}
-        >
-            <style>{keyframes}</style>
-            
-            <div className="absolute inset-0 bg-black/80 z-0"></div>
-
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
-            
-            <div className="w-full max-w-md z-10">
-                <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir relative">
-                    
-                    <button 
-                        onClick={() => setPage('login')} 
-                        className="absolute top-6 left-6 text-gray-400 hover:text-[#f2bd46] flex items-center justify-center transition-colors bg-black/40 hover:bg-black/60 border border-gray-700/50 p-2 rounded-full backdrop-blur-sm"
-                        style={{ animationDelay: '100ms' }}
-                        title="Voltar para o Login"
-                    >
-                        <ArrowLeft size={20} /> 
-                    </button>
-                    
-                    <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '200ms' }}>
-                        <h2 className="text-2xl font-extrabold tracking-tight mb-1 text-white mt-4">
-                            Recuperar Senha
-                        </h2>
-                    </div>
-                    
-                    {step === 1 && (
-                        <form onSubmit={handleVerifyUser} className="animate-surgir" style={{ animationDelay: '300ms' }}>
-                            <p className="text-center text-gray-300 text-sm mb-6">Insira os seus dados para verificarmos a sua identidade.</p>
-                            
-                            <div className="mb-4 relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Seu CPF" 
-                                    value={cpf} 
-                                    onChange={(e) => setCpf(formatCPF(e.target.value))} 
-                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
-                                    required 
-                                />
-                            </div>
-                            
-                            <div className="mb-6 relative group">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Data de Nascimento (DD/MM/AAAA)"
-                                    value={birthDate} 
-                                    onChange={handleDateChange} 
-                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
-                                    required 
-                                />
-                            </div>
-                            
-                            {error && (
-                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
-                                    {error}
-                                </div>
-                            )}
-                            
-                            <button 
-                                type="submit" 
-                                className={`w-full ${neonButtonClassOrange}`} 
-                                disabled={isLoading}
-                            >
-                                {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Verificar Identidade'}
-                            </button>
-                        </form>
-                    )}
-                    
-                    {step === 2 && (
-                        <form onSubmit={handleResetPassword} className="animate-surgir" style={{ animationDelay: '300ms' }}>
-                            <p className="text-center text-green-400/90 text-sm mb-6 font-medium">Usuário verificado! Agora, crie uma nova senha.</p>
-                            
-                            <div className="mb-4 relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#22c55e] transition-colors duration-300" size={20} />
-                                <input 
-                                    type="password" 
-                                    placeholder="Nova senha (mín. 6 caracteres)" 
-                                    value={newPassword} 
-                                    onChange={(e) => setNewPassword(e.target.value)} 
-                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#22c55e]/70 focus:ring-1 focus:ring-[#22c55e]/70 transition-all duration-300" 
-                                    required 
-                                />
-                            </div>
-                            
-                            <div className="mb-6 relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#22c55e] transition-colors duration-300" size={20} />
-                                <input 
-                                    type="password" 
-                                    placeholder="Confirme a nova senha" 
-                                    value={confirmPassword} 
-                                    onChange={(e) => setConfirmPassword(e.target.value)} 
-                                    className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#22c55e]/70 focus:ring-1 focus:ring-[#22c55e]/70 transition-all duration-300" 
-                                    required 
-                                />
-                            </div>
-                            
-                            {error && (
-                                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
-                                    {error}
-                                </div>
-                            )}
-                            {success && (
-                                <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
-                                    {success}
-                                </div>
-                            )}
-                            
-                            <button 
-                                type="submit" 
-                                className={`w-full ${neonButtonClassGreen}`} 
-                                disabled={isLoading}
-                            >
-                                {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Alterar Senha'}
-                            </button>
-                        </form>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
+    React.useEffect(() => { setPage('home'); }, [setPage]);
+    return null;
 };
 
-// App.js -> SUBSTITUA o seu componente LoginPage por este
-
-const LoginPage = ({ onLogin, onAdminLogin, onSwitchToRegister, setPage }) => {
-    const [cpf, setCpf] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [showAdminModal, setShowAdminModal] = React.useState(false);
-    
-    // NOVO: Estado para controlar a tela de boas-vindas inicial
-    const [isIntro, setIsIntro] = React.useState(true);
-
-    // Efeito para remover a tela de boas-vindas (reduzido para 2.6s para ser mais dinâmico)
-    React.useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsIntro(false);
-        }, 2600); 
-        return () => clearTimeout(timer);
-    }, []);
-
-    const handleCpfChange = (e) => { setCpf(formatCPF(e.target.value)); };
-    
-    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-surgir {
-            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; backdrop-filter: blur(12px); }
-            to { opacity: 0; backdrop-filter: blur(0px); visibility: hidden; }
-        }
-        .animate-fadeout {
-            animation: fadeOut 0.6s ease-in-out forwards;
-        }
-        /* Nova Animação Cinematográfica para o Bem-Vindo */
-        @keyframes textFocus {
-            0% { filter: blur(10px); opacity: 0; transform: scale(0.95); }
-            100% { filter: blur(0px); opacity: 1; transform: scale(1); }
-        }
-        .animate-text-focus {
-            animation: textFocus 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-    `;
-    
-    // --- Classe do Botão Neon ---
-    const neonButtonClass = `
-        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
-    
-    const handleLoginSubmit = async (e) => {
-        e.preventDefault(); setIsLoading(true); setError('');
-        try {
-            const response = await fetch(`${API_URL}/api/auth/login`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cpf, password })
-            });
-            const data = await response.json();
-            if (!response.ok) { throw new Error(data.message || 'Erro ao fazer login.'); }
-            onLogin(data.token, data.user);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <>
-            {/* Modal de Admin */}
-            <AdminLoginModal show={showAdminModal} onClose={() => setShowAdminModal(false)} onAdminLogin={onAdminLogin} />
-            
-            {/* --- CONTAINER PRINCIPAL COM IMAGEM DE FUNDO --- */}
-            <div 
-                className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
-                style={{
-                    // Imagem de mercado desfocada/escura para dar contexto.
-                    backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')`
-                }}
-            >
-                <style>{keyframes}</style>
-                
-                {/* Overlay Escuro para garantir a leitura do texto e efeito Neon */}
-                <div className="absolute inset-0 bg-black/80 z-0"></div>
-
-                {/* Efeitos de luz no fundo (Ambient Glow) */}
-                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
-
-                {/* --- TELA DE INTRODUÇÃO (BOAS-VINDAS MINIMALISTA) --- */}
-                {isIntro ? (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md animate-fadeout" style={{ animationDelay: '2s' }}>
-                        <h1 className="text-4xl md:text-5xl font-light tracking-[0.2em] text-white animate-text-focus">
-                            BEM-VINDO
-                        </h1>
-                        <p className="text-[#f2bd46] mt-4 tracking-[0.3em] text-xs font-semibold animate-surgir" style={{ animationDelay: '600ms' }}>
-                            DANIEL MARQUES MARKET
-                        </p>
-                    </div>
-                ) : null}
-
-                {/* --- TELA DE LOGIN PRINCIPAL --- */}
-                {/* Só renderiza o conteúdo do form se a intro já estiver no fim ou finalizada */}
-                {!isIntro && (
-                    <div className="w-full max-w-md z-10">
-                        
-                        {/* Card de Vidro (Glassmorphism) Modernizado */}
-                        <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir">
-                            
-                            {/* --- Cabeçalho com Logo e Boas-vindas --- */}
-                            <div className="text-center mb-8 animate-surgir" style={{ animationDelay: '100ms' }}>
-                                <img 
-                                    src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
-                                    alt="Daniel Marques Market Logo" 
-                                    className="h-16 w-auto mx-auto mb-5 drop-shadow-[0_0_10px_rgba(242,189,70,0.2)]" 
-                                />
-                                <h1 className="text-2xl font-extrabold tracking-tight mb-1">
-                                    Acesse sua conta
-                                </h1>
-                                <p className="text-gray-300 text-sm">
-                                    Sua loja autônoma 24 horas
-                                </p>
-                            </div>
-                            
-                            <form onSubmit={handleLoginSubmit} className="animate-surgir" style={{ animationDelay: '200ms' }}>
-                                
-                                {/* Inputs com design refinado */}
-                                <div className="mb-4 relative group">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Seu CPF" 
-                                        value={cpf} 
-                                        onChange={handleCpfChange} 
-                                        className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
-                                        required 
-                                    />
-                                </div>
-                                
-                                <div className="mb-6 relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                    <input 
-                                        type="password" 
-                                        placeholder="Senha" 
-                                        value={password} 
-                                        onChange={(e) => setPassword(e.target.value)} 
-                                        className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" 
-                                        required 
-                                    />
-                                </div>
-                                
-                                {error && (
-                                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mb-4 animate-surgir">
-                                        {error}
-                                    </div>
-                                )}
-                                
-                                {/* Botão Principal */}
-                                <button 
-                                    type="submit" 
-                                    className={`w-full ${neonButtonClass}`} 
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin" size={22} /> : 'Entrar na Loja'}
-                                </button>
-                            </form>
-                            
-                            {/* Links de apoio */}
-                            <div className="flex flex-col items-center gap-3 mt-8 animate-surgir" style={{ animationDelay: '300ms' }}>
-                                <button onClick={() => setPage('forgot-password')} className="text-sm text-gray-300 hover:text-[#f2bd46] transition-colors font-medium drop-shadow-md">
-                                    Esqueci minha senha
-                                </button>
-                                <div className="w-full h-px bg-gray-700/60 my-1"></div>
-                                <button onClick={onSwitchToRegister} className="text-sm text-gray-200 hover:text-white transition-colors font-medium drop-shadow-md">
-                                    Não tem uma conta? <span className="text-[#f2bd46] font-bold">Cadastre-se</span>
-                                </button>
-                            </div>
-                            
-                            {/* Botão Admin Secreto/Discreto */}
-                            <div className="absolute top-4 right-4 animate-surgir" style={{ animationDelay: '400ms' }}>
-                                <button 
-                                    onClick={() => setShowAdminModal(true)} 
-                                    className="text-gray-500 hover:text-[#f2bd46] transition-colors p-2 rounded-full hover:bg-black/50 backdrop-blur-sm"
-                                    title="Acessar como Administrador"
-                                >
-                                    <Shield size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </>
-    );
+const LoginPage = ({ setPage }) => {
+    React.useEffect(() => { setPage('home'); }, [setPage]);
+    return null;
 };
 
-// App.js -> SUBSTITUA o seu componente RegisterPage por este
-
-const RegisterPage = ({ onRegister, onSwitchToLogin }) => {
-    const [step, setStep] = React.useState(1);
-    const [formData, setFormData] = React.useState({ name: '', cpf: '', email: '', phone_number: '', birthDate: '', apartmentBlock: '', apartmentNumber: '', password: '', confirmPassword: '', terms: false });
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [success, setSuccess] = React.useState('');
-
-    // --- DEFINIÇÃO DAS ANIMAÇÕES ---
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-surgir {
-            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-    `;
-    
-    // --- Classe do Botão Neon (Laranja) Atualizada ---
-    const neonButtonClassOrange = `
-        bg-[#f2bd46] text-black font-bold py-3.5 px-4 
-        flex items-center justify-center gap-2 rounded-xl
-        shadow-[0_0_15px_rgba(242,189,70,0.4)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] 
-        transition-all duration-300 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:shadow-none
-        transform hover:-translate-y-1 active:translate-y-0
-    `;
-
-    // --- Botão Secundário (Voltar) ---
-    const secondaryButtonClass = `
-        bg-black/40 hover:bg-black/60 border border-gray-700/50 
-        text-white font-medium py-3.5 px-5 rounded-xl transition-all duration-300
-        flex items-center gap-2 backdrop-blur-sm hover:text-[#f2bd46]
-    `;
-    
-    // --- LÓGICA MANTIDA INTACTA ---
-    const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
-    const handleCpfChange = (e) => { setFormData({ ...formData, cpf: formatCPF(e.target.value) }); };
-    const handlePhoneChange = (e) => { setFormData({ ...formData, phone_number: formatPhone(e.target.value) }); };
-    const handleDateChange = (e) => { setFormData({ ...formData, birthDate: formatDate(e.target.value) }); };
-
-    const handleRegisterSubmit = async () => {
-        setError('');
-        if (!validateCPF(formData.cpf)) { setError('CPF inválido.'); return; }
-        if (!validateEmail(formData.email)) { setError('Formato de e-mail inválido.'); return; }
-        setIsLoading(true); setSuccess('');
-
-        const [day, month, year] = formData.birthDate.split('/');
-        const birthDateForBackend = `${year}-${month}-${day}`;
-
-        try {
-            const response = await fetch(`${API_URL}/api/auth/register`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    name: formData.name, 
-                    cpf: formData.cpf, 
-                    email: formData.email, 
-                    phone_number: formData.phone_number, 
-                    password: formData.password, 
-                    birth_date: birthDateForBackend,
-                    apartment: `Bloco ${formData.apartmentBlock} - Apto ${formData.apartmentNumber}` 
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) { throw new Error(data.message || 'Erro ao criar conta.'); }
-            setSuccess('Conta criada! A fazer login...');
-            
-            onRegister(data.token, data.user); 
-
-        } catch (err) {
-            setError(err.message);
-            setIsLoading(false);
-        }
-    }
-    
-    const validateStep1 = () => {
-        if (!formData.name || !validateEmail(formData.email) || formData.cpf.length !== 14 || formData.phone_number.length < 14 || formData.birthDate.length !== 10) return false;
-        
-        const [day, month, year] = formData.birthDate.split('/');
-        if (!day || !month || !year || year.length !== 4) return false;
-        
-        const birthDate = new Date(`${year}-${month}-${day}T00:00:00`);
-        if (isNaN(birthDate.getTime())) return false; 
-        
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age >= 18;
-    }
-    
-    const validateStep2 = () => { 
-        return formData.apartmentBlock.trim() && formData.apartmentNumber.trim(); 
-    }
-    const validateStep3 = () => { return formData.password.length >= 6 && formData.password === formData.confirmPassword && formData.terms; }
-    
-    // ==========================================
-    // --- NOVO: FUNÇÕES DE SUPORTE E TUTORIAL ---
-    // ==========================================
-    const handleTutorialClick = () => {
-        // Substitua abaixo pelo link do seu vídeo do YouTube
-        const youtubeUrl = "https://www.youtube.com/watch?v=SEU_LINK_AQUI";
-        window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
-    };
-
-    const handleSupportClick = () => {
-        // Coloque o número do WhatsApp com DDI (55 para Brasil) e DDD. Ex: 5561992729183
-        const whatsappNumber = "5561992729183"; 
-        const message = "Olá! Estou com dificuldades para fazer meu cadastro no Daniel Marques Market. Podem me ajudar?";
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    };
-    // ==========================================
-
-    // --- DESIGN "DARK & NEON" REFINADO ---
-    return (
-        <div 
-            className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url('https://i.ibb.co/N2Hh8yjt/Chat-GPT-Image-12-de-mai-de-2026-10-20-15.png')` }}
-        >
-            <style>{keyframes}</style>
-            
-            {/* Overlay Escuro */}
-            <div className="absolute inset-0 bg-black/80 z-0"></div>
-
-            {/* Ambient Glow */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
-
-            {/* Card de Vidro (Glassmorphism) Modernizado */}
-            <div className="w-full max-w-xl z-10">
-                <div className="bg-black/50 backdrop-blur-xl border border-gray-700/50 p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] animate-surgir">
-                    
-                    {/* Cabeçalho */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-extrabold tracking-tight mb-2 text-white">Crie sua conta</h2>
-                        <p className="text-gray-300 text-sm">Siga as etapas para ter acesso à loja autônoma.</p>
-                    </div>
-                    
-                    {/* Barra de Progresso Estilizada */}
-                    <div className="w-full bg-black/60 border border-gray-800 rounded-full h-2 mb-8 overflow-hidden">
-                        <div 
-                            className="bg-[#f2bd46] h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(242,189,70,0.8)]" 
-                            style={{ width: `${(step / 3) * 100}%` }}
-                        ></div>
-                    </div>
-
-                    {/* Janela da animação */}
-                    <div className="overflow-hidden">
-                    
-                        {/* Trilho que desliza */}
-                        <div 
-                            className="flex transition-transform duration-500 ease-in-out" 
-                            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-                        >
-                            
-                            {/* --- ETAPA 1: DADOS PESSOAIS --- */}
-                            <div className="w-full flex-shrink-0 px-1">
-                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
-                                    <User size={20} /> 1. Informações Pessoais
-                                </h3>
-                                <div className="flex flex-col gap-4">
-                                    <div className="relative group">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input name="name" type="text" placeholder="Nome Completo" value={formData.name} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    <div className="relative group">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    <div className="relative group">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input type="text" placeholder="CPF" value={formData.cpf} onChange={handleCpfChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    <div className="relative group">
-                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input name="phone_number" type="tel" placeholder="Telefone (XX) XXXXX-XXXX" value={formData.phone_number} onChange={handlePhoneChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    <div>
-                                        <div className="relative group mt-1">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                            <input type="text" name="birthDate" placeholder="Data de Nascimento (DD/MM/AAAA)" value={formData.birthDate} onChange={handleDateChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-8 flex justify-end items-center">
-                                    <button 
-                                        onClick={() => setStep(step + 1)} 
-                                        disabled={!validateStep1()} 
-                                        className={`flex items-center gap-2 ${neonButtonClassOrange} px-8`}
-                                    >
-                                        Avançar <ArrowRight size={18} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            {/* --- ETAPA 2: ENDEREÇO --- */}
-                            <div className="w-full flex-shrink-0 px-1">
-                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
-                                    <Building2 size={20} /> 2. Endereço
-                                </h3>
-                                <div className="flex flex-col gap-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="relative group">
-                                            <label className="text-xs text-gray-400 mb-1.5 block font-medium uppercase tracking-wider">Bloco / Torre</label>
-                                            <Building2 className="absolute left-4 top-[65%] -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                            <input name="apartmentBlock" type="text" placeholder="Ex: A" value={formData.apartmentBlock} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                        </div>
-                                        <div className="relative group">
-                                            <label className="text-xs text-gray-400 mb-1.5 block font-medium uppercase tracking-wider">Apartamento</label>
-                                            <Home className="absolute left-4 top-[65%] -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                            <input name="apartmentNumber" type="text" placeholder="Ex: 101" value={formData.apartmentNumber} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-8 flex justify-between items-center">
-                                    <button 
-                                        onClick={() => setStep(step - 1)} 
-                                        className={secondaryButtonClass}
-                                    >
-                                        <ArrowLeft size={18} /> Voltar
-                                    </button>
-                                    <button 
-                                        onClick={() => setStep(step + 1)} 
-                                        disabled={!validateStep2()} 
-                                        className={`flex items-center gap-2 ${neonButtonClassOrange} px-8`}
-                                    >
-                                        Avançar <ArrowRight size={18} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            {/* --- ETAPA 3: SEGURANÇA --- */}
-                            <div className="w-full flex-shrink-0 px-1">
-                                <h3 className="text-lg font-bold mb-5 text-[#f2bd46] flex items-center gap-2">
-                                    <Shield size={20} /> 3. Segurança
-                                </h3>
-                                <div className="flex flex-col gap-4">
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input name="password" type="password" placeholder="Crie uma senha (mín. 6 caracteres)" value={formData.password} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f2bd46] transition-colors duration-300" size={20} />
-                                        <input name="confirmPassword" type="password" placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleChange} className="w-full bg-black/60 border border-gray-700/80 rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#f2bd46]/70 focus:ring-1 focus:ring-[#f2bd46]/70 transition-all duration-300" />
-                                    </div>
-                                    
-                                    <div className="flex items-center mt-2 bg-black/40 border border-gray-800 p-4 rounded-xl">
-                                        <input 
-                                            id="terms" 
-                                            name="terms" 
-                                            type="checkbox" 
-                                            checked={formData.terms} 
-                                            onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} 
-                                            className="h-5 w-5 text-[#f2bd46] bg-black border-gray-600 rounded focus:ring-[#f2bd46] focus:ring-offset-black accent-[#f2bd46]" 
-                                        />
-                                        <label htmlFor="terms" className="ml-3 text-sm text-gray-300 cursor-pointer select-none">
-                                            Eu declaro que as informações acima são verdadeiras.
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-8 flex justify-between items-center">
-                                    <button 
-                                        onClick={() => setStep(step - 1)} 
-                                        className={secondaryButtonClass}
-                                    >
-                                        <ArrowLeft size={18} /> Voltar
-                                    </button>
-                                    <button 
-                                        onClick={handleRegisterSubmit} 
-                                        disabled={!validateStep3() || isLoading} 
-                                        className={`flex items-center justify-center gap-2 px-8 ${neonButtonClassOrange}`}
-                                    >
-                                        {isLoading ? <Loader2 className="animate-spin" size={22} /> : <>Finalizar <Check size={18} /></>}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center py-2 px-3 rounded-lg mt-6 animate-surgir">
-                            {error}
-                        </div>
-                    )}
-                    {success && (
-                        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center py-2 px-3 rounded-lg mt-6 animate-surgir">
-                            {success}
-                        </div>
-                    )}
-                    
-                    {/* Botões de Rodapé e Ajuda */}
-                    <div className="mt-8 pt-6 border-t border-gray-700/50 flex flex-col gap-5">
-                        
-                        {/* Já tem conta */}
-                        <div className="text-center">
-                            <button 
-                                onClick={onSwitchToLogin} 
-                                className="text-sm text-gray-300 hover:text-white transition-colors font-medium drop-shadow-md"
-                            >
-                                Já tem uma conta? <span className="text-[#f2bd46] font-bold">Faça login</span>
-                            </button>
-                        </div>
-
-                        {/* --- NOVO: Banner Discreto de Suporte --- */}
-                        <div className="bg-black/40 border border-gray-700/50 rounded-2xl p-4 flex items-center justify-between gap-3 hover:border-[#f2bd46]/30 hover:bg-black/60 transition-all duration-300 group">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-[#f2bd46]/10 p-2.5 rounded-full text-[#f2bd46] group-hover:scale-110 transition-transform duration-300">
-                                    <Info size={22} />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-sm text-gray-200 font-semibold mb-1">Dificuldade no cadastro?</p>
-                                    <div className="flex flex-wrap gap-2 items-center">
-                                        <button 
-                                            type="button"
-                                            onClick={handleTutorialClick}
-                                            className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium"
-                                        >
-                                            Ver tutorial
-                                        </button>
-                                        <span className="text-gray-600 text-xs">•</span>
-                                        <button 
-                                            type="button"
-                                            onClick={handleSupportClick}
-                                            className="text-[13px] text-[#f2bd46] hover:text-white transition-colors flex items-center gap-1 font-medium"
-                                        >
-                                            Chamar suporte
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="hidden sm:flex text-gray-500 group-hover:text-[#f2bd46] transition-colors">
-                                <MessageSquare size={20} />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+const RegisterPage = ({ setPage }) => {
+    React.useEffect(() => { setPage('home'); }, [setPage]);
+    return null;
 };
+
 const BannerCarousel = () => {
     // Configurações do carrossel
     const settings = {
@@ -1432,30 +681,23 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                     </button>
                 </div>
                 <nav className="flex flex-col gap-3">
-                    <button onClick={() => setPage('wallet')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Wallet size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
-                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Carteira</span>
+                    <button onClick={() => { setShowMenu(false); setPage('home'); }} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Home size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div>
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Loja</span>
                     </button>
-                    <button onClick={() => setPage('history')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><History size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
-                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meu Histórico</span>
+                    <button onClick={() => { setShowMenu(false); setPage('cart'); }} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><ShoppingCart size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div>
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Carrinho</span>
                     </button>
-                    <button onClick={() => setPage('my-tickets')} className="flex items-center justify-between gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><Ticket size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
-                            <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Meus Tiquetes</span>
-                        </div>
-                        {unreadTickets > 0 && <span className="bg-red-500 text-xs font-bold text-white rounded-full h-6 w-6 flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.5)]">{unreadTickets}</span>}
-                    </button>
-                    <button onClick={() => setPage('my-account')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><User size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div> 
-                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Minha Conta</span>
+                    <button onClick={() => window.open('https://wa.me/5561992729183?text=Olá! Preciso de suporte em uma compra no Daniel Marques Market.', '_blank')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div className="bg-[#1a1a1a] p-2 rounded-lg group-hover:bg-[#f2bd46]/20 transition-colors"><MessageSquare size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></div>
+                        <span className="font-medium text-gray-200 group-hover:text-white transition-colors">Suporte</span>
                     </button>
                 </nav>
             </div>
-            <button onClick={onLogout} className="absolute bottom-6 left-6 right-6 flex items-center justify-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hover:bg-red-500/20 hover:border-red-500/40 transition-all">
-                <LogOut size={20} /> Sair do Aplicativo
-            </button>
+            <div className="absolute bottom-6 left-6 right-6 bg-[#f2bd46]/10 border border-[#f2bd46]/20 text-[#f2bd46] rounded-2xl p-4 text-xs leading-relaxed">
+                Compra sem cadastro: escolha, pague no carrinho e retire após a trava liberar.
+            </div>
         </div>
     );
     
@@ -1595,16 +837,11 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
             <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-[#f2bd46]/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
             <div className="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-[#f2bd46]/5 rounded-full blur-[150px] pointer-events-none z-0"></div>
             
-            <SideMenu />
-            {showMenu && <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowMenu(false)}></div>}
+            {/* Menu lateral removido no mobile: fluxo rápido, sem conta e sem atalhos antigos. */}
             
             <header className="sticky top-0 bg-black/70 backdrop-blur-xl border-b border-gray-800/60 shadow-lg z-30">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-5">
-                        <button onClick={() => setShowMenu(true)} className="md:hidden relative p-2 bg-black/40 border border-gray-700/50 rounded-xl hover:bg-white/10 transition-colors">
-                            <Menu size={22} />
-                            {unreadTickets > 0 && <span className="absolute -top-1 -right-1 bg-red-500 h-3 w-3 rounded-full border-2 border-black"></span>}
-                        </button>
                         <div className="cursor-pointer transition-transform hover:scale-105" onClick={() => setPage('home')}>
                             <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="SmartFridge Logo" className="h-16 w-auto drop-shadow-[0_0_10px_rgba(242,189,70,0.2)]" />
                         </div>
@@ -1642,6 +879,13 @@ const HomePage = ({ user, onLogout, cart, setCart, addToCart, setPage, fridgeId,
                                 <div className="h-8 w-px bg-gray-800 hidden md:block"></div>
                             </>
                         )}
+                        <button
+                            className="md:hidden relative p-2.5 bg-black/40 border border-gray-700/60 text-gray-300 hover:border-[#f2bd46]/40 hover:text-[#f2bd46] transition-all duration-300 rounded-xl"
+                            onClick={() => window.open('https://wa.me/5561992729183?text=Olá! Preciso de suporte no Daniel Marques Market.', '_blank')}
+                            title="Suporte WhatsApp"
+                        >
+                            <MessageSquare size={21} />
+                        </button>
                         <button className="relative p-2.5 bg-[#f2bd46]/10 border border-[#f2bd46]/30 text-[#f2bd46] hover:bg-[#f2bd46] hover:text-black transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(242,189,70,0.15)] group" onClick={() => setPage('cart')}>
                             <ShoppingCart size={22} className="group-hover:scale-110 transition-transform"/>
                             {totalItemsInCart > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center text-xs shadow-[0_0_10px_rgba(239,68,68,0.8)] border-2 border-black">{totalItemsInCart}</span>}
@@ -3259,65 +2503,44 @@ const MyAccountPage = ({ user, setPage, onAccountUpdate, onLogout }) => {
 };
 // App.js -> SUBSTITUA o seu componente Footer por este
 
-const Footer = () => {
-    // --- ESTADOS PARA OS MODAIS ---
-    const [modalContent, setModalContent] = React.useState(null);
 
-    // --- ANIMAÇÃO "SURGIR" REFINADA ---
+const Footer = ({ onAdminLogin }) => {
+    const [modalContent, setModalContent] = React.useState(null);
+    const [showAdminModal, setShowAdminModal] = React.useState(false);
+
     const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animate-surgir {
-            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-        .animate-fade-in {
-            animation: fade-in 0.3s ease-out forwards;
-        }
+        @keyframes surgir { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-surgir { animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
     `;
 
-    // --- AÇÕES ---
     const handleFranquiaClick = () => {
-        const whatsappNumber = "5561992729183"; // Coloque seu número aqui
-        const message = "Olá! Tenho interesse em ser dono de uma franquia do Daniel Marques Market. Podem me passar mais informações?";
+        const whatsappNumber = "5561992729183";
+        const message = "Olá! Tenho interesse em levar o Daniel Marques Market para condomínio, empresa ou evento. Podem me passar mais informações?";
         window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
-    // --- CONTEÚDOS DOS MODAIS ---
+    const InfoCard = ({ number, icon, title, children }) => (
+        <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
+            <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">{number}</div>
+            <h4 className="font-bold text-white flex items-center gap-2">{icon} {title}</h4>
+            <p className="text-xs text-gray-400 leading-relaxed">{children}</p>
+        </div>
+    );
+
     const renderModalContent = () => {
         switch (modalContent) {
             case 'como-comprar':
                 return (
                     <div className="flex flex-col gap-6">
                         <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><ShoppingCart size={28} /> Como Comprar</h2>
-                        <p className="text-gray-300 text-sm">Siga os passos abaixo para realizar suas compras de forma rápida e segura:</p>
+                        <p className="text-gray-300 text-sm">Compra rápida, sem cadastro e sem carteira digital. Você paga no carrinho e a máquina libera automaticamente após a confirmação.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
-                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">1</div>
-                                <h4 className="font-bold text-white flex items-center gap-2"><Wallet size={16} className="text-[#f2bd46]"/> Adicione Saldo</h4>
-                                <p className="text-xs text-gray-400">Deposite um saldo na sua carteira digital via PIX ou Cartão de Crédito.</p>
-                            </div>
-                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
-                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">2</div>
-                                <h4 className="font-bold text-white flex items-center gap-2"><Search size={16} className="text-[#f2bd46]"/> Escolha os Produtos</h4>
-                                <p className="text-xs text-gray-400">Navegue pelo catálogo da máquina selecionada e adicione itens ao carrinho.</p>
-                            </div>
-                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
-                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">3</div>
-                                <h4 className="font-bold text-white flex items-center gap-2"><CheckCircle2 size={16} className="text-[#f2bd46]"/> Pague e Libere</h4>
-                                <p className="text-xs text-gray-400">Finalize a compra com o seu saldo. A porta da geladeira será destrancada.</p>
-                            </div>
-                            <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50 flex flex-col gap-2">
-                                <div className="bg-[#f2bd46]/20 w-10 h-10 rounded-full flex items-center justify-center text-[#f2bd46] font-bold">4</div>
-                                <h4 className="font-bold text-white flex items-center gap-2"><Package size={16} className="text-[#f2bd46]"/> Retire os Itens</h4>
-                                <p className="text-xs text-gray-400">Abra a porta, retire exclusivamente os itens pagos e feche a porta. Bom proveito!</p>
-                            </div>
+                            <InfoCard number="1" icon={<QrCode size={16} className="text-[#f2bd46]"/>} title="Acesse pelo QR Code">Escaneie o QR Code da máquina ou escolha a máquina disponível no site.</InfoCard>
+                            <InfoCard number="2" icon={<Search size={16} className="text-[#f2bd46]"/>} title="Escolha os produtos">Adicione os itens ao carrinho e confira as quantidades antes de pagar.</InfoCard>
+                            <InfoCard number="3" icon={<CreditCard size={16} className="text-[#f2bd46]"/>} title="Pague na hora">Finalize por Pix ou cartão direto no carrinho, com processamento seguro pela Cielo.</InfoCard>
+                            <InfoCard number="4" icon={<Refrigerator size={16} className="text-[#f2bd46]"/>} title="Retire e feche">Após o pagamento aprovado, a trava libera. Retire apenas os itens pagos e feche a porta.</InfoCard>
                         </div>
                     </div>
                 );
@@ -3327,16 +2550,16 @@ const Footer = () => {
                         <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><Info size={28} /> Dúvidas Frequentes</h2>
                         <div className="flex flex-col gap-4">
                             <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
-                                <h4 className="font-bold text-white mb-1">Como peço reembolso?</h4>
-                                <p className="text-xs text-gray-400">Você pode abrir um chamado na aba "Meus Tiquetes" informando o ID da transação. Nossa equipe analisará rapidamente.</p>
+                                <h4 className="font-bold text-white mb-1">Preciso criar conta?</h4>
+                                <p className="text-xs text-gray-400">Não. O novo fluxo é sem cadastro: você escolhe os produtos, paga no carrinho e retira após a liberação.</p>
                             </div>
                             <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
                                 <h4 className="font-bold text-white mb-1">A porta não abriu, o que eu faço?</h4>
-                                <p className="text-xs text-gray-400">Verifique sua conexão com a internet. Se o problema persistir, chame o suporte pelo botão de WhatsApp ou abra um Tíquete.</p>
+                                <p className="text-xs text-gray-400">Guarde o comprovante do pagamento e chame o suporte pelo WhatsApp. A equipe verifica o pedido e a máquina.</p>
                             </div>
                             <div className="bg-[#1a1a1a]/50 p-4 rounded-xl border border-gray-700/50">
-                                <h4 className="font-bold text-white mb-1">Posso usar cartão de crédito direto?</h4>
-                                <p className="text-xs text-gray-400">Sim, você pode recarregar sua carteira virtual utilizando seu cartão de crédito com total segurança.</p>
+                                <h4 className="font-bold text-white mb-1">Posso pagar com cartão?</h4>
+                                <p className="text-xs text-gray-400">Sim. O cartão é processado pela Cielo. O sistema não armazena número do cartão nem CVV.</p>
                             </div>
                         </div>
                     </div>
@@ -3344,15 +2567,21 @@ const Footer = () => {
             case 'termos':
                 return (
                     <div className="flex flex-col gap-4">
-                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><FileText size={28} /> Termos de Uso</h2>
-                        <div className="h-64 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
-                            <p>Bem-vindo ao Daniel Marques Market. Ao utilizar nossos serviços, você concorda com as regras abaixo descritas.</p>
-                            <h4 className="font-bold text-white">1. Uso das Máquinas</h4>
-                            <p>O usuário concorda em retirar apenas os produtos que foram devidamente pagos através do aplicativo. Qualquer tentativa de fraude ou furto será tratada de acordo com as leis vigentes, com auxílio das câmeras de segurança.</p>
-                            <h4 className="font-bold text-white">2. Saldo na Carteira</h4>
-                            <p>Os valores depositados na carteira virtual são de uso exclusivo dentro do ecossistema Daniel Marques Market e não sofrem reajustes ou juros.</p>
-                            <h4 className="font-bold text-white">3. Responsabilidades</h4>
-                            <p>É responsabilidade do usuário fechar corretamente a porta da máquina após a retirada dos produtos. Danos ao equipamento por mau uso podem ser repassados ao usuário cadastrado.</p>
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><FileText size={28} /> Termos Institucionais e de Uso</h2>
+                        <div className="h-72 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
+                            <p>Bem-vindo ao Daniel Marques Market. Nosso fluxo é pensado para compra rápida em máquinas autônomas, eventos, condomínios e empresas. Ao utilizar a operação, você concorda com as regras de compra, pagamento, retirada, suporte e monitoramento descritas abaixo.</p>
+                            <h4 className="font-bold text-white">1. Compra sem cadastro</h4>
+                            <p>O fluxo de compra é rápido e não exige criação de conta pelo consumidor final. A compra é vinculada ao pedido gerado no carrinho, ao meio de pagamento escolhido e à máquina selecionada.</p>
+                            <h4 className="font-bold text-white">2. Pagamento direto no carrinho</h4>
+                            <p>Os pagamentos podem ser realizados por Pix ou cartão, conforme disponibilidade do sistema. A confirmação do pagamento é processada por provedor externo, como a Cielo, antes da liberação da trava.</p>
+                            <h4 className="font-bold text-white">3. Liberação da máquina</h4>
+                            <p>A porta é liberada apenas após confirmação do pagamento. O cliente deve retirar somente os produtos pagos no pedido e fechar a porta corretamente após a retirada.</p>
+                            <h4 className="font-bold text-white">4. Monitoramento e segurança</h4>
+                            <p>As áreas das máquinas podem ser monitoradas por vídeo para segurança operacional, prevenção de perdas e resolução de divergências de compra.</p>
+                            <h4 className="font-bold text-white">5. Divergências e suporte</h4>
+                            <p>Em caso de cobrança aprovada sem liberação, produto indisponível ou divergência na retirada, o cliente deve acionar o suporte pelo WhatsApp (61) 99272-9183 com comprovante e informações do pedido para análise.</p>
+                            <h4 className="font-bold text-white">6. Expansão, eventos e franquia</h4>
+                            <p>As informações institucionais sobre levar o Daniel Marques Market para condomínios, empresas, eventos ou operar uma franquia são comerciais e podem variar conforme estrutura, localização, demanda, contrato e disponibilidade técnica.</p>
                         </div>
                     </div>
                 );
@@ -3360,14 +2589,29 @@ const Footer = () => {
                 return (
                     <div className="flex flex-col gap-4">
                         <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><Shield size={28} /> Política de Privacidade</h2>
-                        <div className="h-64 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
-                            <p>Sua privacidade é nossa prioridade. Coletamos apenas as informações necessárias para garantir o funcionamento seguro do nosso mercado autônomo.</p>
-                            <h4 className="font-bold text-white">1. Dados Coletados</h4>
-                            <p>Coletamos nome, CPF, e-mail e telefone para identificação. Informações de pagamento são processadas diretamente por plataformas seguras (como o Mercado Pago) e não ficam armazenadas em nossos servidores.</p>
-                            <h4 className="font-bold text-white">2. Monitoramento</h4>
-                            <p>Para sua segurança e do condomínio/empresa, as áreas ao redor das máquinas possuem monitoramento por vídeo 24h.</p>
-                            <h4 className="font-bold text-white">3. Compartilhamento</h4>
-                            <p>Não vendemos ou compartilhamos seus dados pessoais com terceiros para fins publicitários sob nenhuma hipótese.</p>
+                        <div className="h-72 overflow-y-auto pr-2 text-sm text-gray-400 space-y-4 custom-scrollbar">
+                            <p>Coletamos somente as informações necessárias para processar pedidos, liberar máquinas, prestar suporte e proteger a operação.</p>
+                            <h4 className="font-bold text-white">1. Dados de pedido</h4>
+                            <p>Podemos registrar máquina, itens comprados, horário, valor, status de pagamento e identificadores da transação retornados pelo provedor de pagamento.</p>
+                            <h4 className="font-bold text-white">2. Dados de pagamento</h4>
+                            <p>Dados sensíveis de cartão são utilizados apenas para autorização da transação e não são armazenados pelo sistema Daniel Marques Market. O processamento é realizado por ambiente seguro do provedor de pagamento.</p>
+                            <h4 className="font-bold text-white">3. Monitoramento</h4>
+                            <p>As câmeras podem ser usadas para segurança da operação, suporte ao cliente e prevenção de perdas.</p>
+                            <h4 className="font-bold text-white">4. Compartilhamento</h4>
+                            <p>Não vendemos dados pessoais. Informações podem ser compartilhadas apenas quando necessário para pagamento, suporte, segurança, auditoria ou cumprimento legal.</p>
+                        </div>
+                    </div>
+                );
+            case 'institucional':
+                return (
+                    <div className="flex flex-col gap-5">
+                        <h2 className="text-2xl font-extrabold text-[#f2bd46] flex items-center gap-3"><Building2 size={28} /> Institucional</h2>
+                        <p className="text-sm text-gray-300 leading-relaxed">O Daniel Marques Market instala operações autônomas para venda rápida em condomínios, empresas e eventos, com máquinas conectadas, pagamento no carrinho, suporte operacional e monitoramento.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InfoCard number="01" icon={<Refrigerator size={16} className="text-[#f2bd46]"/>} title="Máquinas autônomas">Estrutura de venda 24h com estoque, pagamentos e destravamento integrados.</InfoCard>
+                            <InfoCard number="02" icon={<Calendar size={16} className="text-[#f2bd46]"/>} title="Eventos">Solução para bares, feiras, congressos, hotéis e pontos de alta rotatividade.</InfoCard>
+                            <InfoCard number="03" icon={<Building size={16} className="text-[#f2bd46]"/>} title="Condomínios e empresas">Instalação em locais com fluxo interno recorrente e atendimento sem fila.</InfoCard>
+                            <InfoCard number="04" icon={<Trophy size={16} className="text-[#f2bd46]"/>} title="Franquia">Possibilidade comercial para quem quer operar uma unidade Daniel Marques Market.</InfoCard>
                         </div>
                     </div>
                 );
@@ -3375,143 +2619,68 @@ const Footer = () => {
                 return null;
         }
     };
-    
+
     return (
-        // --- RODAPÉ REDESENHADO DO ZERO (Premium Corporate Glassmorphism) ---
         <footer className="relative mt-24 bg-black/90 backdrop-blur-3xl z-20 overflow-hidden text-left">
             <style>{keyframes}</style>
-            
-            {/* Modal Glassmorphism de Informações */}
+            <AdminLoginModal show={showAdminModal} onClose={() => setShowAdminModal(false)} onAdminLogin={onAdminLogin} />
             {modalContent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setModalContent(null)}></div>
                     <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-gray-700 shadow-[0_0_40px_rgba(0,0,0,0.8)] rounded-3xl p-6 md:p-8 animate-surgir">
-                        <button onClick={() => setModalContent(null)} className="absolute top-6 right-6 text-gray-400 hover:text-white bg-black/50 p-2 rounded-full transition-colors">
-                            <X size={24} />
-                        </button>
+                        <button onClick={() => setModalContent(null)} className="absolute top-6 right-6 text-gray-400 hover:text-white bg-black/50 p-2 rounded-full transition-colors"><X size={24} /></button>
                         {renderModalContent()}
-                        <div className="mt-8 flex justify-end">
-                            <button onClick={() => setModalContent(null)} className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-xl transition-colors font-bold">
-                                Fechar
-                            </button>
-                        </div>
+                        <div className="mt-8 flex justify-end"><button onClick={() => setModalContent(null)} className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-xl transition-colors font-bold">Fechar</button></div>
                     </div>
                 </div>
             )}
-
-            {/* Linha Dourada de Separação com Glow Brilhante */}
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#f2bd46] to-transparent shadow-[0_0_20px_rgba(242,189,70,0.8)]"></div>
-            
-            {/* Glow Ambiente de Fundo */}
             <div className="absolute bottom-[-20%] left-[-10%] w-96 h-96 bg-[#f2bd46]/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
-
             <div className="container mx-auto px-6 md:px-12 py-16 relative z-10 animate-surgir">
-                
-                {/* GRID DE ORGANIZAÇÃO: 1 Coluna (Mobile), 2 (Tablet), 4 (Desktop) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                    
-                    {/* COLUNA 1: MARCA E SOBRE */}
                     <div className="flex flex-col gap-6 items-start">
-                        <img 
-                            src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" 
-                            alt="Daniel Marques Market Logo" 
-                            className="h-16 w-auto object-contain drop-shadow-[0_0_15px_rgba(242,189,70,0.15)]" 
-                        />
-                        <p className="text-gray-400 text-sm leading-relaxed pr-4">
-                            O <span className="text-[#f2bd46] font-bold">Daniel Marques Market</span> revoluciona a forma como você faz compras. Mercados autônomos de alta tecnologia, abertos 24h por dia, levando máxima conveniência para perto de você.
-                        </p>
+                        <img src="https://i.postimg.cc/5yNYZHHp/Design-sem-nome-(1).png" alt="Daniel Marques Market Logo" className="h-16 w-auto object-contain drop-shadow-[0_0_15px_rgba(242,189,70,0.15)]" />
+                        <p className="text-gray-400 text-sm leading-relaxed pr-4">O <span className="text-[#f2bd46] font-bold">Daniel Marques Market</span> leva mercados autônomos 24h para condomínios, empresas e eventos, com compra rápida por QR Code, pagamento no carrinho e liberação automática da máquina. Também temos opções para quem quer levar a operação para seu evento ou estudar uma franquia.</p>
                         <div className="flex items-center gap-4 mt-2">
-                            <a href="https://instagram.com/pronto24h.oficial" target="_blank" rel="noopener noreferrer" className="bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 hover:border-[#f2bd46]/50 hover:bg-[#f2bd46]/10 group transition-all duration-300">
-                                <Instagram size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" />
-                            </a>
+                            <a href="https://instagram.com/pronto24h.oficial" target="_blank" rel="noopener noreferrer" className="bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 hover:border-[#f2bd46]/50 hover:bg-[#f2bd46]/10 group transition-all duration-300"><Instagram size={20} className="text-gray-400 group-hover:text-[#f2bd46] transition-colors" /></a>
                         </div>
                     </div>
-
-                    {/* COLUNA 2: NAVEGAÇÃO E LINKS ÚTEIS */}
                     <div className="flex flex-col gap-6">
-                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">
-                            Institucional
-                        </h3>
+                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">Institucional</h3>
                         <ul className="flex flex-col gap-4">
+                            <li><button onClick={() => setModalContent('institucional')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Institucional</button></li>
                             <li><button onClick={() => setModalContent('como-comprar')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Como comprar</button></li>
-                            <li><button onClick={() => setModalContent('faq')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Dúvidas Frequentes (FAQ)</button></li>
-                            <li><button onClick={() => setModalContent('termos')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Termos de Uso</button></li>
+                            <li><button onClick={() => setModalContent('faq')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Dúvidas Frequentes</button></li>
+                            <li><button onClick={() => setModalContent('termos')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Termos institucionais</button></li>
                             <li><button onClick={() => setModalContent('privacidade')} className="text-sm text-gray-400 hover:text-[#f2bd46] transition-colors flex items-center gap-2 group"><ArrowRight size={14} className="text-gray-600 group-hover:text-[#f2bd46] transition-colors"/> Política de Privacidade</button></li>
                         </ul>
                     </div>
-
-                    {/* COLUNA 3: ATENDIMENTO E ENDEREÇO */}
                     <div className="flex flex-col gap-6">
-                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">
-                            Atendimento
-                        </h3>
+                        <h3 className="text-lg font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-3 inline-block w-fit">Atendimento</h3>
                         <ul className="flex flex-col gap-5">
-                            <li>
-                                <a href="tel:+5561992729183" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
-                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
-                                        <Phone size={16} className="text-[#f2bd46]" />
-                                    </div>
-                                    <span className="text-sm font-medium">(61) 99272-9183</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="mailto:danielmarquesmarket@gmail.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
-                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors">
-                                        <Mail size={16} className="text-[#f2bd46]" />
-                                    </div>
-                                    <span className="text-sm font-medium">suporte@danielmarques.com</span>
-                                </a>
-                            </li>
-                            <li className="mt-2">
-                                <div className="flex items-start gap-3 text-gray-400">
-                                    <div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 mt-1 flex-shrink-0">
-                                        <Building2 size={16} className="text-gray-500" />
-                                    </div>
-                                    <span className="text-sm leading-relaxed">
-                                        Hotel S4, Distribuidora Empório M4 Business <br/>
-                                        R. 36 Sul, 15<br/>
-                                        Águas Claras, Brasília - DF, 71931-360
-                                    </span>
-                                </div>
-                            </li>
+                            <li><a href="tel:+5561992729183" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group"><div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors"><Phone size={16} className="text-[#f2bd46]" /></div><span className="text-sm font-medium">Suporte: (61) 99272-9183</span></a></li>
+                            <li><a href="mailto:danielmarquesmarket@gmail.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group"><div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 group-hover:border-[#f2bd46]/50 group-hover:bg-[#f2bd46]/10 transition-colors"><Mail size={16} className="text-[#f2bd46]" /></div><span className="text-sm font-medium">danielmarquesmarket@gmail.com</span></a></li>
+                            <li className="mt-2"><div className="flex items-start gap-3 text-gray-400"><div className="bg-[#1a1a1a] p-2 rounded-lg border border-gray-800 mt-1 flex-shrink-0"><Building2 size={16} className="text-gray-500" /></div><span className="text-sm leading-relaxed">Hotel S4, Distribuidora Empório M4 Business <br/>R. 36 Sul, 15<br/>Águas Claras, Brasília - DF, 71931-360</span></div></li>
                         </ul>
                     </div>
-
-                    {/* COLUNA 4: SEJA FRANQUEADO (DESTAQUE) */}
                     <div className="flex flex-col gap-6">
-                        <h3 className="text-lg font-bold text-[#f2bd46] uppercase tracking-widest border-b border-[#f2bd46]/30 pb-3 flex items-center gap-2">
-                            <Building size={20} /> Expansão
-                        </h3>
-                        
+                        <h3 className="text-lg font-bold text-[#f2bd46] uppercase tracking-widest border-b border-[#f2bd46]/30 pb-3 flex items-center gap-2"><Building size={20} /> Expansão</h3>
                         <div className="bg-gradient-to-br from-[#f2bd46]/10 to-transparent border border-[#f2bd46]/30 p-6 rounded-2xl relative overflow-hidden group hover:border-[#f2bd46]/60 transition-colors duration-300">
-                            {/* Brilho interno animado no hover */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#f2bd46]/10 blur-[30px] rounded-full group-hover:bg-[#f2bd46]/20 transition-all duration-500"></div>
-                            
-                            <h4 className="text-white text-lg font-extrabold mb-2 relative z-10">Seja dono da sua franquia</h4>
-                            <p className="text-xs text-gray-300 mb-5 leading-relaxed relative z-10">
-                                Leve o Daniel Marques Market para o seu condomínio ou empresa e invista no modelo de negócio que mais cresce no Brasil.
-                            </p>
-                            <button 
-                                onClick={handleFranquiaClick}
-                                className="w-full bg-[#f2bd46] text-black font-extrabold py-3 px-4 rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-[#e0af40] shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-1 relative z-10"
-                            >
-                                <MessageSquare size={18} /> Quero ser Franqueado
-                            </button>
+                            <h4 className="text-white text-lg font-extrabold mb-2 relative z-10">Leve um Daniel Marques Market para seu evento</h4>
+                            <p className="text-xs text-gray-300 mb-4 leading-relaxed relative z-10">Atenda eventos, condomínios e empresas com venda rápida, pagamento direto no carrinho e operação autônoma. Quer empreender? Também dá para estudar o modelo de franquia.</p>
+                            <div className="grid grid-cols-1 gap-2 mb-5 relative z-10">
+                                <div className="bg-black/30 border border-[#f2bd46]/20 rounded-xl px-3 py-2 text-xs text-gray-200">• Leve para seu evento</div>
+                                <div className="bg-black/30 border border-[#f2bd46]/20 rounded-xl px-3 py-2 text-xs text-gray-200">• Seja dono da sua franquia</div>
+                            </div>
+                            <button onClick={handleFranquiaClick} className="w-full bg-[#f2bd46] text-black font-extrabold py-3 px-4 rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-[#e0af40] shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] transition-all duration-300 transform hover:-translate-y-1 relative z-10"><MessageSquare size={18} /> Falar com suporte/comercial</button>
                         </div>
                     </div>
-
                 </div>
-
-                {/* PARTE DE BAIXO: DIREITOS AUTORAIS */}
                 <div className="border-t border-gray-800/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-xs text-gray-500 font-medium text-center md:text-left">
-                        &copy; {new Date().getFullYear()} <span className="text-gray-300 font-bold tracking-wide">Daniel Marques Market</span>. Todos os direitos reservados.
-                    </p>
-                    <p className="text-xs text-gray-600 font-medium text-center md:text-right">
-                        Feito com tecnologia de ponta para sua comodidade.
-                    </p>
+                    <p className="text-xs text-gray-500 font-medium text-center md:text-left">&copy; {new Date().getFullYear()} <span className="text-gray-300 font-bold tracking-wide">Daniel Marques Market</span>. Todos os direitos reservados.</p>
+                    <button onClick={() => setShowAdminModal(true)} className="text-[11px] text-gray-500 hover:text-[#f2bd46] border border-gray-800 hover:border-[#f2bd46]/40 rounded-full px-3 py-2 transition-colors flex items-center gap-1"><Shield size={12} /> Área administrativa</button>
                 </div>
-
             </div>
         </footer>
     );
@@ -3559,7 +2728,7 @@ const ChangeCondoPage = ({ user, setPage, onCondoChanged }) => {
             <header className="bg-[#1a1a1a] shadow-md">
                 <div className="container mx-auto px-4 py-4 flex items-center gap-4">
                     <button onClick={() => setPage('home')} className="text-[#f2bd46] hover:text-[#f2bd46]-300"><ArrowLeft size={24} /></button>
-                    <h1 className="text-2xl font-bold">Mudar de Condomínio</h1>
+                    <h1 className="text-2xl font-bold">Mudar de Máquina</h1>
                 </div>
             </header>
             <main className="container mx-auto p-4 md:p-8">
@@ -4178,6 +3347,7 @@ const DailyPromotionsWidget = ({ token }) => {
 
 // App.js -> SUBSTITUA o seu componente EntradasVendasPage por este
 
+
 const EntradasVendasPage = ({ condominiums, token }) => {
     const [reportData, setReportData] = React.useState({ log: [], summary: {}, pagination: {} });
     const [expandedRow, setExpandedRow] = React.useState(null);
@@ -4194,17 +3364,25 @@ const EntradasVendasPage = ({ condominiums, token }) => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState('');
 
+    React.useEffect(() => {
+        if (condominiums.length > 0 && !filterInputs.condoId) {
+            const firstId = condominiums[0].id;
+            setFilterInputs(prev => ({ ...prev, condoId: firstId }));
+            setActiveFilters(prev => ({ ...prev, condoId: firstId }));
+        }
+    }, [condominiums, filterInputs.condoId]);
+
     const fetchLogData = React.useCallback(async (page = 1) => {
         if (!activeFilters.condoId) return;
-        setIsLoading(true); setError(''); setCurrentPage(page);
-        
-        const params = new URLSearchParams({ condoId: activeFilters.condoId, page: page, limit: 10 });
+        setIsLoading(true);
+        setError('');
+        setCurrentPage(page);
+        const params = new URLSearchParams({ condoId: activeFilters.condoId, page, limit: 10 });
         if (activeFilters.startDate) params.append('startDate', activeFilters.startDate);
         if (activeFilters.endDate) params.append('endDate', activeFilters.endDate);
-
         try {
             const response = await fetch(`${API_URL}/api/admin/sales?${params.toString()}`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error('Falha ao buscar dados.');
+            if (!response.ok) throw new Error('Falha ao buscar entradas e vendas.');
             const data = await response.json();
             setReportData({ log: data.log || [], summary: data.summary || {}, pagination: data.pagination || {} });
         } catch (err) {
@@ -4217,9 +3395,10 @@ const EntradasVendasPage = ({ condominiums, token }) => {
 
     React.useEffect(() => { fetchLogData(currentPage); }, [activeFilters, currentPage, fetchLogData]);
 
-    const handleInputChange = (e) => { setFilterInputs(prev => ({ ...prev, [e.target.name]: e.target.value })); };
+    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
+    const displayDate = (value) => value ? new Date(value).toLocaleString('pt-BR') : '-';
+    const handleInputChange = (e) => setFilterInputs(prev => ({ ...prev, [e.target.name]: e.target.value }));
     const handleApplyFilters = () => { setCurrentPage(1); setActiveFilters(filterInputs); };
-    
     const handleFilterToday = () => {
         const today = getTodayInBrasilia();
         const newFilters = { ...filterInputs, startDate: today, endDate: today };
@@ -4228,287 +3407,145 @@ const EntradasVendasPage = ({ condominiums, token }) => {
         setCurrentPage(1);
     };
 
-    const toggleRow = (id) => {
-        setExpandedRow(prev => prev === id ? null : id);
-    };
-    
-    const handleRefund = async (orderId, amount) => {
-        if (!window.confirm(`Tem certeza que deseja reembolsar o pedido #${orderId} no valor de R$ ${parseFloat(amount).toFixed(2)}?`)) return;
+    const summary = reportData.summary || {};
+    const rows = reportData.log || [];
+    const totalOrders = Number(summary.total_orders || rows.length || 0);
+    const totalRevenue = Number(summary.total_revenue || 0);
+    const totalNetProfit = Number(summary.total_net_profit || 0);
+    const totalRefunded = Number(summary.total_refunded || 0);
+    const ticketMedio = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalItems = rows.reduce((sum, order) => sum + (order.items || []).reduce((s, item) => s + Number(item.quantity || 0), 0), 0);
+    const paidOrders = rows.filter(o => ['paid', 'captured', 'approved'].includes(String(o.status || '').toLowerCase())).length;
 
-        try {
-            const response = await fetch(`${API_URL}/api/admin/orders/${orderId}/refund`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha ao processar reembolso.');
-            alert(data.message);
-            fetchLogData(currentPage);
-        } catch (err) {
-            alert(`Erro: ${err.message}`);
-        }
-    };
-
-    const summary = reportData.summary;
-    const ticketMedio = summary.total_orders > 0 ? summary.total_revenue / summary.total_orders : 0;
-
-    // ==============================================
-    // --- ANIMAÇÕES E COMPONENTES VISUAIS PREMIUM ---
-    // ==============================================
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-surgir {
-            animation: surgir 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-    `;
-
-    // Card de Estatística Premium Local (Substitui o AdminStatCard antigo visualmente)
-    const StatCard = ({ icon, label, value, colorClass, delay }) => (
-        <div 
-            className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-gray-500/50 transition-all duration-300"
-            style={{ animationDelay: delay }}
-        >
-            <div className={`absolute -right-10 -top-10 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
-            <div className="flex items-start mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl bg-black/50 border border-gray-800 ${colorClass} shadow-inner group-hover:scale-110 transition-transform`}>
-                    {icon}
-                </div>
+    const StatCard = ({ icon, label, value, hint, colorClass = 'text-[#f2bd46]', delay = '0ms' }) => (
+        <div className="animate-surgir bg-black/50 backdrop-blur-xl border border-gray-700/60 p-5 rounded-3xl shadow-xl relative overflow-hidden" style={{ animationDelay: delay }}>
+            <div className="absolute -right-10 -top-10 w-28 h-28 bg-[#f2bd46]/5 blur-[40px] rounded-full"></div>
+            <div className="flex items-center gap-3 mb-4 relative z-10">
+                <div className={`p-3 rounded-2xl bg-black/60 border border-gray-800 ${colorClass}`}>{icon}</div>
+                <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
             </div>
-            <div className="relative z-10">
-                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">{label}</p>
-                <p className={`text-2xl lg:text-3xl font-black tracking-tighter ${colorClass}`}>{value}</p>
-            </div>
+            <p className={`text-2xl md:text-3xl font-black tracking-tight ${colorClass}`}>{value}</p>
+            {hint && <p className="text-xs text-gray-500 mt-2 leading-relaxed">{hint}</p>}
         </div>
     );
+
+    const keyframes = `
+        @keyframes surgir { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-surgir { animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    `;
 
     return (
         <div className="flex flex-col gap-8 pb-12 relative z-10">
             <style>{keyframes}</style>
-            
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
-                <div>
-                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
-                        Relatório de Vendas
-                    </h2>
-                    <p className="text-gray-400 font-medium text-sm">Acompanhamento detalhado de entradas e estornos</p>
-                </div>
+            <div className="animate-surgir border-b border-gray-800/80 pb-6">
+                <p className="text-xs font-black text-[#f2bd46] uppercase tracking-[0.3em] mb-2">fluxo rápido sem cadastro</p>
+                <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Entradas e Vendas</h2>
+                <p className="text-gray-400 text-sm mt-2 max-w-2xl">Acompanhe pedidos pagos no carrinho, método de pagamento, produtos retirados e lucro estimado. O fluxo antigo de reembolso foi removido desta tela para evitar operação manual indevida.</p>
             </div>
-            
-            {/* --- FILTROS RESPONSIVOS (Painel Glassmorphism) --- */}
+
             <div className="bg-black/60 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl shadow-xl border border-gray-700/80 relative overflow-hidden animate-surgir" style={{ animationDelay: '50ms' }}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#f2bd46]/50 to-transparent"></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-end relative z-10">
-                    <div className="w-full">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Condomínio</label>
+                    <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Máquina</label>
                         <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer">
                             {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
-                    <div className="w-full">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> De</label>
-                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
-                    </div>
-                    <div className="w-full">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> Até</label>
-                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all [color-scheme:dark]" />
-                    </div>
-                    
-                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] flex justify-center items-center gap-2 border border-blue-400/50">
-                        Hoje
-                    </button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] flex justify-center items-center gap-2">
-                        <Filter size={18} /> Aplicar
-                    </button>
+                    <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none [color-scheme:dark]" /></div>
+                    <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Calendar size={14}/> Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none [color-scheme:dark]" /></div>
+                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 px-4 rounded-xl transition-all flex justify-center items-center gap-2 border border-blue-400/50"><Clock size={18}/> Hoje</button>
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3 px-4 rounded-xl transition-all flex justify-center items-center gap-2"><Filter size={18} /> Aplicar</button>
                 </div>
             </div>
 
-            {/* --- CARDS DE RESUMO --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
-                <StatCard icon={<DollarSign size={24} />} label="Faturamento" value={`R$ ${summary.total_revenue?.toFixed(2) || '0.00'}`} colorClass="text-green-400" delay="100ms" />
-                <StatCard icon={<PiggyBank size={24} />} label="Lucro Líquido" value={`R$ ${summary.total_net_profit?.toFixed(2) || '0.00'}`} colorClass="text-teal-400" delay="150ms" />
-                <StatCard icon={<ArrowRightLeft size={24} />} label="Reembolsado" value={`R$ ${summary.total_refunded?.toFixed(2) || '0.00'}`} colorClass="text-red-400" delay="200ms" />
-                <StatCard icon={<ShoppingCart size={24} />} label="Vendas Pagas" value={summary.total_orders || 0} colorClass="text-blue-400" delay="250ms" />
-                <StatCard icon={<UsersIcon size={24} />} label="Ticket Médio" value={`R$ ${ticketMedio.toFixed(2)}`} colorClass="text-purple-400" delay="300ms" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+                <StatCard icon={<DollarSign size={22} />} label="Entradas aprovadas" value={money(totalRevenue)} hint="Total confirmado no período" colorClass="text-green-400" delay="80ms" />
+                <StatCard icon={<ShoppingCart size={22} />} label="Pedidos pagos" value={totalOrders} hint={`${paidOrders || totalOrders} pedidos confirmados`} colorClass="text-blue-400" delay="120ms" />
+                <StatCard icon={<Package size={22} />} label="Itens vendidos" value={totalItems} hint="Soma das unidades no log" colorClass="text-[#f2bd46]" delay="160ms" />
+                <StatCard icon={<CreditCard size={22} />} label="Ticket médio" value={money(ticketMedio)} hint="Faturamento / pedidos" colorClass="text-purple-300" delay="200ms" />
+                <StatCard icon={<PiggyBank size={22} />} label="Lucro estimado" value={money(totalNetProfit)} hint="Baseado no custo cadastrado" colorClass="text-teal-400" delay="240ms" />
+                <StatCard icon={<Ban size={22} />} label="Estornos registrados" value={money(totalRefunded)} hint="Somente informativo" colorClass="text-red-400" delay="280ms" />
             </div>
 
-            {/* --- HISTÓRICO DE TRANSAÇÕES --- */}
-            <div className="mt-4 animate-surgir" style={{ animationDelay: '350ms' }}>
-                <h3 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 mb-6 tracking-tight">
-                    <div className="bg-gray-800 p-2 rounded-xl border border-gray-700">
-                        <History className="text-white" size={24} />
+            <div className="bg-black/40 backdrop-blur-2xl border border-gray-700/60 rounded-3xl shadow-2xl overflow-hidden animate-surgir" style={{ animationDelay: '300ms' }}>
+                <div className="p-5 border-b border-gray-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <h3 className="font-black text-white text-xl">Pedidos confirmados</h3>
+                        <p className="text-xs text-gray-500">Clique em “Ver produtos” para conferir os itens de cada venda.</p>
                     </div>
-                    Lista de Transações
-                </h3>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{rows.length} registros nesta página</span>
+                </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col justify-center items-center h-48 gap-4 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-3xl">
-                        <Loader2 className="animate-spin text-[#f2bd46]" size={40} />
-                        <span className="text-gray-400 font-bold tracking-widest text-sm animate-pulse">CARREGANDO DADOS...</span>
-                    </div>
+                    <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-[#f2bd46]" size={42} /></div>
                 ) : error ? (
-                    <div className="bg-red-900/20 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3">
-                        <AlertTriangle size={24} /> {error}
-                    </div>
+                    <div className="p-8 text-red-400 text-center">{error}</div>
                 ) : (
                     <>
-                        {/* --- VERSÃO DESKTOP (Tabela Premium Glassmorphism) --- */}
-                        <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
-                            <div className="overflow-x-auto custom-scrollbar">
-                                <table className="w-full text-left whitespace-nowrap">
-                                    <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
-                                        <tr>
-                                            <th className="p-5 w-10"></th>
-                                            <th className="p-5">Cliente</th>
-                                            <th className="p-5">Data & Hora</th>
-                                            <th className="p-5">Faturamento</th>
-                                            <th className="p-5">Lucro Líquido</th>
-                                            <th className="p-5">Status</th>
-                                            <th className="p-5 text-center">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800/80">
-                                        {reportData.log?.length > 0 ? reportData.log.map(item => (
-                                            <React.Fragment key={item.id}>
-                                                <tr className={`transition-colors duration-300 ${item.status === 'refunded' ? 'bg-red-900/10' : 'hover:bg-white/5'}`}>
-                                                    <td className="p-5">
-                                                        <button onClick={() => toggleRow(item.id)} className="text-gray-500 hover:text-[#f2bd46] transition-colors bg-black/50 p-1.5 rounded-lg border border-gray-700">
-                                                            {expandedRow === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                        </button>
-                                                    </td>
-                                                    <td className="p-5">
-                                                        <span className="font-bold text-white block">{item.user_name}</span>
-                                                        <span className="text-gray-500 text-xs font-mono mt-0.5 block">{item.user_cpf}</span>
-                                                    </td>
-                                                    <td className="p-5 text-sm text-gray-400 font-medium">
-                                                        {new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
-                                                    </td>
-                                                    <td className={`p-5 font-black tracking-tight ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-white'}`}>
-                                                        R$ {parseFloat(item.amount).toFixed(2)}
-                                                    </td>
-                                                    <td className={`p-5 font-black tracking-tight ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-teal-400'}`}>
-                                                        R$ {parseFloat(item.net_profit).toFixed(2)}
-                                                    </td>
-                                                    <td className="p-5">
-                                                        <span className={`px-3 py-1.5 rounded-full text-xs font-black tracking-wider border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
-                                                            {item.status === 'paid' ? 'PAGO' : 'ESTORNADO'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-5 text-center">
-                                                        <button 
-                                                            onClick={() => handleRefund(item.id, item.amount)} 
-                                                            disabled={item.status === 'refunded'} 
-                                                            className="bg-transparent hover:bg-red-500/20 text-red-400 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold py-2 px-4 rounded-xl border border-red-500/30 transition-all duration-300 flex items-center gap-2 mx-auto"
-                                                        >
-                                                            <ArrowRightLeft size={14} /> Reembolsar
-                                                        </button>
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-black/70 text-gray-500 uppercase text-[11px] tracking-widest">
+                                    <tr>
+                                        <th className="p-4">Pedido</th>
+                                        <th className="p-4">Data</th>
+                                        <th className="p-4">Cliente</th>
+                                        <th className="p-4">Status</th>
+                                        <th className="p-4 text-right">Valor</th>
+                                        <th className="p-4 text-right">Lucro</th>
+                                        <th className="p-4 text-center">Produtos</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
+                                    {rows.length > 0 ? rows.map(item => (
+                                        <React.Fragment key={item.id}>
+                                            <tr className="hover:bg-white/[0.03] transition-colors">
+                                                <td className="p-4 font-mono text-[#f2bd46]">#{item.id}</td>
+                                                <td className="p-4 text-gray-300">{displayDate(item.created_at)}</td>
+                                                <td className="p-4 text-gray-300">{item.user_name || 'Cliente rápido'}</td>
+                                                <td className="p-4"><span className={`px-3 py-1 rounded-full text-[10px] font-black border ${String(item.status).toLowerCase() === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-blue-500/10 text-blue-300 border-blue-500/30'}`}>{String(item.status || 'pago').toUpperCase()}</span></td>
+                                                <td className="p-4 text-right font-black text-white">{money(item.amount)}</td>
+                                                <td className="p-4 text-right font-black text-teal-400">{money(item.net_profit)}</td>
+                                                <td className="p-4 text-center"><button onClick={() => setExpandedRow(expandedRow === item.id ? null : item.id)} className="bg-white/5 hover:bg-white/10 border border-gray-700 text-white text-xs font-bold py-2 px-4 rounded-xl transition">{expandedRow === item.id ? 'Ocultar' : 'Ver produtos'}</button></td>
+                                            </tr>
+                                            {expandedRow === item.id && (
+                                                <tr className="bg-black/60">
+                                                    <td colSpan="7" className="p-5">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            {(item.items || []).map((prod, idx) => (
+                                                                <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/5 p-3 rounded-xl">
+                                                                    <span className="text-sm text-gray-300"><b className="text-white">{prod.quantity}x</b> {prod.product_name}</span>
+                                                                    <span className="font-mono font-bold text-[#f2bd46]">{money(prod.price)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                                
-                                                {/* Detalhes da Linha Expandida */}
-                                                {expandedRow === item.id && (
-                                                    <tr className="bg-black/60 border-b border-gray-700/80 shadow-inner">
-                                                        <td colSpan="7" className="p-6 pl-16">
-                                                            <div className="bg-black/50 p-5 rounded-2xl border border-gray-700/50 shadow-lg">
-                                                                <h4 className="font-black text-gray-400 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                                    <Package size={14} /> Produtos do Pedido #{item.id}
-                                                                </h4>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                    {item.items.map((prod, idx) => (
-                                                                        <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/5 p-3 rounded-xl">
-                                                                            <span className="text-sm text-gray-300 font-medium flex items-center gap-2">
-                                                                                <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-xs font-bold">{prod.quantity}x</span> 
-                                                                                {prod.product_name}
-                                                                            </span>
-                                                                            <span className="font-mono font-bold text-[#f2bd46]">R$ {parseFloat(prod.price).toFixed(2)}</span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </React.Fragment>
-                                        )) : (
-                                            <tr><td colSpan="7" className="text-center p-12 text-gray-500 font-medium">Nenhum registro encontrado neste período.</td></tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            )}
+                                        </React.Fragment>
+                                    )) : <tr><td colSpan="7" className="text-center p-12 text-gray-500 font-medium">Nenhuma venda encontrada neste período.</td></tr>}
+                                </tbody>
+                            </table>
                         </div>
 
-                        {/* --- VERSÃO MOBILE (Cards Premium Glassmorphism) --- */}
-                        <div className="md:hidden flex flex-col gap-4">
-                            {reportData.log?.length > 0 ? reportData.log.map(item => (
-                                <div key={item.id} className={`bg-black/40 backdrop-blur-xl rounded-2xl p-5 shadow-lg border ${item.status === 'refunded' ? 'border-red-900/50 opacity-80' : 'border-gray-700/50'}`}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h4 className="font-extrabold text-white text-lg tracking-tight">{item.user_name}</h4>
-                                            <p className="text-xs text-gray-400 font-medium mt-0.5 flex items-center gap-1">
-                                                <Calendar size={12} /> {new Date(item.created_at).toLocaleString('pt-BR')}
-                                            </p>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-[10px] font-black tracking-widest border ${item.status === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
-                                            {item.status === 'paid' ? 'PAGO' : 'ESTORNADO'}
-                                        </span>
+                        <div className="md:hidden flex flex-col gap-4 p-4">
+                            {rows.length > 0 ? rows.map(item => (
+                                <div key={item.id} className="bg-black/50 border border-gray-700/60 rounded-2xl p-5">
+                                    <div className="flex justify-between items-start gap-4 mb-4">
+                                        <div><h4 className="font-black text-white">Pedido #{item.id}</h4><p className="text-xs text-gray-500 mt-1">{displayDate(item.created_at)}</p></div>
+                                        <span className="px-2 py-1 rounded text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/30">{String(item.status || 'pago').toUpperCase()}</span>
                                     </div>
-                                    
-                                    <div className="flex justify-between items-center mb-5 bg-black/60 border border-gray-800 p-3.5 rounded-xl shadow-inner">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Faturamento</span>
-                                            <span className={`font-black text-lg ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-white'}`}>R$ {parseFloat(item.amount).toFixed(2)}</span>
-                                        </div>
-                                        <div className="w-px h-8 bg-gray-700"></div>
-                                        <div className="flex flex-col text-right">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Lucro</span>
-                                            <span className={`font-black text-lg ${item.status === 'refunded' ? 'line-through text-gray-600' : 'text-teal-400'}`}>R$ {parseFloat(item.net_profit).toFixed(2)}</span>
-                                        </div>
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        <div className="bg-black/60 border border-gray-800 rounded-xl p-3"><p className="text-[10px] text-gray-500 uppercase font-bold">Valor</p><p className="font-black text-white">{money(item.amount)}</p></div>
+                                        <div className="bg-black/60 border border-gray-800 rounded-xl p-3"><p className="text-[10px] text-gray-500 uppercase font-bold">Lucro</p><p className="font-black text-teal-400">{money(item.net_profit)}</p></div>
                                     </div>
-
-                                    {/* Área Expansível Mobile */}
-                                    {expandedRow === item.id && (
-                                        <div className="mb-5 bg-black/50 p-4 rounded-xl border border-gray-800 shadow-inner animate-surgir">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-2 border-b border-gray-800 pb-2">
-                                                <Package size={14} /> Itens Comprados
-                                            </p>
-                                            <ul className="space-y-3">
-                                                {item.items.map((prod, idx) => (
-                                                    <li key={idx} className="flex justify-between items-center text-xs text-gray-300 font-medium">
-                                                        <span className="flex items-center gap-2">
-                                                            <span className="bg-gray-800 text-white px-1.5 py-0.5 rounded">{prod.quantity}x</span> {prod.product_name}
-                                                        </span>
-                                                        <span className="font-mono text-[#f2bd46] font-bold">R$ {parseFloat(prod.price).toFixed(2)}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-3">
-                                        <button onClick={() => toggleRow(item.id)} className="flex-1 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-white py-2.5 rounded-xl text-xs font-bold transition-colors">
-                                            {expandedRow === item.id ? 'Ocultar Itens' : 'Ver Produtos'}
-                                        </button>
-                                        <button 
-                                            onClick={() => handleRefund(item.id, item.amount)} 
-                                            disabled={item.status === 'refunded'}
-                                            className="flex-1 bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/10 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex justify-center items-center gap-1"
-                                        >
-                                            <ArrowRightLeft size={14} /> {item.status === 'refunded' ? 'Estornado' : 'Reembolsar'}
-                                        </button>
-                                    </div>
+                                    {expandedRow === item.id && <div className="mb-4 space-y-2">{(item.items || []).map((prod, idx) => <div key={idx} className="flex justify-between text-xs text-gray-300 bg-white/5 p-2 rounded-lg"><span>{prod.quantity}x {prod.product_name}</span><b>{money(prod.price)}</b></div>)}</div>}
+                                    <button onClick={() => setExpandedRow(expandedRow === item.id ? null : item.id)} className="w-full bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-white py-2.5 rounded-xl text-xs font-bold transition-colors">{expandedRow === item.id ? 'Ocultar produtos' : 'Ver produtos'}</button>
                                 </div>
-                            )) : (
-                                <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium">Nenhuma venda encontrada.</div>
-                            )}
+                            )) : <div className="text-center p-8 bg-black/40 rounded-2xl border border-gray-700/50 text-gray-500 font-medium">Nenhuma venda encontrada.</div>}
                         </div>
-                        
-                        {/* Paginação */}
-                        <div className="mt-8 flex justify-center">
-                            <Pagination currentPage={currentPage} totalPages={Math.ceil((reportData?.pagination?.total || 0) / (reportData?.pagination?.limit || 10))} onPageChange={fetchLogData} />
-                        </div>
+
+                        <div className="p-5"><Pagination currentPage={currentPage} totalPages={Math.ceil((reportData?.pagination?.total || 0) / (reportData?.pagination?.limit || 10))} onPageChange={fetchLogData} /></div>
                     </>
                 )}
             </div>
@@ -4516,392 +3553,50 @@ const EntradasVendasPage = ({ condominiums, token }) => {
     );
 };
 
-const CentralCashierPage = ({ token }) => {
-    // --- ESTADOS ---
-    const [summary, setSummary] = React.useState({ net_profit: 0, cost_of_goods: 0, total_wallet_balance: 0 });
-    const [history, setHistory] = React.useState([]); // Lista completa
+const CentralCashierPage = () => null;
+
+const CriticalStockPage = ({ condominiums, token }) => {
+    const [selectedCondoId, setSelectedCondoId] = React.useState(condominiums[0]?.id || '');
+    const [inventoryQuantities, setInventoryQuantities] = React.useState({});
+    const [criticalItems, setCriticalItems] = React.useState([]);
+    const [expiringSoonItems, setExpiringSoonItems] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
-    
-    // --- ESTADOS DA PAGINAÇÃO ---
-    const [currentPage, setCurrentPage] = React.useState(1);
-    const itemsPerPage = 10; 
 
-    // --- ESTADOS DO MODAL ---
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [withdrawalData, setWithdrawalData] = React.useState({ amount: '', type: 'net_profit', reason: '' });
+    React.useEffect(() => {
+        if (condominiums.length > 0 && !selectedCondoId) setSelectedCondoId(condominiums[0].id);
+    }, [condominiums, selectedCondoId]);
 
-    // --- BUSCA DE DADOS ---
-    const fetchData = React.useCallback(async () => {
-        setIsLoading(true);
+    const fetchCriticalStock = React.useCallback(async () => {
+        if (!selectedCondoId) { setCriticalItems([]); setExpiringSoonItems([]); setIsLoading(false); return; }
+        setIsLoading(true); setError('');
         try {
-            const [summaryRes, historyRes] = await Promise.all([
-                fetch(`${API_URL}/api/admin/central-cashier`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_URL}/api/admin/central-cashier/history`, { headers: { 'Authorization': `Bearer ${token}` } })
-            ]);
-            if (!summaryRes.ok || !historyRes.ok) throw new Error('Falha ao buscar dados do caixa.');
-            const summaryData = await summaryRes.json();
-            const historyData = await historyRes.json();
-            setSummary(summaryData);
-            setHistory(historyData);
+            const response = await fetch(`${API_URL}/api/admin/critical-stock-page?condoId=${selectedCondoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Falha ao buscar validades e estoque crítico.');
+            const data = await response.json();
+            const critical = data.criticalStock || [];
+            setCriticalItems(critical);
+            setExpiringSoonItems(data.expiringSoon || []);
+            setInventoryQuantities(critical.reduce((acc, item) => ({ ...acc, [item.product_id]: item.quantity }), {}));
         } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, [token]);
-
-    React.useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-
-    // --- LÓGICA DE PAGINAÇÃO ---
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem); 
-    const totalPages = Math.ceil(history.length / itemsPerPage);
-
-    const nextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-    };
-
-    const prevPage = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
-    };
-
-    // --- HANDLERS ---
-    const handleWithdrawalChange = (e) => {
-        setWithdrawalData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const handleWithdrawalSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(`${API_URL}/api/admin/central-cashier/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    ...withdrawalData,
-                    amount: parseFloat(withdrawalData.amount)
-                })
-            });
-            if (!response.ok) throw new Error('Falha ao registrar retirada.');
-            setIsModalOpen(false);
-            setWithdrawalData({ amount: '', type: 'net_profit', reason: '' });
-            fetchData();
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    // ==============================================
-    // --- ANIMAÇÕES E COMPONENTES VISUAIS ---
-    // ==============================================
-    const keyframes = `
-        @keyframes surgir {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(242, 189, 70, 0.2); }
-            50% { box-shadow: 0 0 25px rgba(242, 189, 70, 0.5); }
-        }
-        .animate-surgir {
-            animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(242, 189, 70, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(242, 189, 70, 0.6); }
-    `;
-
-    // Card Premium Local
-    const StatCard = ({ icon, label, value, colorClass, delay }) => (
-        <div 
-            className="animate-surgir bg-black/40 backdrop-blur-xl border border-gray-700/50 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-gray-500/50 transition-all duration-300"
-            style={{ animationDelay: delay }}
-        >
-            <div className={`absolute -right-10 -top-10 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
-            <div className="flex items-start mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl bg-black/50 border border-gray-800 ${colorClass} shadow-inner group-hover:scale-110 transition-transform`}>
-                    {icon}
-                </div>
-            </div>
-            <div className="relative z-10">
-                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">{label}</p>
-                <p className={`text-2xl lg:text-3xl font-black tracking-tighter ${colorClass}`}>{value}</p>
-            </div>
-        </div>
-    );
-
-    return (
-        <div className="flex flex-col gap-6 md:gap-8 pb-12 relative z-10">
-            <style>{keyframes}</style>
-
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-800/80 pb-6 animate-surgir">
-                <div>
-                    <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-1">
-                        Caixa Central
-                    </h2>
-                    <p className="text-gray-400 font-medium text-sm">Controle financeiro, saldos e retiradas</p>
-                </div>
-            </div>
-            
-            {isLoading ? (
-                <div className="flex flex-col justify-center items-center h-[50vh] gap-4">
-                    <Loader2 className="animate-spin text-[#f2bd46] drop-shadow-[0_0_10px_rgba(242,189,70,0.5)]" size={56} />
-                    <span className="text-[#f2bd46] font-bold tracking-widest animate-pulse text-sm">CARREGANDO CAIXA...</span>
-                </div>
-            ) : error ? (
-                <div className="bg-red-900/10 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3 animate-surgir">
-                    <AlertTriangle size={24} /> {error}
-                </div>
-            ) : (
-                <>
-                    {/* --- CARDS DE RESUMO --- */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-2">
-                        <StatCard icon={<DollarSign size={28} />} label="Lucro Líquido" value={`R$ ${parseFloat(summary.net_profit).toFixed(2)}`} colorClass="text-green-400" delay="0ms" />
-                        <StatCard icon={<ShoppingCart size={28} />} label="Custo Mercadoria" value={`R$ ${parseFloat(summary.cost_of_goods).toFixed(2)}`} colorClass="text-yellow-400" delay="50ms" />
-                        <StatCard icon={<Wallet size={28} />} label="Saldo em Carteiras" value={`R$ ${(summary.total_wallet_balance || 0).toFixed(2)}`} colorClass="text-cyan-400" delay="100ms" />
-                    </div>
-
-                    {/* --- HEADER DA SEÇÃO --- */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-4 animate-surgir" style={{ animationDelay: '150ms' }}>
-                        <h3 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 tracking-tight">
-                            <div className="bg-gray-800 p-2 rounded-xl border border-gray-700">
-                                <History size={24} className="text-[#f2bd46]"/>
-                            </div>
-                            Histórico de Movimentações
-                        </h3>
-                        <button 
-                            onClick={() => setIsModalOpen(true)} 
-                            className="w-full sm:w-auto bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3.5 sm:py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-0.5"
-                        >
-                            <PlusCircle size={20} /> Nova Retirada
-                        </button>
-                    </div>
-
-                    {/* --- TABELA OTIMIZADA COM PAGINAÇÃO --- */}
-                    <div className="animate-surgir" style={{ animationDelay: '200ms' }}>
-                        
-                        {/* --- VERSÃO DESKTOP (Tabela Glassmorphism) --- */}
-                        <div className="hidden md:block bg-black/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50 mb-6">
-                            <div className="overflow-x-auto custom-scrollbar">
-                                <table className="w-full text-left whitespace-nowrap">
-                                    <thead className="bg-black/60 border-b border-gray-700/80 text-gray-400 text-xs uppercase tracking-widest font-bold">
-                                        <tr>
-                                            <th className="p-5">Data & Hora</th>
-                                            <th className="p-5">Tipo</th>
-                                            <th className="p-5">Valor</th>
-                                            <th className="p-5">Usuário/Origem</th>
-                                            <th className="p-5">Condomínio</th>
-                                            <th className="p-5">Detalhes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800/80">
-                                        {currentItems.length > 0 ? currentItems.map((item, index) => (
-                                            <tr key={`${item.type}-${item.id}-${index}`} className="hover:bg-white/5 transition-colors duration-300">
-                                                <td className="p-5 text-sm text-gray-300 font-medium">
-                                                    {new Date(item.created_at).toLocaleDateString('pt-BR')} 
-                                                    <span className="text-xs text-gray-500 font-mono ml-2">{new Date(item.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
-                                                </td>
-                                                <td className="p-5">
-                                                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-wider border ${
-                                                        item.type === 'entrada' 
-                                                        ? 'bg-green-500/10 text-green-400 border-green-500/30' 
-                                                        : 'bg-red-500/10 text-red-400 border-red-500/30'
-                                                    }`}>
-                                                        {item.type.toUpperCase()}
-                                                    </span>
-                                                </td>
-                                                <td className={`p-5 font-black tracking-tight ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {item.amount > 0 ? '+' : ''} R$ {parseFloat(item.amount).toFixed(2)}
-                                                </td>
-                                                <td className="p-5 text-gray-300 font-medium">{item.user_name || '-'}</td>
-                                                <td className="p-5 text-gray-400">{item.condo_name || '-'}</td>
-                                                <td className="p-5 text-sm text-gray-400 truncate max-w-[200px]" title={item.details}>
-                                                    {item.details}
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr>
-                                                <td colSpan="6" className="text-center p-12 text-gray-500 font-medium">
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <Info size={32} className="opacity-50" />
-                                                        <p>Nenhuma movimentação registrada.</p>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* --- VERSÃO MOBILE (Cards Premium Glassmorphism) --- */}
-                        <div className="md:hidden flex flex-col gap-4 mb-6">
-                            {currentItems.length > 0 ? currentItems.map((item, index) => (
-                                <div key={`${item.type}-${item.id}-${index}`} className="bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-5 shadow-lg">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`p-2 rounded-lg ${item.amount > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                                                {item.amount > 0 ? <ArrowDownToLine size={16} /> : <ArrowRightLeft size={16} />}
-                                            </span>
-                                            <div>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest border ${
-                                                    item.type === 'entrada' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'
-                                                }`}>
-                                                    {item.type.toUpperCase()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className={`font-black text-lg tracking-tight block ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                {item.amount > 0 ? '+' : ''} R$ {parseFloat(item.amount).toFixed(2)}
-                                            </span>
-                                            <span className="text-[10px] text-gray-500 font-medium flex items-center justify-end gap-1 mt-1">
-                                                <Calendar size={10} /> {new Date(item.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="bg-black/50 border border-gray-800 p-3 rounded-xl shadow-inner space-y-2">
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-500 font-bold uppercase">Origem/Usuário:</span>
-                                            <span className="text-gray-300 font-medium truncate max-w-[150px]">{item.user_name || '-'}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-500 font-bold uppercase">Condomínio:</span>
-                                            <span className="text-gray-300 font-medium truncate max-w-[150px]">{item.condo_name || '-'}</span>
-                                        </div>
-                                        <div className="pt-2 mt-2 border-t border-gray-800">
-                                            <p className="text-xs text-gray-400 leading-relaxed italic">"{item.details}"</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )) : (
-                                <div className="text-center p-8 bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 text-gray-500 font-medium flex flex-col items-center gap-2">
-                                    <Info size={32} className="opacity-50" />
-                                    <p>Nenhuma movimentação registrada.</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* --- RODAPÉ DE PAGINAÇÃO (Premium Look) --- */}
-                        {history.length > 0 && (
-                            <div className="bg-black/60 backdrop-blur-2xl p-4 sm:px-6 rounded-2xl border border-gray-700/80 shadow-xl flex justify-between items-center">
-                                <span className="text-xs sm:text-sm text-gray-400 font-medium">
-                                    Página <span className="text-white font-black bg-gray-800 px-2 py-1 rounded">{currentPage}</span> de {totalPages}
-                                </span>
-                                <div className="flex gap-2 sm:gap-3">
-                                    <button 
-                                        onClick={prevPage} 
-                                        disabled={currentPage === 1}
-                                        className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === 1 ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600 shadow-md'}`}
-                                    >
-                                        Anterior
-                                    </button>
-                                    <button 
-                                        onClick={nextPage} 
-                                        disabled={currentPage === totalPages}
-                                        className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-black/40 text-gray-600 cursor-not-allowed border border-gray-800' : 'bg-[#f2bd46] text-black hover:bg-[#e0af40] border border-[#f2bd46]/50 shadow-[0_0_10px_rgba(242,189,70,0.2)]'}`}
-                                    >
-                                        Próxima
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </>
-            )}
-            
-            {/* --- MODAL DE RETIRADA (Premium Glassmorphism) --- */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-surgir" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative z-10 bg-black/80 backdrop-blur-2xl p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-gray-700/80 w-full max-w-md animate-surgir overflow-hidden">
-                        
-                        <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#f2bd46]/10 blur-[50px] rounded-full pointer-events-none"></div>
-
-                        <div className="flex items-center gap-3 mb-6 relative z-10">
-                            <div className="bg-[#f2bd46]/20 p-2.5 rounded-xl border border-[#f2bd46]/30">
-                                <PlusCircle size={24} className="text-[#f2bd46]" />
-                            </div>
-                            <h2 className="text-2xl font-extrabold text-white tracking-tight">Registrar Saída</h2>
-                        </div>
-                        
-                        <form onSubmit={handleWithdrawalSubmit} className="relative z-10">
-                            <div className="mb-5">
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Valor da Retirada (R$)</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <DollarSign size={18} className="text-gray-500" />
-                                    </div>
-                                    <input type="number" step="0.01" name="amount" value={withdrawalData.amount} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] pl-10 pr-4 py-3.5 rounded-xl text-white font-bold text-lg outline-none transition-all placeholder-gray-700" placeholder="0.00" required />
-                                </div>
-                            </div>
-                            
-                            <div className="mb-5">
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Origem do Saldo</label>
-                                <select name="type" value={withdrawalData.type} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] p-3.5 rounded-xl text-white outline-none transition-all appearance-none cursor-pointer">
-                                    <option value="net_profit">Lucro Líquido</option>
-                                    <option value="cost_of_goods">Custo de Mercadoria</option>
-                                </select>
-                            </div>
-                            
-                            <div className="mb-8">
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Motivo / Descrição</label>
-                                <input name="reason" value={withdrawalData.reason} onChange={handleWithdrawalChange} className="w-full bg-black/50 border border-gray-600 focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] p-3.5 rounded-xl text-white outline-none transition-all placeholder-gray-700" placeholder="Ex: Retirada de sócios, Pagamento de boleto..." required />
-                            </div>
-                            
-                            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-gray-300 font-bold bg-gray-800/50 hover:bg-gray-800 border border-gray-700 transition-colors">Cancelar</button>
-                                <button type="submit" className="w-full sm:w-auto bg-[#f2bd46] hover:bg-[#e0af40] px-8 py-3.5 rounded-xl text-black font-extrabold shadow-[0_0_15px_rgba(242,189,70,0.3)] hover:shadow-[0_0_25px_rgba(242,189,70,0.6)] hover:-translate-y-0.5 transition-all">Confirmar Retirada</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-const CriticalStockPage = ({ condominiums, token }) => {
-    // --- ESTADOS ---
-    const [selectedCondoId, setSelectedCondoId] = React.useState(condominiums[0]?.id || '');
-    const [inventoryQuantities, setInventoryQuantities] = React.useState({});
-    const [criticalItems, setCriticalItems] = React.useState([]); 
-    const [expiringSoonItems, setExpiringSoonItems] = React.useState([]); 
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState('');
-
-    // --- FETCH ---
-    const fetchCriticalStock = React.useCallback(async () => {
-        if (!selectedCondoId) {
-            setCriticalItems([]); setExpiringSoonItems([]); setIsLoading(false); return;
-        }
-        setIsLoading(true); setError('');
-        try {
-            const response = await fetch(`${API_URL}/api/admin/critical-stock-page?condoId=${selectedCondoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error('Falha ao buscar dados.');
-            
-            const data = await response.json();
-            setCriticalItems(data.criticalStock || []);
-            setExpiringSoonItems(data.expiringSoon || []);
-            
-            const quantities = (data.criticalStock || []).reduce((acc, item) => {
-                acc[item.product_id] = item.quantity;
-                return acc;
-            }, {});
-            setInventoryQuantities(quantities);
-            
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [selectedCondoId, token]);
 
-    React.useEffect(() => { fetchCriticalStock(); }, [fetchCriticalStock]); 
+    React.useEffect(() => { fetchCriticalStock(); }, [fetchCriticalStock]);
 
-    // --- AÇÕES ---
+    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
+    const formatDate = (value) => value ? new Date(value).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-';
+    const totalReorderCost = criticalItems.reduce((sum, item) => sum + Number(item.reorder_cost || 0), 0);
+    const totalReorderItems = criticalItems.reduce((sum, item) => sum + Number(item.suggested_reorder_quantity || 0), 0);
+    const urgentExpirations = expiringSoonItems.filter(item => {
+        const expiration = new Date(item.nearest_expiration_date);
+        const diff = (expiration - new Date()) / (1000 * 60 * 60 * 24);
+        return diff <= 7;
+    }).length;
+
     const handleInventoryChange = (productId, quantity) => {
         const newQuantity = Math.max(0, parseInt(quantity, 10) || 0);
         setInventoryQuantities(prev => ({ ...prev, [productId]: newQuantity }));
@@ -4915,190 +3610,86 @@ const CriticalStockPage = ({ condominiums, token }) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ condo_id: selectedCondoId, product_id: productId, quantity })
             });
-            if (!response.ok) throw new Error('Falha ao atualizar.');
-            alert('Estoque atualizado!');
-            fetchCriticalStock(); 
+            if (!response.ok) throw new Error('Falha ao atualizar estoque.');
+            alert('Estoque atualizado com sucesso.');
+            fetchCriticalStock();
         } catch (err) { alert(err.message); }
     };
-    
-    // Cálculos
-    const totalReorderCost = criticalItems.reduce((sum, item) => sum + parseFloat(item.reorder_cost || 0), 0);
-    const totalReorderItems = criticalItems.reduce((sum, item) => sum + parseInt(item.suggested_reorder_quantity || 0), 0);
+
+    const keyframes = `
+        @keyframes surgir { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-surgir { animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    `;
+
+    const StatCard = ({ icon, label, value, hint, tone = 'text-[#f2bd46]' }) => (
+        <div className="bg-black/50 border border-gray-700/60 rounded-3xl p-5 shadow-xl relative overflow-hidden animate-surgir">
+            <div className="flex items-center gap-3 mb-3"><div className={`p-3 rounded-2xl bg-black/60 border border-gray-800 ${tone}`}>{icon}</div><span className="text-[11px] uppercase tracking-widest font-black text-gray-500">{label}</span></div>
+            <p className={`text-2xl font-black ${tone}`}>{value}</p>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">{hint}</p>
+        </div>
+    );
 
     return (
-        <div className="flex flex-col gap-8 pb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Gestão de Riscos (Estoque/Validade)</h2>
-            
-            {/* --- SELETOR DE CONDOMÍNIO --- */}
-            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
-                <label className="text-sm text-gray-400 mb-1 block">Analisar Condomínio:</label>
-                <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-[#f2bd46] outline-none transition">
+        <div className="flex flex-col gap-8 pb-12">
+            <style>{keyframes}</style>
+            <div className="animate-surgir border-b border-gray-800/80 pb-6">
+                <p className="text-xs font-black text-[#f2bd46] uppercase tracking-[0.3em] mb-2">controle operacional</p>
+                <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Validades e Críticos</h2>
+                <p className="text-gray-400 text-sm mt-2 max-w-2xl">Tela redesenhada para mostrar rapidamente o que vence, o que precisa repor e quanto custa normalizar a máquina.</p>
+            </div>
+
+            <div className="bg-black/60 backdrop-blur-2xl p-5 rounded-3xl border border-gray-700/80 animate-surgir">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Máquina analisada</label>
+                <select onChange={(e) => setSelectedCondoId(e.target.value)} value={selectedCondoId} className="w-full md:max-w-md bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] outline-none transition">
                     {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
 
-            {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : (
+            {isLoading ? <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-[#f2bd46]" size={48} /></div> : error ? <div className="p-6 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400">{error}</div> : (
                 <>
-                    {/* ======================================================= */}
-                    {/* --- SEÇÃO 1: VENCIMENTO (EXPIRATION) --- */}
-                    {/* ======================================================= */}
-                    <div>
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-400">
-                            <Calendar className="text-red-500" /> Vencimento Próximo (30 dias)
-                        </h3>
-                        
-                        {expiringSoonItems.length > 0 ? (
-                            <>
-                                {/* VISÃO PC */}
-                                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700 shadow-md">
-                                    <table className="w-full text-left">
-                                        <thead className="bg-[#1a1a1a] text-gray-200">
-                                            <tr>
-                                                <th className="p-4">Produto</th>
-                                                <th className="p-4 text-center">Quantidade no Lote</th>
-                                                <th className="p-4 text-center">Data de Vencimento</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-700">
-                                            {expiringSoonItems.map((item) => (
-                                                <tr key={item.product_id} className="hover:bg-[#1a1a1a]/50 transition">
-                                                    <td className="p-4 font-medium">{item.product_name}</td>
-                                                    <td className="p-4 text-center">{item.quantity} un.</td>
-                                                    <td className="p-4 text-center font-bold text-red-400 bg-red-900/10">
-                                                        {new Date(item.nearest_expiration_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* VISÃO MOBILE (Cards de Alerta) */}
-                                <div className="md:hidden flex flex-col gap-3">
-                                    {expiringSoonItems.map((item) => (
-                                        <div key={item.product_id} className="bg-[#1a1a1a] border-l-4 border-red-500 rounded-r-lg p-4 shadow-md flex justify-between items-center">
-                                            <div>
-                                                <h4 className="font-bold text-white text-lg">{item.product_name}</h4>
-                                                <p className="text-sm text-gray-400">Lote com: <span className="text-white font-bold">{item.quantity} un.</span></p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-xs text-red-400 font-bold uppercase mb-1">Vence em</p>
-                                                <p className="text-lg font-bold text-white bg-red-600 px-2 py-1 rounded">
-                                                    {new Date(item.nearest_expiration_date).toLocaleDateString('pt-BR', {day: '2-digit', month:'2-digit'})}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="border-gray-700 p-6 rounded-lg text-center border border-dashed border-gray-600">
-                                <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
-                                <p className="text-gray-400">Tudo certo! Nenhum produto vencendo nos próximos 30 dias.</p>
-                            </div>
-                        )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <StatCard icon={<Calendar size={22}/>} label="Produtos vencendo" value={expiringSoonItems.length} hint="Lotes com vencimento nos próximos 30 dias" tone="text-red-400" />
+                        <StatCard icon={<AlertTriangle size={22}/>} label="Críticos" value={criticalItems.length} hint="Produtos abaixo do nível mínimo definido" tone="text-yellow-400" />
+                        <StatCard icon={<Flame size={22}/>} label="Urgentes" value={urgentExpirations} hint="Vencimentos em até 7 dias" tone="text-orange-400" />
+                        <StatCard icon={<DollarSign size={22}/>} label="Reposição sugerida" value={money(totalReorderCost)} hint={`${totalReorderItems} unidades sugeridas para compra`} tone="text-teal-400" />
                     </div>
 
-                    {/* ======================================================= */}
-                    {/* --- SEÇÃO 2: REPOSIÇÃO (CRITICAL STOCK) --- */}
-                    {/* ======================================================= */}
-                    <div className="mt-4">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-400">
-                            <AlertTriangle className="text-yellow-500" /> Reposição Necessária
-                        </h3>
-
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 flex items-center gap-4">
-                                <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-400"><DollarSign size={24} /></div>
-                                <div><p className="text-sm text-gray-400">Custo Est. Reposição</p><p className="text-xl font-bold text-white">R$ {totalReorderCost.toFixed(2)}</p></div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <section className="bg-black/40 border border-gray-700/60 rounded-3xl overflow-hidden shadow-2xl animate-surgir">
+                            <div className="p-6 border-b border-gray-800 bg-red-500/5">
+                                <h3 className="text-xl font-black text-red-400 flex items-center gap-2"><Calendar /> Vencimentos próximos</h3>
+                                <p className="text-xs text-gray-500 mt-1">Priorize estes produtos para promoção, retirada ou reposicionamento.</p>
                             </div>
-                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 flex items-center gap-4">
-                                <div className="p-3 bg-blue-500/20 rounded-full text-blue-400"><Package size={24} /></div>
-                                <div><p className="text-sm text-gray-400">Itens a Comprar</p><p className="text-xl font-bold text-white">{totalReorderItems} un.</p></div>
+                            <div className="p-4 flex flex-col gap-3 max-h-[520px] overflow-y-auto">
+                                {expiringSoonItems.length > 0 ? expiringSoonItems.map(item => (
+                                    <div key={item.product_id} className="bg-black/50 border border-red-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div><h4 className="font-black text-white">{item.product_name}</h4><p className="text-xs text-gray-500 mt-1">Lote com <b className="text-gray-300">{item.quantity} un.</b></p></div>
+                                        <div className="text-left sm:text-right"><p className="text-[10px] uppercase tracking-widest font-black text-red-400">Vencimento</p><p className="text-lg font-black text-white">{formatDate(item.nearest_expiration_date)}</p></div>
+                                    </div>
+                                )) : <div className="text-center p-10 text-gray-500"><CheckCircle2 className="mx-auto text-green-500 mb-3" size={42}/><p className="font-bold text-gray-300">Nenhum vencimento crítico encontrado.</p><p className="text-sm">A máquina está saudável nesse ponto.</p></div>}
                             </div>
-                        </div>
+                        </section>
 
-                        {criticalItems.length > 0 ? (
-                            <>
-                                {/* VISÃO PC */}
-                                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700 shadow-md">
-                                    <table className="w-full text-left">
-                                        <thead className="bg-[#1a1a1a] text-gray-200">
-                                            <tr>
-                                                <th className="p-4">Produto</th>
-                                                <th className="p-4 text-center">Nível Mínimo</th>
-                                                <th className="p-4 text-center">Sugestão Compra</th>
-                                                <th className="p-4 text-center">Custo Est.</th>
-                                                <th className="p-4 w-48">Estoque Atual (Ajustar)</th>
-                                                <th className="p-4 text-center">Ação</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-700">
-                                            {criticalItems.map((item) => (
-                                                <tr key={item.product_id} className="hover:bg-[#1a1a1a]/50 transition">
-                                                    <td className="p-4 font-medium">{item.product_name}</td>
-                                                    <td className="p-4 text-center text-gray-400">{item.critical_stock_level}</td>
-                                                    <td className="p-4 text-center font-bold text-blue-400">+{item.suggested_reorder_quantity}</td>
-                                                    <td className="p-4 text-center text-yellow-400">R$ {parseFloat(item.reorder_cost).toFixed(2)}</td>
-                                                    <td className="p-4">
-                                                        <input type="number" value={inventoryQuantities[item.product_id] || 0} onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} className="w-full bg-black p-2 rounded border border-gray-600 focus:border-[#f2bd46] text-center text-white" />
-                                                    </td>
-                                                    <td className="p-4 text-center">
-                                                        <button onClick={() => handleSaveInventory(item.product_id)} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition"><Save size={18} /></button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* VISÃO MOBILE (Action Cards) */}
-                                <div className="md:hidden flex flex-col gap-4">
-                                    {criticalItems.map((item) => (
-                                        <div key={item.product_id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
-                                            {/* Badge de Sugestão */}
-                                            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                                                Comprar +{item.suggested_reorder_quantity}
-                                            </div>
-
-                                            <div className="mb-4 pr-16">
-                                                <h4 className="font-bold text-white text-lg">{item.product_name}</h4>
-                                                <p className="text-xs text-gray-400">Custo Est: <span className="text-yellow-400 font-bold">R$ {parseFloat(item.reorder_cost).toFixed(2)}</span></p>
-                                            </div>
-                                            
-                                            <div className="bg-black/50 p-3 rounded-lg border border-gray-700/50 mb-3 flex justify-between items-center">
-                                                <span className="text-xs text-gray-400">Mínimo Ideal: <strong className="text-gray-200">{item.critical_stock_level}</strong></span>
-                                                <span className="text-xs text-red-400 font-bold flex items-center gap-1"><ArrowDownToLine size={12}/> Abaixo do nível</span>
-                                            </div>
-
-                                            <div className="flex items-end gap-3">
-                                                <div className="flex-grow">
-                                                    <label className="text-xs text-gray-500 block mb-1">Ajustar Estoque Real</label>
-                                                    <input 
-                                                        type="number" 
-                                                        value={inventoryQuantities[item.product_id] || 0} 
-                                                        onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} 
-                                                        className="w-full bg-black p-3 rounded-lg border border-gray-600 focus:border-[#f2bd46] text-white font-bold text-lg" 
-                                                    />
-                                                </div>
-                                                <button 
-                                                    onClick={() => handleSaveInventory(item.product_id)} 
-                                                    className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg h-[52px] w-[52px] flex items-center justify-center shadow-lg shadow-green-600/20"
-                                                >
-                                                    <Save size={24} />
-                                                </button>
-                                            </div>
+                        <section className="bg-black/40 border border-gray-700/60 rounded-3xl overflow-hidden shadow-2xl animate-surgir">
+                            <div className="p-6 border-b border-gray-800 bg-yellow-500/5">
+                                <h3 className="text-xl font-black text-yellow-400 flex items-center gap-2"><AlertTriangle /> Estoque crítico</h3>
+                                <p className="text-xs text-gray-500 mt-1">Ajuste a quantidade atual ou use a sugestão de reposição como lista de compra.</p>
+                            </div>
+                            <div className="p-4 flex flex-col gap-3 max-h-[520px] overflow-y-auto">
+                                {criticalItems.length > 0 ? criticalItems.map(item => (
+                                    <div key={item.product_id} className="bg-black/50 border border-yellow-500/20 rounded-2xl p-4">
+                                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+                                            <div><h4 className="font-black text-white">{item.product_name}</h4><p className="text-xs text-gray-500 mt-1">Crítico em: <b className="text-yellow-300">{item.critical_stock_level} un.</b> • Repor: <b className="text-teal-300">{item.suggested_reorder_quantity || 0} un.</b></p></div>
+                                            <div className="text-left md:text-right"><p className="text-[10px] uppercase tracking-widest font-black text-gray-500">Custo estimado</p><p className="text-lg font-black text-teal-400">{money(item.reorder_cost)}</p></div>
                                         </div>
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="border-gray-700 p-6 rounded-lg text-center border border-dashed border-gray-600">
-                                <CheckCircle2 className="mx-auto text-green-500 mb-2" size={32} />
-                                <p className="text-gray-400">Estoque saudável! Nenhum produto abaixo do nível crítico.</p>
+                                        <div className="flex gap-3">
+                                            <input type="number" value={inventoryQuantities[item.product_id] ?? item.quantity} onChange={(e) => handleInventoryChange(item.product_id, e.target.value)} className="w-28 bg-black border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#f2bd46]" />
+                                            <button onClick={() => handleSaveInventory(item.product_id)} className="flex-1 bg-[#f2bd46] text-black font-black rounded-xl px-4 py-2 hover:bg-[#e0af40] transition flex items-center justify-center gap-2"><Save size={16}/> Salvar estoque</button>
+                                        </div>
+                                    </div>
+                                )) : <div className="text-center p-10 text-gray-500"><CheckCircle2 className="mx-auto text-green-500 mb-3" size={42}/><p className="font-bold text-gray-300">Nenhum produto abaixo do mínimo.</p><p className="text-sm">A máquina está abastecida.</p></div>}
                             </div>
-                        )}
+                        </section>
                     </div>
                 </>
             )}
@@ -5106,174 +3697,12 @@ const CriticalStockPage = ({ condominiums, token }) => {
     );
 };
 
-// App.js -> SUBSTITUA o seu componente UserManagementPage por este
-
-const UserManagementPage = ({ condominiums, token }) => { 
-    const [usersData, setUsersData] = React.useState({ users: [], pagination: {} });
-    const [currentPage, setCurrentPage] = React.useState(1);
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [selectedUser, setSelectedUser] = React.useState(null);
-    const [searchQuery, setSearchQuery] = React.useState('');
-
-    // --- FETCH ---
-    const fetchUsers = React.useCallback(async (page = 1) => {
-        setIsLoading(true); setError(''); setCurrentPage(page);
-        try {
-            const response = await fetch(`${API_URL}/api/admin/users-paginated?page=${page}&limit=10`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            if (!response.ok) throw new Error('Falha ao buscar utilizadores.');
-            const data = await response.json();
-            setUsersData(data);
-        } catch (err) {
-            setError(err.message);
-            setUsersData({ users: [], pagination: {} });
-        } finally {
-            setIsLoading(false);
-        }
-    }, [token]);
-
-    React.useEffect(() => { fetchUsers(1); }, [fetchUsers]);
-
-    const handleOpenModal = (user) => { setSelectedUser(user); setIsModalOpen(true); };
-    const handleCloseModal = () => { setIsModalOpen(false); setSelectedUser(null); };
-    const handleSaveUser = () => { fetchUsers(currentPage); };
-    
-    // Filtro local da página atual (para busca rápida)
-    const filteredUsers = usersData.users?.filter(user => 
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        user.cpf.includes(searchQuery)
-    ) || [];
-
-    return (
-        <div className="flex flex-col gap-6">
-            <UserEditModal user={selectedUser} isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveUser} token={token} />
-            
-            <h2 className="text-2xl md:text-3xl font-bold">Gestão de Utilizadores</h2>
-            
-            {/* --- BARRA DE PESQUISA RESPONSIVA --- */}
-            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
-                <label className="text-sm text-gray-400 mb-1 block">Procurar Utilizador</label>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input 
-                        type="text" 
-                        placeholder="Nome ou CPF..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-black border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:border-[#f2bd46] outline-none transition"
-                    />
-                </div>
-            </div>
-            
-            {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : error ? <p className="text-red-400 text-center bg-red-900/20 p-4 rounded-lg">{error}</p> : (
-                <>
-                    {/* --- VISÃO PC (Tabela Detalhada) --- */}
-                    <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
-                        <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-[#1a1a1a] text-gray-200">
-                                <tr>
-                                    <th className="p-4">Utilizador</th>
-                                    <th className="p-4">CPF</th>
-                                    <th className="p-4">Apartamento</th>
-                                    <th className="p-4">Máquina</th>
-                                    <th className="p-4">Saldo</th>
-                                    <th className="p-4 text-center">Status</th>
-                                    <th className="p-4 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                                    <tr key={user.id} className="hover:bg-[#1a1a1a]/50 transition">
-                                        <td className="p-4 flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg">
-                                                {user.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <span className="font-medium">{user.name}</span>
-                                        </td>
-                                        <td className="p-4 text-gray-300">{user.cpf}</td>
-                                        <td className="p-4 text-gray-300">{user.apartment || '-'}</td>
-                                        <td className="p-4 text-gray-400 text-sm">{user.condo_name || 'N/A'}</td>
-                                        <td className="p-4 font-bold text-green-400">R$ {parseFloat(user.wallet_balance || 0).toFixed(2)}</td>
-                                        <td className="p-4 text-center">
-                                            {user.is_active ? 
-                                                <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-bold">ATIVO</span> : 
-                                                <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1"><Ban size={12}/> BLOQ.</span>
-                                            }
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <button onClick={() => handleOpenModal(user)} className="bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/30 font-bold py-1 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition mx-auto">
-                                                <Edit size={14} /> Editar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan="7" className="text-center p-8 text-gray-500">Nenhum utilizador encontrado.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* --- VISÃO MOBILE (Cards de Perfil) --- */}
-                    <div className="md:hidden flex flex-col gap-4">
-                        {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                            <div key={user.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
-                                {/* Status Dot */}
-                                <div className={`absolute top-4 right-4 h-3 w-3 rounded-full ${user.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`}></div>
-
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-16 w-16 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-2xl border-2 border-gray-600">
-                                        {user.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white text-lg">{user.name}</h3>
-                                        <p className="text-sm text-gray-400">{user.cpf}</p>
-                                        <p className="text-xs text-gray-500">{user.condo_name || 'Sem Condomínio'}</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="bg-black/50 p-3 rounded-lg border border-gray-700/50 mb-4 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase">Saldo em Carteira</p>
-                                        <p className="text-xl font-bold text-green-400">R$ {parseFloat(user.wallet_balance || 0).toFixed(2)}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-gray-500 uppercase">Apartamento</p>
-                                        <p className="text-lg font-bold text-white">{user.apartment || '-'}</p>
-                                    </div>
-                                </div>
-
-                                <button 
-                                    onClick={() => handleOpenModal(user)} 
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20"
-                                >
-                                    <Edit size={18} /> Gerenciar Conta
-                                </button>
-                            </div>
-                        )) : (
-                            <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
-                                <UsersIcon size={48} className="mx-auto mb-3 opacity-20" />
-                                <p>Nenhum utilizador encontrado.</p>
-                            </div>
-                        )}
-                    </div>
-                    
-                    {/* Paginação */}
-                    <div className="mt-4">
-                         <Pagination currentPage={currentPage} totalPages={Math.ceil((usersData?.pagination?.total || 0) / (usersData?.pagination?.limit || 10))} onPageChange={fetchUsers} />
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
+const UserManagementPage = () => null;
 
 const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
     const handleRemoteUnlock = async (fridgeId) => {
         if (!fridgeId) {
-            alert('Este condomínio não tem um ID de geladeira definido.');
+            alert('Esta máquina não tem um ID de geladeira definido.');
             return;
         }
         if (window.confirm(`Tem a certeza que quer destravar remotamente a geladeira ${fridgeId}?`)) {
@@ -5294,9 +3723,9 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
         <div>
             {/* --- BOTÃO "NOVO CONDOMÍNIO" RESTAURADO --- */}
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
+                <h2 className="text-2xl font-bold">Gestão de Máquinas</h2>
                 <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                    <PlusCircle size={20} /> Novo Condomínio
+                    <PlusCircle size={20} /> Nova Máquina
                 </button>
             </div>
             <div className="bg-[#1a1a1a] rounded-lg overflow-x-auto">
@@ -5305,7 +3734,7 @@ const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
                     <thead className="bg-[#1a1a1a]">
                         <tr>
                             <th className="p-4">Nome</th>
-                            <th className="p-4">ID da Geladeira</th>
+                            <th className="p-4">ID da Máquina</th>
                             <th className="p-4">Síndico</th>
                             <th className="p-4">Ações</th>
                         </tr>
@@ -5637,13 +4066,13 @@ const StockManagement = ({ condominiums, token }) => {
                 
                 <div className="flex flex-col md:flex-row gap-5 items-end relative z-10">
                     <div className="w-full md:w-1/3">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Selecionar Condomínio</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Selecionar Máquina</label>
                         <select 
                             onChange={(e) => setSelectedCondoId(e.target.value)} 
                             value={selectedCondoId} 
                             className="w-full bg-black/50 border border-gray-600 rounded-xl py-3.5 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all cursor-pointer appearance-none"
                         >
-                            <option value="">-- Selecione o Condomínio --</option>
+                            <option value="">-- Selecione o Máquina --</option>
                             {condominiums.map(condo => <option key={condo.id} value={condo.id}>{condo.name}</option>)}
                         </select>
                     </div>
@@ -5718,7 +4147,7 @@ const StockManagement = ({ condominiums, token }) => {
                                                 <button 
                                                     onClick={() => handleRemoveProduct(product.id, product.name)} 
                                                     className="text-red-400 bg-red-400/10 hover:bg-red-400/20 border border-red-400/20 p-2.5 rounded-xl transition-all"
-                                                    title="Remover do Condomínio"
+                                                    title="Remover do Máquina"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
@@ -5796,15 +4225,13 @@ const StockManagement = ({ condominiums, token }) => {
 
 // App.js -> SUBSTITUA o seu componente FinanceReport por este
 
+
 const FinanceReport = ({ condominiums, token }) => {
-    // === ESTADOS ===
     const [reportData, setReportData] = React.useState([]);
     const [expenses, setExpenses] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState('');
     const [filterInputs, setFilterInputs] = React.useState({ condoId: 'all', startDate: '', endDate: '' });
-    
-    // Modal
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [newExpense, setNewExpense] = React.useState({ description: '', amount: '', due_date: '', condo_id: '', recurrence_type: '' });
     const [modalError, setModalError] = React.useState('');
@@ -5815,18 +4242,16 @@ const FinanceReport = ({ condominiums, token }) => {
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     };
 
-    // === FETCH ===
     const fetchReport = React.useCallback(async () => {
         setIsLoading(true); setError('');
         const params = new URLSearchParams({ condoId: filterInputs.condoId });
         if (filterInputs.startDate) params.append('startDate', filterInputs.startDate);
         if (filterInputs.endDate) params.append('endDate', filterInputs.endDate);
-        
         try {
             const response = await fetch(`${API_URL}/api/admin/finance/report?${params.toString()}`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Falha ao buscar relatório.');
-            setReportData(data);
+            if (!response.ok) throw new Error(data.message || 'Falha ao buscar relatório financeiro.');
+            setReportData(Array.isArray(data) ? data : []);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [filterInputs, token]);
 
@@ -5835,40 +4260,38 @@ const FinanceReport = ({ condominiums, token }) => {
             const response = await fetch(`${API_URL}/api/admin/finance/expenses`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Falha ao buscar despesas.');
             const data = await response.json();
-            setExpenses(data);
+            setExpenses(Array.isArray(data) ? data : []);
         } catch (err) { setError(err.message); }
     }, [token]);
 
     React.useEffect(() => { fetchReport(); fetchExpenses(); }, [fetchReport, fetchExpenses]);
 
-    // === HANDLERS ===
-    const handleInputChange = (e) => { setFilterInputs(prev => ({ ...prev, [e.target.name]: e.target.value })); };
+    const money = (value) => `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}`;
+    const percent = (value) => `${Number(value || 0).toFixed(1).replace('.', ',')}%`;
+    const handleInputChange = (e) => setFilterInputs(prev => ({ ...prev, [e.target.name]: e.target.value }));
     const handleFilterToday = () => {
         const today = getTodayInBrasilia();
         setFilterInputs(prev => ({ ...prev, startDate: today, endDate: today }));
-        fetchReport(); 
     };
-    const handleApplyFilters = () => { fetchReport(); };
+    const handleApplyFilters = () => fetchReport();
+    const handleExpenseChange = (e) => setNewExpense(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-    const handleExpenseChange = (e) => { setNewExpense(prev => ({ ...prev, [e.target.name]: e.target.value })); };
     const handleCreateExpense = async (e) => {
         e.preventDefault(); setModalError('');
-        if (!newExpense.description || !newExpense.amount || !newExpense.due_date) { setModalError('Campos obrigatórios faltando.'); return; }
+        if (!newExpense.description || !newExpense.amount || !newExpense.due_date) { setModalError('Preencha descrição, valor e vencimento.'); return; }
         try {
             const response = await fetch(`${API_URL}/api/admin/finance/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(newExpense) 
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(newExpense)
             });
             if (!response.ok) throw new Error('Falha ao criar despesa.');
             setIsModalOpen(false);
             setNewExpense({ description: '', amount: '', due_date: '', condo_id: '', recurrence_type: '' });
-            fetchExpenses(); 
+            fetchExpenses(); fetchReport();
         } catch (err) { setModalError(err.message); }
     };
 
     const handleMarkAsPaid = async (id) => {
-        if (!window.confirm('Marcar como paga?')) return;
+        if (!window.confirm('Marcar esta despesa como paga?')) return;
         try {
             await fetch(`${API_URL}/api/admin/finance/expenses/${id}/pay`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
             fetchExpenses(); fetchReport();
@@ -5879,217 +4302,129 @@ const FinanceReport = ({ condominiums, token }) => {
         if (!window.confirm('Apagar esta despesa?')) return;
         try {
             await fetch(`${API_URL}/api/admin/finance/expenses/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            fetchExpenses(); 
+            fetchExpenses(); fetchReport();
         } catch (err) { alert(err.message); }
     };
 
-    // Cálculos
-    const summaryCards = React.useMemo(() => {
-        return reportData.reduce((acc, condo) => {
-            acc.gross_revenue += parseFloat(condo.gross_revenue);
-            acc.cost_of_goods_sold += parseFloat(condo.cost_of_goods_sold);
-            acc.net_revenue += parseFloat(condo.net_revenue);
-            acc.syndic_commission += parseFloat(condo.syndic_commission);
-            acc.total_expenses += parseFloat(condo.total_expenses);
-            acc.final_net_profit += parseFloat(condo.final_net_profit);
-            return acc;
-        }, { gross_revenue: 0, cost_of_goods_sold: 0, net_revenue: 0, syndic_commission: 0, total_expenses: 0, final_net_profit: 0 });
-    }, [reportData]);
-    
-    const totalPendingExpenses = React.useMemo(() => {
-        return expenses.filter(expense => expense.status === 'pending').reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-    }, [expenses]);
+    const totals = React.useMemo(() => reportData.reduce((acc, row) => {
+        acc.gross += Number(row.gross_revenue || 0);
+        acc.cmv += Number(row.cost_of_goods_sold || 0);
+        acc.grossProfit += Number(row.net_revenue || 0);
+        acc.commission += Number(row.syndic_commission || 0);
+        acc.expenses += Number(row.total_expenses || 0);
+        acc.net += Number(row.final_net_profit || 0);
+        return acc;
+    }, { gross: 0, cmv: 0, grossProfit: 0, commission: 0, expenses: 0, net: 0 }), [reportData]);
 
-    // Componente de Card
-    const StatCard = ({ label, value, colorClass = 'text-white', icon: Icon, subLabel }) => (
-        <div className="bg-[#1a1a1a] p-4 rounded-xl shadow-md border border-gray-700 flex flex-col justify-between h-full">
-            <div className="flex justify-between items-start mb-2">
-                <p className="text-sm text-gray-400">{label}</p>
-                {Icon && <Icon size={20} className="text-gray-500" />}
-            </div>
-            <div>
-                <p className={`text-2xl font-bold ${colorClass}`}>{value}</p>
-                {subLabel && <p className="text-xs text-gray-500 mt-1">{subLabel}</p>}
-            </div>
+    const margin = totals.gross > 0 ? (totals.net / totals.gross) * 100 : 0;
+    const grossMargin = totals.gross > 0 ? (totals.grossProfit / totals.gross) * 100 : 0;
+    const pendingExpenses = expenses.filter(e => e.status === 'pending').reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const paidExpenses = expenses.filter(e => e.status === 'paid').reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+    const keyframes = `
+        @keyframes surgir { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-surgir { animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    `;
+
+    const StatCard = ({ icon, label, value, hint, tone = 'text-white' }) => (
+        <div className="bg-black/50 border border-gray-700/60 rounded-3xl p-5 shadow-xl animate-surgir">
+            <div className="flex items-center gap-3 mb-3"><div className={`p-3 rounded-2xl bg-black/60 border border-gray-800 ${tone}`}>{icon}</div><p className="text-[11px] uppercase tracking-widest font-black text-gray-500">{label}</p></div>
+            <p className={`text-2xl md:text-3xl font-black ${tone}`}>{value}</p>
+            {hint && <p className="text-xs text-gray-500 mt-2 leading-relaxed">{hint}</p>}
         </div>
     );
 
     return (
-        <div className="flex flex-col gap-8 pb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Relatórios Financeiros</h2>
+        <div className="flex flex-col gap-8 pb-12">
+            <style>{keyframes}</style>
+            <div className="animate-surgir border-b border-gray-800/80 pb-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                <div>
+                    <p className="text-xs font-black text-[#f2bd46] uppercase tracking-[0.3em] mb-2">relatório preciso</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Relatórios</h2>
+                    <p className="text-gray-400 text-sm mt-2 max-w-3xl">DRE didático para entender quanto entrou, quanto custou, quanto sobrou e qual margem real da operação.</p>
+                </div>
+                <button onClick={() => setIsModalOpen(true)} className="bg-[#f2bd46] text-black font-black px-5 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#e0af40] transition"><PlusCircle size={18}/> Nova despesa</button>
+            </div>
 
-            {/* --- FILTROS RESPONSIVOS --- */}
-            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-md">
+            <div className="bg-black/60 backdrop-blur-2xl p-5 rounded-3xl border border-gray-700/80 animate-surgir">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                    <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">Condomínio</label>
-                        <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none">
-                            <option value="all">Todos</option>
-                            {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                    </div>
-                    <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">De</label>
-                        <input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
-                    </div>
-                    <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-1 block">Até</label>
-                        <input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#f2bd46] outline-none" />
-                    </div>
-                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20">Hoje</button>
-                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-lg shadow-[#f2bd46]/20">
-                        <Filter size={16} /> Aplicar
-                    </button>
+                    <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Máquina</label><select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] outline-none"><option value="all">Todas as máquinas</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+                    <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">De</label><input name="startDate" type="date" onChange={handleInputChange} value={filterInputs.startDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] outline-none [color-scheme:dark]" /></div>
+                    <div><label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Até</label><input name="endDate" type="date" onChange={handleInputChange} value={filterInputs.endDate} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] outline-none [color-scheme:dark]" /></div>
+                    <button onClick={handleFilterToday} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 px-4 rounded-xl transition flex justify-center items-center gap-2"><Clock size={18}/> Hoje</button>
+                    <button onClick={handleApplyFilters} className="w-full bg-[#f2bd46] hover:bg-[#e0af40] text-black font-extrabold py-3 px-4 rounded-xl transition flex justify-center items-center gap-2"><Filter size={18}/> Aplicar</button>
                 </div>
             </div>
 
-            {/* --- RELATÓRIO DRE (CARDS) --- */}
-            <div>
-                <h3 className="text-xl font-bold mb-4 text-[#f2bd46] border-b border-gray-700 pb-2">Demonstrativo (DRE)</h3>
-                {isLoading ? <Loader2 className="animate-spin mx-auto text-[#f2bd46]" size={40} /> : error ? <p className="text-red-400">{error}</p> : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <StatCard label="Faturamento Bruto" value={`R$ ${summaryCards.gross_revenue.toFixed(2)}`} colorClass="text-green-400" icon={DollarSign} />
-                        <StatCard label="Custo Produtos (CMV)" value={`- R$ ${summaryCards.cost_of_goods_sold.toFixed(2)}`} colorClass="text-red-400" icon={ShoppingCart} />
-                        <StatCard label="Lucro Bruto" value={`R$ ${summaryCards.net_revenue.toFixed(2)}`} colorClass="text-blue-400" subLabel="Faturamento - CMV" icon={PieChart} />
-                        
-                        <StatCard label="Comissões (Síndicos)" value={`- R$ ${summaryCards.syndic_commission.toFixed(2)}`} colorClass="text-red-400" icon={UsersIcon} />
-                        <StatCard label="Despesas Pagas" value={`- R$ ${summaryCards.total_expenses.toFixed(2)}`} colorClass="text-red-400" icon={FileText} />
-                        
-                        {/* LUCRO LÍQUIDO DESTACADO */}
-                        <div className="bg-gradient-to-br from-gray-800 to-gray-700 p-4 rounded-xl shadow-lg border-2 border-green-500/50 flex flex-col justify-center items-center h-full sm:col-span-2 lg:col-span-1">
-                            <p className="text-sm text-gray-300 uppercase font-bold tracking-wider mb-1">Lucro Líquido Final</p>
-                            <p className="text-3xl md:text-4xl font-extrabold text-green-400">R$ {summaryCards.final_net_profit.toFixed(2)}</p>
-                        </div>
+            {isLoading ? <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-[#f2bd46]" size={48} /></div> : error ? <div className="p-6 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400">{error}</div> : (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <StatCard icon={<DollarSign size={22}/>} label="1. Faturamento bruto" value={money(totals.gross)} hint="Tudo que entrou em vendas aprovadas" tone="text-green-400" />
+                        <StatCard icon={<ShoppingCart size={22}/>} label="2. CMV" value={`- ${money(totals.cmv)}`} hint="Custo dos produtos vendidos" tone="text-red-400" />
+                        <StatCard icon={<PieChart size={22}/>} label="3. Lucro bruto" value={money(totals.grossProfit)} hint={`Margem bruta: ${percent(grossMargin)}`} tone="text-blue-400" />
+                        <StatCard icon={<PiggyBank size={22}/>} label="4. Lucro líquido" value={money(totals.net)} hint={`Margem líquida: ${percent(margin)}`} tone={totals.net >= 0 ? 'text-teal-400' : 'text-red-400'} />
                     </div>
-                )}
-            </div>
 
-            {/* --- SEÇÃO 2: DESPESAS --- */}
-            <div className="mt-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-700 pb-4">
-                    <div>
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <FileText className="text-[#f2bd46]" /> Contas a Pagar
-                        </h3>
-                        <p className="text-sm text-gray-400 mt-1">Total Pendente: <span className="text-yellow-400 font-bold">R$ {totalPendingExpenses.toFixed(2)}</span></p>
-                    </div>
-                    <button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-[#f2bd46]/20 transition hover:scale-105">
-                        <PlusCircle size={20} /> Nova Despesa
-                    </button>
-                </div>
-
-                {/* VISÃO PC (Tabela) */}
-                <div className="hidden md:block bg-[#1a1a1a] rounded-lg overflow-x-auto shadow-md border border-gray-700">
-                    <table className="w-full text-left whitespace-nowrap">
-                        <thead className="bg-[#1a1a1a] text-gray-200">
-                            <tr>
-                                <th className="p-4">Vencimento</th>
-                                <th className="p-4">Descrição</th>
-                                <th className="p-4">Condomínio</th>
-                                <th className="p-4">Valor</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4 text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-700">
-                            {expenses.length > 0 ? expenses.map(expense => (
-                                <tr key={expense.id} className="hover:bg-[#1a1a1a]/50 transition">
-                                    <td className="p-4 text-gray-300">{new Date(expense.due_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
-                                    <td className="p-4 font-medium">
-                                        {expense.description}
-                                        {expense.recurrence_type && <span className="text-xs text-cyan-400 ml-2 px-1.5 py-0.5 rounded border border-cyan-500/30 bg-cyan-500/10 uppercase">{expense.recurrence_type === 'monthly' ? 'Mensal' : 'Anual'}</span>}
-                                    </td>
-                                    <td className="p-4 text-gray-400 text-sm">{expense.condo_name || 'Geral'}</td>
-                                    <td className="p-4 font-bold text-white">R$ {parseFloat(expense.amount).toFixed(2)}</td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${expense.status === 'paid' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
-                                            {expense.status === 'paid' ? 'PAGO' : 'PENDENTE'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 flex justify-center gap-2">
-                                        {expense.status === 'pending' && <button onClick={() => handleMarkAsPaid(expense.id)} className="text-green-400 hover:bg-green-500/10 p-2 rounded" title="Pagar"><CheckCircle2 size={18} /></button>}
-                                        <button onClick={() => handleDeleteExpense(expense.id)} className="text-red-400 hover:bg-red-500/10 p-2 rounded" title="Apagar"><Trash2 size={18} /></button>
-                                    </td>
-                                </tr>
-                            )) : <tr><td colSpan="6" className="text-center p-8 text-gray-500">Nenhuma despesa registrada.</td></tr>}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* VISÃO MOBILE (Cards) */}
-                <div className="md:hidden flex flex-col gap-4">
-                    {expenses.length > 0 ? expenses.map(expense => (
-                        <div key={expense.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-700 shadow-lg relative">
-                            {/* Status Stripe */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${expense.status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                            
-                            <div className="pl-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-bold text-white text-lg">{expense.description}</h4>
-                                    <span className={`px-2 py-1 rounded text-[10px] font-bold ${expense.status === 'paid' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
-                                        {expense.status === 'paid' ? 'PAGO' : 'PENDENTE'}
-                                    </span>
-                                </div>
-                                
-                                <div className="flex justify-between text-sm text-gray-400 mb-4">
-                                    <span>Vence: {new Date(expense.due_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
-                                    <span className="font-bold text-white text-lg">R$ {parseFloat(expense.amount).toFixed(2)}</span>
-                                </div>
-                                
-                                <div className="flex gap-2 border-t border-gray-700 pt-3">
-                                    {expense.status === 'pending' && (
-                                        <button onClick={() => handleMarkAsPaid(expense.id)} className="flex-1 bg-green-600/10 text-green-400 hover:bg-green-600/20 py-2 rounded-lg flex items-center justify-center gap-2 font-bold text-sm transition border border-green-600/20">
-                                            <CheckCircle2 size={16} /> Pagar
-                                        </button>
-                                    )}
-                                    <button onClick={() => handleDeleteExpense(expense.id)} className="flex-1 bg-red-600/10 text-red-400 hover:bg-red-600/20 py-2 rounded-lg flex items-center justify-center gap-2 font-bold text-sm transition border border-red-600/20">
-                                        <Trash2 size={16} /> Excluir
-                                    </button>
-                                </div>
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <section className="xl:col-span-2 bg-black/40 border border-gray-700/60 rounded-3xl overflow-hidden shadow-2xl animate-surgir">
+                            <div className="p-6 border-b border-gray-800"><h3 className="text-xl font-black text-white">DRE por máquina</h3><p className="text-xs text-gray-500 mt-1">Leitura: faturamento - CMV = lucro bruto; depois desconta comissão, despesas e sobra o líquido.</p></div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-black/70 text-gray-500 uppercase text-[11px] tracking-widest"><tr><th className="p-4">Máquina</th><th className="p-4 text-right">Faturamento</th><th className="p-4 text-right">CMV</th><th className="p-4 text-right">Lucro bruto</th><th className="p-4 text-right">Comissão</th><th className="p-4 text-right">Despesas</th><th className="p-4 text-right">Líquido</th></tr></thead>
+                                    <tbody className="divide-y divide-gray-800">
+                                        {reportData.length > 0 ? reportData.map((row, idx) => (
+                                            <tr key={idx} className="hover:bg-white/[0.03] transition-colors">
+                                                <td className="p-4 font-bold text-white">{row.condo_name || row.name || 'Máquina'}</td>
+                                                <td className="p-4 text-right text-green-400 font-bold">{money(row.gross_revenue)}</td>
+                                                <td className="p-4 text-right text-red-400 font-bold">{money(row.cost_of_goods_sold)}</td>
+                                                <td className="p-4 text-right text-blue-400 font-bold">{money(row.net_revenue)}</td>
+                                                <td className="p-4 text-right text-red-300 font-bold">{money(row.syndic_commission)}</td>
+                                                <td className="p-4 text-right text-red-300 font-bold">{money(row.total_expenses)}</td>
+                                                <td className={`p-4 text-right font-black ${Number(row.final_net_profit || 0) >= 0 ? 'text-teal-400' : 'text-red-400'}`}>{money(row.final_net_profit)}</td>
+                                            </tr>
+                                        )) : <tr><td colSpan="7" className="p-10 text-center text-gray-500">Nenhum dado no período.</td></tr>}
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                    )) : (
-                        <div className="text-center p-8 bg-[#1a1a1a] rounded-xl text-gray-500 border border-gray-700">
-                            <FileText size={48} className="mx-auto mb-3 opacity-20" />
-                            <p>Nenhuma despesa encontrada.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+                        </section>
 
-            {/* Modal de Despesa */}
+                        <section className="bg-black/40 border border-gray-700/60 rounded-3xl p-6 shadow-2xl animate-surgir">
+                            <h3 className="text-xl font-black text-white mb-2">Despesas</h3>
+                            <p className="text-xs text-gray-500 mb-5">Controle financeiro auxiliar para não distorcer o lucro líquido.</p>
+                            <div className="grid grid-cols-2 gap-3 mb-5"><div className="bg-black/50 border border-gray-800 rounded-2xl p-4"><p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Pendentes</p><p className="text-red-400 font-black">{money(pendingExpenses)}</p></div><div className="bg-black/50 border border-gray-800 rounded-2xl p-4"><p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Pagas</p><p className="text-green-400 font-black">{money(paidExpenses)}</p></div></div>
+                            <div className="space-y-3 max-h-[360px] overflow-y-auto">
+                                {expenses.length > 0 ? expenses.slice(0, 20).map(expense => (
+                                    <div key={expense.id} className="bg-black/50 border border-gray-800 rounded-2xl p-4">
+                                        <div className="flex justify-between gap-3 mb-2"><p className="font-bold text-white text-sm">{expense.description}</p><p className="font-black text-[#f2bd46]">{money(expense.amount)}</p></div>
+                                        <p className="text-xs text-gray-500 mb-3">Vence em {expense.due_date ? new Date(expense.due_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}</p>
+                                        <div className="flex gap-2"><button disabled={expense.status === 'paid'} onClick={() => handleMarkAsPaid(expense.id)} className="flex-1 bg-green-500/10 text-green-400 border border-green-500/30 rounded-lg py-2 text-xs font-bold disabled:opacity-40">{expense.status === 'paid' ? 'Paga' : 'Marcar paga'}</button><button onClick={() => handleDeleteExpense(expense.id)} className="px-3 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg"><Trash2 size={14}/></button></div>
+                                    </div>
+                                )) : <p className="text-center text-gray-500 p-8">Nenhuma despesa cadastrada.</p>}
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="bg-[#f2bd46]/10 border border-[#f2bd46]/30 rounded-3xl p-6 animate-surgir">
+                        <h3 className="text-[#f2bd46] font-black text-lg flex items-center gap-2 mb-2"><Info size={20}/> Como interpretar</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">Se o faturamento está alto mas o líquido está baixo, olhe primeiro CMV e despesas. Se o CMV estiver pesado, revise preço/custo dos produtos. Se despesas estiverem altas, separe custo fixo, comissão e perdas para o backend calcular com mais precisão.</p>
+                    </div>
+                </>
+            )}
+
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
-                        <h2 className="text-xl font-bold mb-6 text-white">Nova Despesa</h2>
-                        <form onSubmit={handleCreateExpense}>
-                            <div className="space-y-4">
-                                <div><label className="text-sm text-gray-400 block mb-1">Descrição</label><input type="text" name="description" value={newExpense.description} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
-                                <div><label className="text-sm text-gray-400 block mb-1">Valor (R$)</label><input type="number" step="0.01" name="amount" value={newExpense.amount} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
-                                <div><label className="text-sm text-gray-400 block mb-1">Vencimento</label><input type="date" name="due_date" value={newExpense.due_date} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white focus:border-[#f2bd46] outline-none" required /></div>
-                                <div>
-                                    <label className="text-sm text-gray-400 block mb-1">Recorrência</label>
-                                    <select name="recurrence_type" value={newExpense.recurrence_type} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white outline-none">
-                                        <option value="">Única</option>
-                                        <option value="monthly">Mensal</option>
-                                        <option value="yearly">Anual</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-400 block mb-1">Condomínio (Opcional)</label>
-                                    <select name="condo_id" value={newExpense.condo_id} onChange={handleExpenseChange} className="w-full bg-black border border-gray-600 rounded-lg p-3 text-white outline-none">
-                                        <option value="">Geral</option>
-                                        {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            {modalError && <p className="text-red-400 text-sm mt-4 text-center">{modalError}</p>}
-                            <div className="flex justify-end gap-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#1a1a1a]">Cancelar</button>
-                                <button type="submit" className="bg-[#f2bd46] hover:bg-[#f2bd46] px-6 py-2 rounded-lg text-white font-bold">Salvar</button>
-                            </div>
-                        </form>
-                    </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+                    <form onSubmit={handleCreateExpense} className="relative z-10 w-full max-w-lg bg-[#0a0a0a] border border-gray-700 rounded-3xl p-6 shadow-2xl">
+                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-black text-white">Nova despesa</h3><button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white"><X /></button></div>
+                        <div className="grid grid-cols-1 gap-4">
+                            <input name="description" value={newExpense.description} onChange={handleExpenseChange} placeholder="Descrição" className="bg-black border border-gray-700 rounded-xl p-3 text-white" />
+                            <input name="amount" value={newExpense.amount} onChange={handleExpenseChange} placeholder="Valor" type="number" step="0.01" className="bg-black border border-gray-700 rounded-xl p-3 text-white" />
+                            <input name="due_date" value={newExpense.due_date} onChange={handleExpenseChange} type="date" className="bg-black border border-gray-700 rounded-xl p-3 text-white [color-scheme:dark]" />
+                            <select name="condo_id" value={newExpense.condo_id} onChange={handleExpenseChange} className="bg-black border border-gray-700 rounded-xl p-3 text-white"><option value="">Despesa geral</option>{condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+                        </div>
+                        {modalError && <p className="text-red-400 text-sm mt-4">{modalError}</p>}
+                        <button type="submit" className="w-full mt-6 bg-[#f2bd46] text-black font-black rounded-xl py-3">Salvar despesa</button>
+                    </form>
                 </div>
             )}
         </div>
@@ -6127,10 +4462,10 @@ const CondoModal = ({ isOpen, onClose, onSave, condo }) => {
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
             <div className="bg-[#1a1a1a] p-8 rounded-xl shadow-2xl w-full max-w-lg">
-                <h2 className="text-xl font-bold mb-6">{condo ? 'Editar' : 'Novo'} Condomínio</h2>
+                <h2 className="text-xl font-bold mb-6">{condo ? 'Editar' : 'Nova'} Máquina</h2>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Nome do Condomínio" className="bg-[#1a1a1a] p-2 rounded-md md:col-span-2" required />
-                    <input name="fridge_id" value={formData.fridge_id || ''} onChange={handleChange} placeholder="ID da Geladeira (Ex: SF001)" className="bg-[#1a1a1a] p-2 rounded-md" required />
+                    <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Nome da Máquina / Local" className="bg-[#1a1a1a] p-2 rounded-md md:col-span-2" required />
+                    <input name="fridge_id" value={formData.fridge_id || ''} onChange={handleChange} placeholder="ID da Máquina (Ex: SF001)" className="bg-[#1a1a1a] p-2 rounded-md" required />
                     <input name="address" value={formData.address || ''} onChange={handleChange} placeholder="Endereço" className="bg-[#1a1a1a] p-2 rounded-md" />
                     <input name="syndic_name" value={formData.syndic_name || ''} onChange={handleChange} placeholder="Nome do Síndico" className="bg-[#1a1a1a] p-2 rounded-md" />
                     <input name="syndic_contact" value={formData.syndic_contact || ''} onChange={handleChange} placeholder="Contacto do Síndico" className="bg-[#1a1a1a] p-2 rounded-md" />
@@ -6599,7 +4934,7 @@ const InventoryAnalysisPage = ({ condominiums, token }) => {
             {/* --- FILTROS ADICIONADOS --- */}
             <div className="bg-[#1a1a1a] p-4 rounded-lg mb-6 flex flex-wrap items-end gap-4">
                 <div>
-                    <label className="text-sm text-gray-400 mb-1 block">Filtrar por Condomínio</label>
+                    <label className="text-sm text-gray-400 mb-1 block">Filtrar por Máquina</label>
                     <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-2 px-3">
                         {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -6728,13 +5063,13 @@ const ExpiringSoonWidget = ({ token, condominiums }) => {
                     {/* Ícone e Título Atualizados */}
                     <Calendar size={24} /> Próximo da Validade
                 </h3>
-                {/* Filtro de Condomínio Adicionado */}
+                {/* Filtro de Máquina Adicionado */}
                 <select 
                     value={selectedCondoId} 
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
                     className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
-                    <option value="all">Todos os Condomínios</option>
+                    <option value="all">Todas as Máquinas</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
@@ -6814,13 +5149,13 @@ const LatestOrdersWidget = ({ token, condominiums }) => {
                 <h3 className="text-xl font-bold text-blue-400 flex items-center gap-2">
                     <History size={24} /> Últimos Pedidos
                 </h3>
-                {/* Filtro de Condomínio Adicionado */}
+                {/* Filtro de Máquina Adicionado */}
                 <select 
                     value={selectedCondoId} 
                     onChange={(e) => setSelectedCondoId(e.target.value)} 
                     className="bg-[#1a1a1a] border border-gray-600 rounded-lg py-1 px-2 text-xs"
                 >
-                    <option value="all">Todos os Condomínios</option>
+                    <option value="all">Todas as Máquinas</option>
                     {condominiums && condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
@@ -7071,9 +5406,9 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                     delay="100ms"
                 />
                 <StatCard 
-                    icon={<UsersIcon size={28} />} 
-                    label="Total Utilizadores" 
-                    value={stats?.total_users || 0} 
+                    icon={<Refrigerator size={28} />} 
+                    label="Máquinas Ativas" 
+                    value={condominiums.length || stats?.total_machines || 0} 
                     colorClass="text-purple-400" 
                     delay="150ms"
                 />
@@ -7125,7 +5460,7 @@ const AdminDashboardPage = ({ token, setActiveTab }) => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-end relative z-10">
                         <div className="w-full">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Condomínio</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Máquina</label>
                             <select name="condoId" onChange={handleInputChange} value={filterInputs.condoId} className="w-full bg-black/50 border border-gray-600 rounded-xl py-3 px-4 text-white focus:border-[#f2bd46] focus:ring-1 focus:ring-[#f2bd46] outline-none transition-all appearance-none cursor-pointer">
                                 <option value="all">Geral (Todos)</option>
                                 {condominiums.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -7179,8 +5514,7 @@ const AdminDashboard = ({ onLogout }) => {
     const [isProductModalOpen, setIsProductModalOpen] = React.useState(false);
     const [currentProduct, setCurrentProduct] = React.useState(null);
     
-    // NOVO: Estado para controlar o menu no telemóvel
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [machineAccessGranted, setMachineAccessGranted] = React.useState(false);
     
     const token = localStorage.getItem('adminToken');
 
@@ -7211,17 +5545,17 @@ const AdminDashboard = ({ onLogout }) => {
         const url = condoData.id ? `${API_URL}/api/admin/condominiums/${condoData.id}` : `${API_URL}/api/admin/condominiums`;
         try {
             const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(condoData) });
-            if (!response.ok) throw new Error('Falha ao salvar condomínio.');
+            if (!response.ok) throw new Error('Falha ao salvar máquina.');
             fetchData('condominiums', setCondominiums);
             handleCloseCondoModal();
         } catch (err) { alert(err.message); }
     };
     const handleDeleteCondo = async (id) => {
-        if (window.confirm('Tem a certeza que quer apagar este condomínio?')) {
+        if (window.confirm('Tem certeza que quer apagar esta máquina?')) {
             try {
                 const response = await fetch(`${API_URL}/api/admin/condominiums/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Falha ao apagar condomínio.');
+                if (!response.ok) throw new Error(data.message || 'Falha ao apagar máquina.');
                 fetchData('condominiums', setCondominiums);
                 alert(data.message);
             } catch (err) { alert(err.message); }
@@ -7527,7 +5861,7 @@ const AdminDashboard = ({ onLogout }) => {
     const CondoManager = ({ condominiums, onEdit, onDelete, onAddNew, token }) => {
         const handleRemoteUnlock = async (fridgeId) => {
             if (!fridgeId) {
-                alert('Este condomínio não tem um ID de geladeira definido.');
+                alert('Esta máquina não tem um ID de geladeira definido.');
                 return;
             }
             if (window.confirm(`Tem a certeza que quer destravar remotamente a geladeira ${fridgeId}?`)) {
@@ -7547,9 +5881,9 @@ const AdminDashboard = ({ onLogout }) => {
         return (
             <div>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold">Gestão de Condomínios</h2>
+                    <h2 className="text-2xl font-bold">Gestão de Máquinas</h2>
                     <button onClick={() => onAddNew()} className="bg-[#f2bd46] hover:bg-[#f2bd46] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                        <PlusCircle size={20} /> Novo Condomínio
+                        <PlusCircle size={20} /> Nova Máquina
                     </button>
                 </div>
                 {isLoading && activeTab === 'condominiums' ? <Loader2 className="animate-spin" /> : (
@@ -7558,8 +5892,8 @@ const AdminDashboard = ({ onLogout }) => {
                             <thead className="bg-[#1a1a1a]">
                                 <tr>
                                     <th className="p-4">Nome</th>
-                                    <th className="p-4">ID da Geladeira</th>
-                                    <th className="p-4">Nº de Usuários</th>
+                                    <th className="p-4">ID da Máquina</th>
+                                    <th className="p-4">Compradores</th>
                                     <th className="p-4">Itens em Estoque</th>
                                     <th className="p-4">Ações</th>
                                 </tr>
@@ -7601,9 +5935,7 @@ const AdminDashboard = ({ onLogout }) => {
         switch (activeTab) {
             case 'dashboard': return <AdminDashboardPage token={token} setActiveTab={setActiveTab} />;
             case 'sales': return <EntradasVendasPage condominiums={condominiums} token={token} />;
-            case 'central-cashier': return <CentralCashierPage token={token} />;
             case 'critical-stock': return <CriticalStockPage condominiums={condominiums} token={token} />;
-            case 'users': return <UserManagementPage condominiums={condominiums} token={token} />;
             case 'stock': return <StockManagement condominiums={condominiums} products={products} token={token} />;
             case 'condominiums': return <CondoManager condominiums={condominiums} onAddNew={handleOpenCondoModal} onEdit={handleOpenCondoModal} onDelete={handleDeleteCondo} token={token} />;
             case 'products': return <ProductManager />; 
@@ -7614,39 +5946,64 @@ const AdminDashboard = ({ onLogout }) => {
 
     // Função para fechar o menu ao clicar num link (mobile)
     const handleNavClick = (tab) => {
+        if (tab === 'condominiums' && !machineAccessGranted) {
+            const password = window.prompt('Senha privada para acessar Máquinas:');
+            if (password !== '30105') {
+                alert('Senha incorreta. Acesso negado.');
+                return;
+            }
+            setMachineAccessGranted(true);
+        }
         setActiveTab(tab);
-        setIsMobileMenuOpen(false);
     };
+
+
+    const adminNavItems = [
+        { tab: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+        { tab: 'sales', icon: <DollarSign size={18} />, label: 'Vendas' },
+        { tab: 'products', icon: <Package size={18} />, label: 'Produtos' },
+        { tab: 'stock', icon: <ShoppingCart size={18} />, label: 'Estoque' },
+        { tab: 'critical-stock', icon: <AlertTriangle size={18} />, label: 'Críticos' },
+        { tab: 'condominiums', icon: <Building2 size={18} />, label: 'Máquinas' },
+        { tab: 'finance', icon: <BarChart size={18} />, label: 'Relatórios' },
+    ];
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-black text-white">
             <CondoModal isOpen={isCondoModalOpen} onClose={handleCloseCondoModal} onSave={handleSaveCondo} condo={currentCondo} />
             <ProductModal isOpen={isProductModalOpen} onClose={handleCloseProductModal} onSave={handleSaveProduct} product={currentProduct} />
             
-            {/* --- HEADER MOBILE (Novo) --- */}
-            <div className="md:hidden bg-[#1a1a1a] p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-30">
-                <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-[#f2bd46]">DM</span>
-                    <span className="text-xl font-light">Admin</span>
+            {/* Header mobile sem ícone sanduíche: navegação fica em abas roláveis. */}
+            <div className="md:hidden bg-black/95 backdrop-blur-2xl px-4 pt-4 pb-3 border-b border-gray-800 sticky top-0 z-30">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-9 h-9 rounded-2xl bg-[#f2bd46]/15 border border-[#f2bd46]/30 flex items-center justify-center text-[#f2bd46] font-black">DM</div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-extrabold leading-tight truncate">Painel Administrativo</p>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.18em]">fluxo rápido / cielo</p>
+                        </div>
+                    </div>
+                    <button onClick={onLogout} className="text-[11px] text-red-300 border border-red-500/20 rounded-full px-3 py-2 bg-red-500/10 flex items-center gap-1">
+                        <LogOut size={14} /> Sair admin
+                    </button>
                 </div>
-                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">
-                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                </button>
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 custom-scrollbar">
+                    {adminNavItems.map(item => (
+                        <button
+                            key={item.tab}
+                            onClick={() => handleNavClick(item.tab)}
+                            className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold border transition ${activeTab === item.tab ? 'bg-[#f2bd46] text-black border-[#f2bd46]' : 'bg-[#111] text-gray-300 border-gray-800'}`}
+                        >
+                            {item.icon}
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {/* --- OVERLAY PARA MOBILE --- */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
-            )}
-            
-            {/* --- SIDEBAR RESPONSIVA --- */}
-            <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-[#1a1a1a] p-4 flex flex-col shrink-0 border-r border-gray-700
-                transform transition-transform duration-300 ease-in-out
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-                md:translate-x-0 md:static md:block
-            `}>
-                <div className="text-center mb-8 hidden md:block">
+            {/* Sidebar apenas desktop. No mobile, as abas horizontais substituem o sanduíche. */}
+            <aside className="hidden md:flex md:sticky md:top-0 md:h-screen z-40 w-64 bg-[#1a1a1a] p-4 flex-col shrink-0 border-r border-gray-700">
+                <div className="text-center mb-8">
                     <span className="text-2xl font-bold text-[#f2bd46]">DM</span><span className="text-2xl font-light text-white">24h</span>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Painel Admin</p>
                 </div>
@@ -7654,29 +6011,26 @@ const AdminDashboard = ({ onLogout }) => {
                 <nav className="flex flex-col gap-1 flex-grow overflow-y-auto">
                     <NavButton active={activeTab === 'dashboard'} onClick={() => handleNavClick('dashboard')} icon={<LayoutDashboard size={20} />} label="Dashboard" />
                     <NavButton active={activeTab === 'sales'} onClick={() => handleNavClick('sales')} icon={<DollarSign size={20} />} label="Entradas e Vendas" />
-                    <NavButton active={activeTab === 'central-cashier'} onClick={() => handleNavClick('central-cashier')} icon={<PiggyBank size={20} />} label="Caixa Central" />
                     
                     <div className="my-2 border-t border-gray-700/50"></div>
                     
                     <NavButton active={activeTab === 'products'} onClick={() => handleNavClick('products')} icon={<Package size={20} />} label="Catálogo Produtos" />
                     <NavButton active={activeTab === 'stock'} onClick={() => handleNavClick('stock')} icon={<ShoppingCart size={20} />} label="Estoque Geral" />
-                    <NavButton active={activeTab === 'critical-stock'} onClick={() => handleNavClick('critical-stock')} icon={<AlertTriangle size={20} />} label="Validade / Críticos" />
+                    <NavButton active={activeTab === 'critical-stock'} onClick={() => handleNavClick('critical-stock')} icon={<AlertTriangle size={20} />} label="Validades e Críticos" />
                     
                     <div className="my-2 border-t border-gray-700/50"></div>
 
-                    <NavButton active={activeTab === 'condominiums'} onClick={() => handleNavClick('condominiums')} icon={<Building2 size={20} />} label="Condomínios" />
-                    <NavButton active={activeTab === 'users'} onClick={() => handleNavClick('users')} icon={<UsersIcon size={20} />} label="Utilizadores" />
+                    <NavButton active={activeTab === 'condominiums'} onClick={() => handleNavClick('condominiums')} icon={<Building2 size={20} />} label="Máquinas" />
                     <NavButton active={activeTab === 'finance'} onClick={() => handleNavClick('finance')} icon={<BarChart size={20} />} label="Relatórios" />
                 </nav>
                 
                 <div className="mt-4 pt-4 border-t border-gray-700">
                     <button onClick={onLogout} className="flex items-center w-full gap-3 p-3 rounded-md text-red-400 hover:bg-red-500/10 transition">
-                        <LogOut size={20} /> Sair
+                        <LogOut size={20} /> Sair admin
                     </button>
                 </div>
             </aside>
             
-            {/* --- MAIN CONTENT --- */}
             <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
                 {renderContent()}
             </main>
@@ -7689,7 +6043,7 @@ const NavButton = ({ active, onClick, icon, label }) => (
     <button 
         onClick={onClick} 
         className={`flex items-center gap-3 p-3 rounded-md transition text-sm font-medium
-        ${active ? 'bg-[#f2bd46] text-white shadow-lg shadow-[#f2bd46]/20' : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'}`}
+        ${active ? 'bg-[#f2bd46] text-black shadow-lg shadow-[#f2bd46]/20' : 'text-gray-300 hover:bg-[#262626] hover:text-white'}`}
     >
         {icon} {label}
     </button>
@@ -8742,30 +7096,12 @@ export default function App() {
 
                 const token = localStorage.getItem('token');
                 const adminToken = localStorage.getItem('adminToken');
-                const forceLogin = new URLSearchParams(window.location.search).get('admin') === '1';
                 
-                if (forceLogin && !adminToken) {
-                    setUser(null);
-                    setPage('login');
-                } else if (adminToken) {
+                if (adminToken) {
                     setUser({ name: "Admin" });
                     setPage('admin');
-                } else if (token) {
-                    const meResponse = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (meResponse.ok) {
-                        const userData = await meResponse.json();
-                        setUser(userData);
-                        setFridgeAndGoHome(userData, condosData);
-                    } else {
-                        localStorage.removeItem('token');
-                        const urlFridgeId = new URLSearchParams(window.location.search).get('fridgeId');
-                        const savedFridgeId = urlFridgeId || localStorage.getItem('savedFridgeId');
-                        const selectedCondo = condosData.find(c => c.fridge_id === savedFridgeId) || condosData[0];
-                        setUser(buildGuestUser(selectedCondo));
-                        setFridgeId(selectedCondo?.fridge_id || null);
-                        setPage('home');
-                    }
                 } else {
+                    localStorage.removeItem('token');
                     const urlFridgeId = new URLSearchParams(window.location.search).get('fridgeId');
                     const savedFridgeId = urlFridgeId || localStorage.getItem('savedFridgeId');
                     const selectedCondo = condosData.find(c => c.fridge_id === savedFridgeId) || condosData[0];
@@ -8801,16 +7137,7 @@ export default function App() {
 
     const handleAdminLogin = () => { setUser({ name: "Admin" }); setPage('admin'); };
     
-    // --- CORREÇÃO 2: FLUXO DE CADASTRO ---
-    // Agora chama o 'handleLogin' para ir direto para a HomePage
-    const handleRegister = (token, userData) => { 
-        handleLogin(token, userData);
-    };
-    
-    const handleAccountUpdate = (updatedUser) => { setUser(prevUser => ({ ...prevUser, ...updatedUser })); };
-    const handleCondoChanged = (updatedUser) => { setUser(updatedUser); };
-    
-    const addToCart = (productToAdd) => {
+                const addToCart = (productToAdd) => {
         setCart(prevCart => {
             const existingItem = prevCart.find(item => item.id === productToAdd.id);
             if (existingItem) {
@@ -8827,10 +7154,6 @@ export default function App() {
     }
 
     const pagesWithoutFooter = [
-        'login', 
-        'register', 
-        'forgot-password', 
-        'fridgeSelection', 
         'payment', 
         'card-deposit', 
         'postPayment',
@@ -8840,47 +7163,37 @@ export default function App() {
     
     // O roteador principal
     const renderPage = () => {
-        // --- CORREÇÃO 3: REMOVIDO O 'IF' QUE FORÇAVA O 'fridgeSelection' ---
-        // if (user && user.name !== "Admin" && !fridgeId && !['fridgeSelection', 'admin'].includes(page)) {
-        //      return <FridgeSelectionPage onCondoSelected={handleCondoSelect} setPage={setPage} user={user} onLogout={handleLogout} />;
-        // }
+        const homeProps = {
+            user: user || buildGuestUser(allCondos[0]),
+            onLogout: handleLogout,
+            cart,
+            setCart,
+            addToCart,
+            setPage,
+            fridgeId,
+            onCondoSelected: handleCondoSelect,
+            condos: allCondos
+        };
 
         switch (page) {
-            case 'register': return <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setPage('login')} />;
-            
-            // O 'fridgeSelection' só é chamado se o usuário for um NOVO cadastro
-            // ou se o 'handleLogin' falhar (o que é raro)
-            case 'fridgeSelection': return <FridgeSelectionPage onCondoSelected={handleCondoSelect} setPage={setPage} user={user} onLogout={handleLogout} />;
-            
-            case 'home': 
-                return <HomePage 
-                        user={user || buildGuestUser(allCondos[0])} 
-                        onLogout={handleLogout} 
-                        cart={cart} 
-                        setCart={setCart} 
-                        addToCart={addToCart} 
-                        setPage={setPage} 
-                        fridgeId={fridgeId} 
-                        onCondoSelected={handleCondoSelect}
-                        condos={allCondos}
-                      />;
-            
-            case 'cart': return <CartPage cart={cart} setCart={setCart} setPage={setPage} user={user} setPaymentData={setPaymentData} setPaymentMethod={setPaymentMethod} fridgeId={fridgeId} />;
-            case 'payment': return <PaymentPage paymentData={paymentData} setPage={setPage} paymentMethod={paymentMethod} user={user} cart={cart} setCart={setCart} onPaymentSuccess={updateUserBalance} setPaymentData={setPaymentData} fridgeId={fridgeId}/>;
-            case 'postPayment': return <PostPaymentStatusPage user={user} setPage={setPage} />;
-            case 'my-account': return <MyAccountPage user={user} setPage={setPage} onAccountUpdate={handleAccountUpdate} onLogout={handleLogout} />;
-            case 'changeCondo': return <ChangeCondoPage user={user} setPage={setPage} onCondoChanged={handleCondoChanged} />;
-            case 'forgot-password': return <ForgotPasswordPage setPage={setPage} />;
-            case 'admin': return <AdminDashboard onLogout={handleLogout} />;
-            case 'wallet': return <WalletPage user={user} setPage={setPage} setPaymentData={setPaymentData} setDepositData={setDepositData} setPaymentMethod={setPaymentMethod} updateUserBalance={updateUserBalance} showToast={showToast} />;
-            case 'card-deposit': return <CardDepositPage user={user} depositData={depositData} setPage={setPage} onPaymentSuccess={handleDepositSuccess} />;
-            case 'my-tickets': return <MyTicketsPage setPage={setPage} />;
-            case 'credit': return <CreditPage user={user} setPage={setPage} setPaymentData={setPaymentData} setPaymentMethod={setPaymentMethod} />;
-            case 'depositSuccess': return <DepositSuccessPage setPage={setPage} />;
-            case 'history': return <HistoryPage setPage={setPage} token={localStorage.getItem('token')} showToast={showToast} />;
-            
-            case 'login': return <LoginPage onLogin={handleLogin} onAdminLogin={handleAdminLogin} onSwitchToRegister={() => setPage('register')} setPage={setPage} />;
-            default: return <HomePage user={user || buildGuestUser(allCondos[0])} onLogout={handleLogout} cart={cart} setCart={setCart} addToCart={addToCart} setPage={setPage} fridgeId={fridgeId} onCondoSelected={handleCondoSelect} condos={allCondos} />;
+            case 'home': return <HomePage {...homeProps} />;
+            case 'cart': return <CartPage cart={cart} setCart={setCart} setPage={setPage} user={user || buildGuestUser(allCondos[0])} setPaymentData={setPaymentData} setPaymentMethod={setPaymentMethod} fridgeId={fridgeId} />;
+            case 'payment': return <PaymentPage paymentData={paymentData} setPage={setPage} paymentMethod={paymentMethod} user={user || buildGuestUser(allCondos[0])} cart={cart} setCart={setCart} onPaymentSuccess={updateUserBalance} setPaymentData={setPaymentData} fridgeId={fridgeId}/>;
+            case 'postPayment': return <PostPaymentStatusPage user={user || buildGuestUser(allCondos[0])} setPage={setPage} />;
+            case 'admin': return localStorage.getItem('adminToken') ? <AdminDashboard onLogout={handleLogout} /> : <HomePage {...homeProps} />;
+            case 'login':
+            case 'register':
+            case 'forgot-password':
+            case 'wallet':
+            case 'card-deposit':
+            case 'my-account':
+            case 'changeCondo':
+            case 'my-tickets':
+            case 'credit':
+            case 'depositSuccess':
+            case 'history':
+            case 'fridgeSelection':
+            default: return <HomePage {...homeProps} />;
         }
     };
 
@@ -8891,7 +7204,7 @@ export default function App() {
                 <main className="flex-grow">
                     {renderPage()}
                 </main>
-                {!pagesWithoutFooter.includes(page) && <Footer />}
+                {!pagesWithoutFooter.includes(page) && <Footer onAdminLogin={handleAdminLogin} />}
             </div>
         </>
     );
